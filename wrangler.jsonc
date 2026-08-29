@@ -8,6 +8,10 @@
   "preview_urls": false,
   "keep_vars": true,
 
+  "vars": {
+    "IAM_CLIENT_ID": "iam_identity_47843d145d72455e83b6"
+  },
+
   "ai": {
     "binding": "AGENTSAM_WAI"
   },
