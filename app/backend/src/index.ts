@@ -11,6 +11,9 @@ import {
   createIdentityService,
 } from '@inneranimalmedia/agentsam-sdk/identity/server/worker-router';
 import { verifyBridgeKey, bridgeUnauthorized } from './auth/bridge-key';
+import { getAiKeyStatus, setAiKey, clearAiKey } from './lib/aiKeyStore';
+import { resolveAiKey } from './lib/aiKeyStore';
+import { streamGeminiPage } from './lib/geminiProxy';
 
 export interface Env {
   AGENTSAM_WAI: any; // Workers AI binding
@@ -30,6 +33,11 @@ export interface Env {
   IAM_CLIENT_ID?: string;
   IAM_CLIENT_SECRET?: string;
   IAM_OAUTH_ISSUER?: string; // machine-to-machine only — see auth/bridge-key.ts
+
+  // Runtime-swappable AI provider keys — see lib/aiKeyStore.ts
+  SECRETS_ENCRYPTION_KEY?: string;
+  GEMINI_API_KEY?: string;
+  GOOGLE_AI_API_KEY?: string;
 }
 
 export default {
@@ -189,6 +197,61 @@ export default {
         codeSnippetProposal: '',
         analyzedAt: Date.now(),
       }), { headers: { 'Content-Type': 'application/json' } });
+    }
+
+    // AI provider key management — runtime-swappable, no redeploy needed.
+    // GET returns status only (never the raw key). PUT/DELETE require auth.
+    if (url.pathname === '/api/settings/ai-keys/gemini') {
+      if (!isAuthenticated) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      }
+      const userId = requestIdentity.user.id;
+      const tenantId = requestIdentity.tenant.id || 'system';
+
+      if (request.method === 'GET') {
+        const status = await getAiKeyStatus(env, userId);
+        return new Response(JSON.stringify(status), { headers: { 'Content-Type': 'application/json' } });
+      }
+
+      if (request.method === 'PUT') {
+        const body = await request.json().catch(() => null) as { value?: string } | null;
+        const value = body?.value?.trim();
+        if (!value) {
+          return new Response(JSON.stringify({ error: 'value_required' }), { status: 400 });
+        }
+        try {
+          await setAiKey(env, userId, tenantId, value);
+        } catch (e: any) {
+          return new Response(JSON.stringify({ error: e?.message || 'set_failed' }), { status: 500 });
+        }
+        const status = await getAiKeyStatus(env, userId);
+        return new Response(JSON.stringify(status), { headers: { 'Content-Type': 'application/json' } });
+      }
+
+      if (request.method === 'DELETE') {
+        await clearAiKey(env, userId);
+        const status = await getAiKeyStatus(env, userId);
+        return new Response(JSON.stringify(status), { headers: { 'Content-Type': 'application/json' } });
+      }
+
+      return new Response(JSON.stringify({ error: 'method_not_allowed' }), { status: 405 });
+    }
+
+    // Server-side Gemini proxy — the API key never leaves the Worker.
+    // Resolves the caller's stored key override if set, else env.GEMINI_API_KEY.
+    if (url.pathname === '/api/gemini/generate' && request.method === 'POST') {
+      if (!isAuthenticated) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      }
+      const apiKey = await resolveAiKey(env, requestIdentity.user.id);
+      if (!apiKey) {
+        return new Response(JSON.stringify({ error: 'no_gemini_key_configured' }), { status: 503 });
+      }
+      const body = await request.json().catch(() => null) as any;
+      if (!body?.prompt) {
+        return new Response(JSON.stringify({ error: 'prompt_required' }), { status: 400 });
+      }
+      return streamGeminiPage(apiKey, body, request.signal);
     }
 
     if (url.pathname === '/api/mission/execute' && request.method === 'POST') {

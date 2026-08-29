@@ -7,6 +7,7 @@ import {
   ThemePalette,
 } from '../services/themeService';
 import { BindingsRuntimeView } from './bindings/BindingsRuntimeView';
+import { AiKeySettings } from './AiKeySettings';
 
 interface AppSettingsModalProps {
   isOpen: boolean;
@@ -437,6 +438,8 @@ export const AppSettingsModal: React.FC<AppSettingsModalProps> = ({
                   </button>
                 </div>
               </div>
+
+              <AiKeySettings />
             </div>
           )}
 
