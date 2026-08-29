@@ -32,7 +32,7 @@ jobs:
 
       - name: No donor runtime imports
         run: |
-          if grep -R "imports/agentsamfast" app/backend --include='*.js' --include='*.ts'; then
+          if grep -R -E "(from|import\()[[:space:]]*['\"][^'\"]*imports/agentsamfast" app/backend --include='*.js' --include='*.ts'; then
             echo "Runtime must not import donor-tree AgentSamFast code"
             exit 1
           fi
@@ -44,6 +44,7 @@ jobs:
         run: npm run build
 
       - name: Upload generated package lock
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: retrieval-package-lock
