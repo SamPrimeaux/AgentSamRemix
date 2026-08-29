@@ -12,8 +12,8 @@ import {
   createIdentityService,
 } from '@inneranimalmedia/agentsam-sdk/identity/server/worker-router';
 import { verifyBridgeKey, bridgeUnauthorized } from './auth/bridge-key';
-import { getAiKeyStatus, setAiKey, clearAiKey, resolveAiKey } from './lib/aiKeyStore';
 import { streamGeminiPage } from './lib/geminiProxy';
+import { resolveProviderCredential } from '../credentials/provider-credential.js';
 import {
   destroyTerminalEnvironment,
   executeTerminalLane,
@@ -24,6 +24,7 @@ import { probeExecOS } from '../agentsam/terminal/execos';
 import { isExecLane, resolveUserRuntimeScope, type ExecLane } from '../agentsam/terminal/registry';
 import { handleRetrievalHttpRequest } from '../http/retrieval/routes.js';
 import { handleBrowserLiveViewHttpRequest } from '../http/browser/live-view.js';
+import { handleSettingsRequest } from '../http/settings/index.js';
 import type { Env } from './env';
 
 export { AgentSam } from '../agentsam/runtime/AgentSam';
@@ -99,9 +100,6 @@ export default {
       });
     }
 
-    // Machine-to-machine compatibility routes. A bridge key proves machine
-    // authority only; user/workspace scope must be explicit or resolvable from
-    // the supplied X-User-Id. No implicit operator identity and no lane hop.
     const machineLane = laneForLegacyMachinePath(url.pathname);
     if (machineLane && request.method === 'POST') {
       if (!verifyBridgeKey(request, env)) return bridgeUnauthorized();
@@ -136,11 +134,18 @@ export default {
       return authenticated ? json({ ok: true, identity: requestIdentity }) : json({ ok: false, error: 'session_required' }, 401);
     }
 
-    // Durable Agent routes are always behind the same human IAM session gate.
     if (url.pathname.startsWith('/agents/')) {
       if (!authenticated) return json({ error: 'session_required' }, 401);
       const response = await routeAgentRequest(request, env);
       return response || json({ error: 'agent_route_not_found' }, 404);
+    }
+
+    if (url.pathname.startsWith('/api/settings/')) {
+      if (!authenticated) return json({ error: 'session_required' }, 401);
+      const scope = await authenticatedRuntimeScope(env, requestIdentity);
+      if (!scope) return json({ error: 'workspace_scope_required' }, 409);
+      const response = await handleSettingsRequest(request, env, requestIdentity, scope);
+      return response || json({ error: 'settings_route_not_found' }, 404);
     }
 
     if (url.pathname === '/api/agent/retrieval/query') {
@@ -192,8 +197,6 @@ export default {
       return json(result, result.ok ? 200 : 502);
     }
 
-    // Temporary compatibility alias from the first Remix sprint. It is now an
-    // explicit remote lane, not a separate execution authority.
     if (url.pathname === '/api/exec/host' && request.method === 'POST') {
       if (!authenticated) return json({ error: 'session_required' }, 401);
       const scope = await authenticatedRuntimeScope(env, requestIdentity);
@@ -208,10 +211,6 @@ export default {
       return json(result, result.ok ? 200 : 502);
     }
 
-    // Browser Run state stays owned by the same Think Agent that owns Code
-    // Mode. The Worker proves the human session once, then delegates the HTTP
-    // protocol to app/backend/http/browser without creating another session
-    // resolver or BrowserSession authority.
     if (url.pathname === '/api/browser/live-view') {
       if (!authenticated) return json({ error: 'session_required' }, 401);
       const userId = trim(requestIdentity?.user?.id);
@@ -220,30 +219,14 @@ export default {
       return response || json({ error: 'browser_route_not_found' }, 404);
     }
 
-    if (url.pathname === '/api/settings/ai-keys/gemini') {
-      if (!authenticated) return json({ error: 'Unauthorized' }, 401);
-      const userId = requestIdentity.user.id;
-      const tenantId = requestIdentity.tenant.id || 'system';
-      if (request.method === 'GET') return json(await getAiKeyStatus(env, userId));
-      if (request.method === 'PUT') {
-        const body = await request.json().catch(() => null) as { value?: string } | null;
-        const value = body?.value?.trim();
-        if (!value) return json({ error: 'value_required' }, 400);
-        try { await setAiKey(env, userId, tenantId, value); }
-        catch (error: any) { return json({ error: error?.message || 'set_failed' }, 500); }
-        return json(await getAiKeyStatus(env, userId));
-      }
-      if (request.method === 'DELETE') {
-        await clearAiKey(env, userId);
-        return json(await getAiKeyStatus(env, userId));
-      }
-      return json({ error: 'method_not_allowed' }, 405);
-    }
-
     if (url.pathname === '/api/gemini/generate' && request.method === 'POST') {
       if (!authenticated) return json({ error: 'Unauthorized' }, 401);
-      const apiKey = await resolveAiKey(env, requestIdentity.user.id);
-      if (!apiKey) return json({ error: 'no_gemini_key_configured' }, 503);
+      const apiKey = await resolveProviderCredential(env, {
+        userId: requestIdentity.user.id,
+        tenantId: requestIdentity.tenant.id,
+        provider: 'google',
+      });
+      if (!apiKey) return json({ error: 'no_google_ai_key_configured' }, 503);
       const body = await request.json().catch(() => null) as any;
       if (!body?.prompt) return json({ error: 'prompt_required' }, 400);
       return streamGeminiPage(apiKey, body, request.signal);
