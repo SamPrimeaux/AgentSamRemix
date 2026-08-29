@@ -44,6 +44,11 @@ adding a table or a column — don't re-derive the boundary case by case.
    keeping or killing anything. Two tables were wrongly given a clean
    pass in earlier drafts of this document on label alone; both were
    wrong once checked. See §3.
+7. **A runtime marker is not access control.** Enforcement of "one
+   reader per table" belongs at the module/CI boundary (a single
+   function permitted to query the table, a build check that fails if
+   any other file does), not a flag decorating the object afterward. A
+   flag only checks itself; a CI grep checks everyone. See §6.
 
 ---
 
@@ -52,7 +57,7 @@ adding a table or a column — don't re-derive the boundary case by case.
 ### Identity core
 | Table | Job | Keyed by |
 |---|---|---|
-| `auth_users` | One row per human/agent/system principal. Carries IDP links as `identities_json`, and any additional login-eligible addresses as `alt_emails_json` — both generated column + partial unique index (see §3). | `au_*` |
+| `auth_users` | One row per human/agent/system principal. Carries IDP links as `identities_json`, and any additional login-eligible addresses as `alt_emails_json` — both generated column + partial unique index (see §3). Sole read access via `loadAuthUser()` — see §6. | `au_*` |
 | `auth_sessions` | Browser session proof. High-churn, short-lived, no scope/capability data. | `user_id → auth_users.id` |
 | `auth_event_log` | Append-only audit of auth events. | — |
 
@@ -171,3 +176,52 @@ secret" into actual accreditation.
    can be called fully locked.
 
 Nothing in this document is final until items 1-4 are resolved.
+
+---
+
+## 6. `authUser` — SSOT for "who is this person"
+
+`authUser` is sourced from exactly one table (`auth_users`), via exactly
+one query, defined in exactly one function:
+`loadAuthUser(env, id)` in `app/backend/identity/contracts/identity-context.js`.
+
+```
+authUser.id          ← auth_users.id
+authUser.personId    ← auth_users.person_uuid
+authUser.email       ← auth_users.email
+authUser.displayName ← auth_users.display_name
+```
+
+Nothing else feeds it — not `accounts` (killed, §3), not a request
+header, not a JWT claim, not a hand-constructed object with the right
+shape. `authUser` is a fact about a person, resolved once; it is not
+request-scoped (workspace, tenant, capabilities are resolved alongside
+it by `identityContextFromAuthContext()`, never folded into it).
+
+**No file other than `identity-context.js` may run
+`SELECT ... FROM auth_users` directly.** This is enforced by CI — a
+"Single auth_users read authority invariant" step greps
+`app/backend` for `FROM auth_users` outside that one file and fails the
+build on a match, the same pattern already used for the credential
+authority invariant. *(Blocked on `workflow` OAuth scope as of this
+commit — see PR description for the exact `ci.yml` diff to add by
+hand.)*
+
+**Blast radius — every table where `authUser.id` is the foreign key,**
+i.e. every table where a wrong or forged `authUser` has real
+consequences, permission-gating and money-spending alike:
+`auth_sessions.user_id`, `user_secrets.user_id`,
+`user_oauth_tokens.user_id`, `secret_audit_log.user_id`,
+`mcp_workspace_tokens.user_id`, `workspace_members.user_id`,
+`terminal_sessions.user_id`, `auth_event_log.user_id`,
+`oauth_authorizations.user_id`, both halves of the split
+`agentsam_user_policy` (§2), `user_governance_roles.user_id`.
+
+**Rule for load-bearing code:** any function that gates permissions or
+spends money receives `authUser` from `loadAuthUser()` (directly, or via
+`IdentityContext.user`) — never constructs one, never accepts a
+caller-supplied object shaped like one. Two existing call sites
+(`integration-user-id.js`, `cms-bridge-trust.js`) currently accept a
+bare `{id, email}`-shaped parameter with no verification it came from
+this source — these are the first ports to fix under this rule, not
+new problems it created.
