@@ -4,12 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "wrangler dev",
-    "dev:frontend": "vite app/frontend --config app/frontend/vite.config.ts",
-    "build": "vite build app/frontend --config app/frontend/vite.config.ts",
-    "deploy": "npm run build && wrangler deploy",
-    "preview": "wrangler dev --remote",
-    "lint": "tsc --noEmit"
+    "dev": "concurrently -k -n vite,worker -c blue,green \"vite --config app/frontend/vite.config.ts\" \"wrangler dev\"",
+    "build": "vite build --config app/frontend/vite.config.ts",
+    "typecheck": "tsc --noEmit",
+    "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
     "@google/genai": "^1.35.0",
@@ -17,6 +15,7 @@
     "@monaco-editor/react": "^4.7.0",
     "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
+    "lucide-react": "^1.35.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3"
   },
@@ -25,6 +24,7 @@
     "@types/express": "^5.0.6",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "concurrently": "^8.2.2",
     "esbuild": "^0.28.2",
     "tsx": "^4.23.12",
     "typescript": "~5.8.2",
@@ -38,6 +38,8 @@
     "esbuild@0.28.2": true,
     "esbuild@0.25.12": true,
     "esbuild@0.28.1": true,
-    "workerd@1.20260828.1": true
+    "workerd@1.20260828.1": true,
+    "node-pty@1.1.0": true,
+    "protobufjs@7.6.6": true
   }
 }

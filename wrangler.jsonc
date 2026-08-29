@@ -1,11 +1,17 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
+
   "name": "agentsamremix",
   "main": "app/backend/src/index.ts",
   "compatibility_date": "2026-08-29",
+
+  "preview_urls": false,
+  "keep_vars": true,
+
   "ai": {
     "binding": "AGENTSAM_WAI"
   },
+
   "d1_databases": [
     {
       "binding": "DB",
@@ -13,6 +19,7 @@
       "database_id": "cf87b717-d4e2-4cf8-bab0-a81268e32d49"
     }
   ],
+
   "r2_buckets": [
     {
       "binding": "ASSETS",
@@ -23,6 +30,7 @@
       "bucket_name": "agentsam-os-blueprint-content"
     }
   ],
+
   "vpc_services": [
     {
       "binding": "IAM_VPC",
@@ -30,6 +38,7 @@
       "remote": true
     }
   ],
+
   "assets": {
     "directory": "./app/frontend/dist",
     "binding": "FRONTEND_ASSETS",

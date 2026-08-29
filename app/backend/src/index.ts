@@ -1,117 +1,78 @@
-import { handleIdentityWorkerRequest, getIdentitySession } from '@inneranimalmedia/agentsam-sdk/identity/server/worker-router';
-import { streamPageGeneration } from './services/aiService';
-import { verifyBridgeKey, bridgeUnauthorized } from './auth/bridge-key';
 import {
-  probeVmTerminalViaVpc,
-  runTerminalCommandViaHttpExec,
-} from '../agentsam/terminal/vm-http-exec.js';
+  handleIdentityWorkerRequest,
+  createCloudflareD1Adapter,
+  createIdentityService,
+} from '@inneranimalmedia/agentsam-sdk/identity/server/worker-router';
+import { verifyBridgeKey, bridgeUnauthorized } from './auth/bridge-key';
 
 export interface Env {
-  AGENTSAM_WAI: any;
-  DB: any;
-  ASSETS: any;
-  WEBSITE_ASSETS: any;
-  IAM_VPC: { fetch(request: Request): Promise<Response> };
-  FRONTEND_ASSETS?: { fetch(request: Request): Promise<Response> };
-  AGENTSAM_BRIDGE_KEY?: string;
-}
-
-function json(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { 'Content-Type': 'application/json' },
-  });
-}
-
-async function readJsonBody(request: Request): Promise<Record<string, unknown> | null> {
-  try {
-    const value = await request.json();
-    return value && typeof value === 'object' && !Array.isArray(value)
-      ? (value as Record<string, unknown>)
-      : null;
-  } catch {
-    return null;
-  }
+  AGENTSAM_WAI: any; // Workers AI binding
+  DB: D1Database;
+  WEBSITE_ASSETS: R2Bucket;
+  IAM_VPC: Fetcher; // Service binding for VPC
+  AGENTSAM_BRIDGE_KEY?: string; // machine-to-machine only — see auth/bridge-key.ts
 }
 
 export default {
-  async fetch(request: Request, env: Env, ctx: any): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
-    // 0. Machine-to-machine terminal routes.
-    // The Worker authenticates the caller; terminal-daemon remains the execution authority.
-    if (url.pathname === '/api/terminal/vm/health' && request.method === 'GET') {
+    // 0. Machine-to-machine routes — bridge key only, never user session.
+    // Real PTY/VM wiring is not implemented yet. This gate is real; the
+    // execution behind it is deliberately not — see comments below.
+    if (url.pathname === '/api/terminal/local' && request.method === 'POST') {
       if (!verifyBridgeKey(request, env)) return bridgeUnauthorized();
-      const result = await probeVmTerminalViaVpc(env);
-      return json(result, result.ok ? 200 : 502);
+      // TODO: connect to a localpty daemon session over WebSocket, same
+      // shape as inneranimalmedia's agentsam_terminal_local lane. Not
+      // wired yet — do not fake a successful exec here.
+      return new Response(JSON.stringify({ error: 'not_implemented', lane: 'local' }), {
+        status: 501,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
 
     if (url.pathname === '/api/terminal/vm' && request.method === 'POST') {
       if (!verifyBridgeKey(request, env)) return bridgeUnauthorized();
-
-      const body = await readJsonBody(request);
-      if (!body) return json({ error: 'invalid_json' }, 400);
-
-      const command = typeof body.command === 'string' ? body.command.trim() : '';
-      const cwd = typeof body.cwd === 'string' ? body.cwd.trim() : '';
-      const execIdentity = (request.headers.get('X-IAM-Exec-Identity') || '').trim();
-
-      if (!command) return json({ error: 'command_required' }, 400);
-      if (!cwd) return json({ error: 'cwd_required' }, 400);
-      if (!execIdentity) return json({ error: 'exec_identity_required' }, 400);
-
-      const result = await runTerminalCommandViaHttpExec(env, command, {
-        cwd,
-        execIdentity,
-        execActor: request.headers.get('X-IAM-Exec-Actor') || 'agentsamremix-worker',
-        privilegedTargetId: request.headers.get('X-IAM-Privileged-Target'),
-        userId: request.headers.get('X-User-Id'),
-        workspaceId: request.headers.get('X-Workspace-Id'),
-        tenantId: request.headers.get('X-Tenant-Id'),
+      // TODO: connect to a GCP VM terminal replica, same shape as
+      // inneranimalmedia's remote lane. Not wired yet.
+      return new Response(JSON.stringify({ error: 'not_implemented', lane: 'vm' }), {
+        status: 501,
+        headers: { 'Content-Type': 'application/json' },
       });
-
-      if (result.ok) return json(result);
-      const status =
-        result.error === 'command_required' ||
-        result.error === 'cwd_required' ||
-        result.error === 'exec_identity_required'
-          ? 400
-          : 502;
-      return json(result, status);
     }
 
-    if (url.pathname === '/api/terminal/local' && request.method === 'POST') {
-      if (!verifyBridgeKey(request, env)) return bridgeUnauthorized();
-      return json(
-        {
-          error: 'not_implemented',
-          lane: 'local',
-          detail: 'Local Mac execution needs its own localpty/tunnel transport; IAM_VPC is the VM lane.',
-        },
-        501,
+    // 1. Delegate Identity/Auth routes to the Agent Sam SDK
+    if (
+      url.pathname.startsWith('/api/auth') ||
+      url.pathname.startsWith('/api/oauth') ||
+      url.pathname.startsWith('/auth')
+    ) {
+      const authResponse = await handleIdentityWorkerRequest(
+        request,
+        identityEnv,
+        { identity },
       );
-    }
-
-    // 1. Delegate Identity/Auth routes to the Agent Sam SDK.
-    if (url.pathname.startsWith('/api/auth') || url.pathname.startsWith('/auth')) {
-      const authResponse = await handleIdentityWorkerRequest(request, env);
       if (authResponse.status !== 404) return authResponse;
     }
 
-    // 2. Human session gate for application APIs below this point.
+    // 2. Auth Verification Gate
+    // Any endpoint below this block that performs writes must check this session.
     let session = null;
     try {
-      session = await getIdentitySession(request, env);
-    } catch (error) {
-      console.warn('No valid session found:', error);
+      session = await identity.sessionFromRequest(request);
+    } catch (e) {
+      console.warn("No valid session found:", e);
     }
     const isAuthenticated = !!session?.user;
 
-    // 3. Application API routes.
+    // 3. API Routes
     if (url.pathname === '/api/vision/analyze' && request.method === 'POST') {
-      if (!isAuthenticated) return json({ error: 'Unauthorized' }, 401);
+      if (!isAuthenticated) {
+        return new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 });
+      }
 
-      return json({
+      // Vision Analysis logic using env.AGENTSAM_WAI goes here
+      return new Response(JSON.stringify({
         id: `vis_${Date.now()}`,
         classification: 'UI_MOCKUP',
         confidence: 0.94,
@@ -123,32 +84,30 @@ export default {
         suggestedMissionPrompt: 'Placeholder mission',
         codeSnippetProposal: '',
         analyzedAt: Date.now(),
-      });
+      }), { headers: { 'Content-Type': 'application/json' } });
     }
 
     if (url.pathname === '/api/mission/execute' && request.method === 'POST') {
       if (!isAuthenticated) {
-        return json({ error: 'Not Implemented - Auth Required' }, 501);
+        // Return 501 Not Implemented as requested for blocked write paths
+        return new Response(JSON.stringify({ error: 'Not Implemented - Auth Required' }), {
+          status: 501,
+          headers: { 'Content-Type': 'application/json' }
+        });
       }
-      return json({ status: 'queued' });
+      // Write logic would go here
+      return new Response(JSON.stringify({ status: 'queued' }), { headers: { 'Content-Type': 'application/json' } });
     }
 
     if (url.pathname === '/api/health') {
-      return json({
+      return new Response(JSON.stringify({
         status: 'ok',
         runtime: 'cloudflare-worker',
-        authConfigured: true,
-        vmVpcBound: !!env.IAM_VPC,
-      });
+        authConfigured: true
+      }), { headers: { 'Content-Type': 'application/json' } });
     }
 
-    // API misses must stay JSON 404s instead of falling into SPA navigation handling.
-    if (url.pathname.startsWith('/api/')) return json({ error: 'not_found' }, 404);
-
-    // 4. Frontend assets. Cloudflare's asset router handles normal SPA navigation first;
-    // this binding is available for explicit Worker fallback paths.
-    if (env.FRONTEND_ASSETS) return env.FRONTEND_ASSETS.fetch(request);
-
+    // 4. Fallback to Frontend Static Assets (handled via Cloudflare Pages or Asset binding in production)
     return new Response('Not Found', { status: 404 });
-  },
+  }
 };
