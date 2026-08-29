@@ -364,14 +364,20 @@ const LiveBrowserPane: React.FC = () => {
     );
   }
 
+  const sessionMissing = state?.error === 'session_required';
+  const browserTitle = loading ? 'Checking Browser Run…' : sessionMissing ? 'Sign in to use Browser Run' : 'No active browser session';
+  const browserCopy = sessionMissing
+    ? 'Your browser session is not currently authenticated. Re-authenticate Agent Sam, then Browser Run will reuse the same Think-agent session.'
+    : 'Ask Agent Sam to navigate or inspect a site. The reusable Browser Run session will appear here automatically as an interactive Live View.';
+
   return (
     <div className="as-browser-agent">
       <div className="as-browser-icon">◎</div>
-      <h2>{loading ? 'Checking Browser Run…' : 'Browser Run ready'}</h2>
-      <p>Ask Agent Sam to navigate or inspect a site. Its reusable Browser Run session will appear here automatically as a real interactive Live View.</p>
-      <p className="as-browser-note">Agent policy: WebMCP first when available, then CDP/DOM. The browser session is persisted by the same Think Agent that owns the conversation.</p>
-      {state?.error && <p className="as-browser-error">{state.error}</p>}
-      <button className="as-browser-refresh" onClick={() => void refresh()}>Check now</button>
+      <h2>{browserTitle}</h2>
+      <p>{browserCopy}</p>
+      <p className="as-browser-note">WebMCP first when available, then CDP/DOM. Browser state belongs to the same Think Agent that owns the conversation.</p>
+      {state?.error && !sessionMissing && <p className="as-browser-error">Browser unavailable right now. Try again or inspect runtime status.</p>}
+      <button className="as-browser-refresh" onClick={() => void refresh()}>{sessionMissing ? 'Retry session' : 'Check now'}</button>
     </div>
   );
 };
