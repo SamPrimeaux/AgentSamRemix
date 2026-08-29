@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.35.0",
+    "@inneranimalmedia/agentsam-sdk": "^2.0.0-alpha.identity.11",
     "@monaco-editor/react": "^4.7.0",
     "cookie-parser": "^1.4.7",
     "express": "^5.2.1",

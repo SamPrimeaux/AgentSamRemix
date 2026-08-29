@@ -65,7 +65,7 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
     }
   };
 
-  const handleOAuth = (provider: 'iam' | 'google' | 'github') => {
+  const handleOAuth = (provider: 'iam' | 'google' | 'github' | 'cloudflare') => {
     setLoading(true);
     setTimeout(() => {
       onAuthenticated({
@@ -125,24 +125,33 @@ export const AuthScreen: React.FC<AuthScreenProps> = ({ onAuthenticated }) => {
         </button>
 
         {/* Secondary BYOK OAuth Providers */}
-        <div className="grid grid-cols-2 gap-2 mt-3">
+        <div className="grid grid-cols-3 gap-2 mt-3">
           <button
             type="button"
             onClick={() => handleOAuth('github')}
             disabled={loading}
-            className="py-2.5 px-3 bg-zinc-800/80 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs font-medium border border-zinc-700/60 flex items-center justify-center gap-2 transition-colors"
+            className="py-2.5 px-2 bg-zinc-800/80 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs font-medium border border-zinc-700/60 flex flex-col items-center justify-center gap-1 transition-colors"
           >
             <span className="material-symbols-outlined text-base">code</span>
-            <span>GitHub BYOK</span>
+            <span className="text-[10px]">GitHub</span>
           </button>
           <button
             type="button"
             onClick={() => handleOAuth('google')}
             disabled={loading}
-            className="py-2.5 px-3 bg-zinc-800/80 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs font-medium border border-zinc-700/60 flex items-center justify-center gap-2 transition-colors"
+            className="py-2.5 px-2 bg-zinc-800/80 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs font-medium border border-zinc-700/60 flex flex-col items-center justify-center gap-1 transition-colors"
           >
             <span className="material-symbols-outlined text-base text-red-400">mail</span>
-            <span>Google Cloud</span>
+            <span className="text-[10px]">Google</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => handleOAuth('cloudflare')}
+            disabled={loading}
+            className="py-2.5 px-2 bg-zinc-800/80 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-xl text-xs font-medium border border-zinc-700/60 flex flex-col items-center justify-center gap-1 transition-colors"
+          >
+            <span className="material-symbols-outlined text-base text-orange-400">cloud</span>
+            <span className="text-[10px]">Cloudflare</span>
           </button>
         </div>
 
