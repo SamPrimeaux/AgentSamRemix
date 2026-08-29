@@ -38,7 +38,6 @@
     "@inneranimalmedia/client-core": "file:packages/client-core",
     "@modelcontextprotocol/client": "^2.0.0",
     "@monaco-editor/react": "^4.7.0",
-    "@openai/agents": "^0.11.5",
     "@remotion/player": "4.0.484",
     "@supabase/supabase-js": "^2.105.1",
     "@xterm/addon-fit": "^0.11.0",
