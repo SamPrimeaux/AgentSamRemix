@@ -10,6 +10,7 @@
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
+    "@ai-sdk/react": "^4.0.87",
     "@cloudflare/ai-chat": "^0.11.0",
     "@cloudflare/codemode": "^0.5.1",
     "@cloudflare/computer": "^0.2.1",
@@ -21,17 +22,21 @@
     "@inneranimalmedia/agentsam-sdk": "^2.0.0-alpha.identity.11",
     "@monaco-editor/react": "^4.7.0",
     "agents": "^0.22.0",
+    "ai": "^7.0.84",
     "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
     "lucide-react": "^1.35.0",
     "react": "^19.2.3",
-    "react-dom": "^19.2.3"
+    "react-dom": "^19.2.3",
+    "zod": "^4.5.2"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20260829.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/express": "^5.0.6",
     "@types/node": "^22.14.0",
     "@vitejs/plugin-react": "^5.0.0",
+    "chrome-devtools-mcp": "^1.8.0",
     "concurrently": "^8.2.2",
     "esbuild": "^0.28.2",
     "tsx": "^4.23.12",

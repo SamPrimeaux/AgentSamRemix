@@ -1,46 +1,30 @@
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-const rootDir = path.resolve(__dirname);
-
-export default defineConfig(({ mode }) => {
-  const env = loadEnv(mode, rootDir, '');
-
-  return {
-    root: rootDir,
-
-    build: {
-      outDir: path.resolve(rootDir, 'dist'),
-      emptyOutDir: true,
-
-      // AgentSamRemix has one SPA plus standalone auth documents.
-      rollupOptions: {
-        input: {
-          app: path.resolve(rootDir, 'index.html'),
-          'auth/login': path.resolve(rootDir, 'auth/login.html'),
-          'auth/signup': path.resolve(rootDir, 'auth/signup.html'),
-          'auth/reset': path.resolve(rootDir, 'auth/reset.html'),
-        },
+export default defineConfig({
+  root: path.resolve(__dirname),
+  plugins: [react()],
+  resolve: { alias: { '@': path.resolve(__dirname) } },
+  server: {
+    port: 3000,
+    host: '0.0.0.0',
+    proxy: {
+      '/api': { target: 'http://127.0.0.1:8787', changeOrigin: true },
+      '/agents': { target: 'ws://127.0.0.1:8787', ws: true, changeOrigin: true },
+      '/auth': { target: 'http://127.0.0.1:8787', changeOrigin: true },
+    },
+  },
+  build: {
+    outDir: 'dist',
+    emptyOutDir: true,
+    rollupOptions: {
+      input: {
+        app: path.resolve(__dirname, 'index.html'),
+        login: path.resolve(__dirname, 'auth/login.html'),
+        signup: path.resolve(__dirname, 'auth/signup.html'),
+        reset: path.resolve(__dirname, 'auth/reset.html'),
       },
     },
-
-    server: {
-      port: 3000,
-      host: '0.0.0.0',
-    },
-
-    plugins: [react()],
-
-    define: {
-      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
-
-    resolve: {
-      alias: {
-        '@': rootDir,
-      },
-    },
-  };
+  },
 });

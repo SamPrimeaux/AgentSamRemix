@@ -1,61 +1,43 @@
-import React, { useState, useEffect } from 'react';
-import { IAMUser } from './sdk/types';
+import React, { useEffect, useMemo, useState } from 'react';
+import type { IAMUser } from './sdk/types';
 import { createIdentityClient, DEMO_IAM_USER } from './sdk/identity';
 import { AuthScreen } from './components/auth/AuthScreen';
-import { WorkbenchApp } from './components/WorkbenchApp';
+import { AgentShell } from './components/agent/AgentShell';
 
 export const App: React.FC = () => {
   const [user, setUser] = useState<IAMUser | null>(null);
   const [authChecking, setAuthChecking] = useState(true);
-
-  const identity = createIdentityClient();
+  const identity = useMemo(() => createIdentityClient(), []);
 
   useEffect(() => {
-    let isMounted = true;
-    identity.getCurrentUser().then(activeUser => {
-      if (isMounted) {
-        setUser(activeUser || DEMO_IAM_USER);
+    let mounted = true;
+    const localDev = ['localhost', '127.0.0.1'].includes(window.location.hostname);
+    identity.getCurrentUser()
+      .then((activeUser) => {
+        if (!mounted) return;
+        setUser(activeUser || (localDev ? DEMO_IAM_USER : null));
         setAuthChecking(false);
-      }
-    }).catch(() => {
-      if (isMounted) {
-        setUser(DEMO_IAM_USER);
+      })
+      .catch(() => {
+        if (!mounted) return;
+        setUser(localDev ? DEMO_IAM_USER : null);
         setAuthChecking(false);
-      }
-    });
-    return () => { isMounted = false; };
-  }, []);
+      });
+    return () => { mounted = false; };
+  }, [identity]);
 
-  const handleAuthenticated = (authenticatedUser: IAMUser) => {
-    setUser(authenticatedUser);
-  };
-
-  const handleLogout = async () => {
+  async function handleLogout() {
     await identity.logout();
     setUser(null);
-  };
+  }
 
   if (authChecking) {
-    return (
-      <div className="h-screen w-screen bg-[#0a0c10] flex flex-col items-center justify-center text-zinc-400 font-sans">
-        <span className="material-symbols-outlined text-3xl animate-spin text-sky-400 mb-3">
-          progress_activity
-        </span>
-        <p className="text-xs font-medium tracking-wide">Validating Agent Sam IAM session token...</p>
-      </div>
-    );
+    return <div className="as-auth-check"><span>Agent Sam</span><small>Validating IAM session…</small></div>;
   }
 
-  if (!user) {
-    return <AuthScreen onAuthenticated={handleAuthenticated} />;
-  }
+  if (!user) return <AuthScreen onAuthenticated={setUser} />;
 
-  return (
-    <WorkbenchApp
-      user={user}
-      onLogout={handleLogout}
-    />
-  );
+  return <AgentShell user={user} onLogout={handleLogout} />;
 };
 
 export default App;

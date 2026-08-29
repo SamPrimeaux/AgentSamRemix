@@ -50,7 +50,7 @@ export function createIdentityClient(): IdentityClient {
           }
           return null;
         }
-        const data = await res.json();
+        const data = await res.json() as { user?: IAMUser };
         if (data?.user) {
           localStorage.setItem('agentsam_session', JSON.stringify({ user: data.user }));
           return data.user;
@@ -76,7 +76,7 @@ export function createIdentityClient(): IdentityClient {
       });
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
+        const errData = await res.json().catch(() => ({})) as { error?: string };
         throw new Error(errData.error || 'Failed to authenticate');
       }
 
@@ -93,7 +93,7 @@ export function createIdentityClient(): IdentityClient {
       });
 
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
+        const errData = await res.json().catch(() => ({})) as { error?: string };
         throw new Error(errData.error || 'Failed to create account');
       }
 

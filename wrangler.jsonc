@@ -1,22 +1,18 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
-
   "name": "agentsamremix",
   "main": "app/backend/src/index.ts",
   "compatibility_date": "2026-08-29",
-
   "preview_urls": false,
   "keep_vars": true,
-
   "vars": {
     "IAM_CLIENT_ID": "iam_identity_47843d145d72455e83b6",
-    "ACP_CLIENT_ID": "iam_dcr_d80b0615148b49de814f"
+    "ACP_CLIENT_ID": "iam_dcr_d80b0615148b49de814f",
+    "AGENTSAM_MODEL": "@cf/moonshotai/kimi-k2.7-code"
   },
-
   "ai": {
     "binding": "AGENTSAM_WAI"
   },
-
   "d1_databases": [
     {
       "binding": "DB",
@@ -24,7 +20,6 @@
       "database_id": "cf87b717-d4e2-4cf8-bab0-a81268e32d49"
     }
   ],
-
   "r2_buckets": [
     {
       "binding": "ASSETS",
@@ -35,7 +30,6 @@
       "bucket_name": "agentsam-os-blueprint-content"
     }
   ],
-
   "vpc_services": [
     {
       "binding": "IAM_VPC",
@@ -43,7 +37,6 @@
       "remote": true
     }
   ],
-
   "assets": {
     "directory": "./app/frontend/dist",
     "binding": "APP_ASSETS",
@@ -52,7 +45,35 @@
       "/",
       "/workbench",
       "/api/*",
-      "/auth/*"
+      "/auth/*",
+      "/agents/*"
     ]
-  }
+  },
+  "compatibility_flags": [
+    "nodejs_compat"
+  ],
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "AgentSam",
+        "class_name": "AgentSam"
+      }
+    ]
+  },
+  "migrations": [
+    {
+      "tag": "agentsam-v1",
+      "new_sqlite_classes": [
+        "AgentSam"
+      ]
+    }
+  ],
+  "browser": {
+    "binding": "BROWSER"
+  },
+  "worker_loaders": [
+    {
+      "binding": "LOADER"
+    }
+  ]
 }
