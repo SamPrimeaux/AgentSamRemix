@@ -41,7 +41,7 @@ export const wss = new WebSocketServer({ server });
 
 wss.on("connection", async (ws, req) => {
   if (!TOKEN) {
-    safeSend(ws, JSON.stringify({ type: "error", data: "AGENTSAM_BRIDGE_KEY not set" }));
+    safeSend(ws, JSON.stringify({ type: "error", data: "PTY_AUTH_TOKEN not set" }));
     ws.close(4001, "Unauthorized");
     return;
   }

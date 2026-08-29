@@ -1,34 +1,52 @@
 # AgentSamRemix Terminal Daemon
 
-Ported from `ExecOS` (`server.js` + `lib/ws-pty.js`), which was already
-architecturally decoupled from inneranimalmedia's own D1/auth — auth here
-is a plain bearer-token check, renamed from `PTY_AUTH_TOKEN` to
-`AGENTSAM_BRIDGE_KEY` to match this repo's existing convention.
+Ported from `ExecOS` — real scope, verified by actually running it, not by
+guessing at the import graph (took several attempts to get right; the
+final verification was starting the process and watching it either crash
+or bind a port).
+
+## What's actually here
+
+19 files, ~3,200 lines: `server.js`, `router.js`, `context-manager.js`,
+and `lib/`+`shared/` covering PTY session lifecycle, exec security policy,
+command vocabulary/allowlisting, operator identity, machine auth, MCP
+filesystem bridge, and the WebSocket PTY relay itself.
+
+`lib/machine-auth.js` already uses `AGENTSAM_BRIDGE_KEY` as its primary
+credential (with `EXECOS_KEY` as a legacy alias) — same contract as
+inneranimalmedia's own `backend/auth/bridge-key-auth.js`. No auth
+rewrite needed, this was already built to the right convention.
+
+Coupling to inneranimalmedia is limited to env-var-overridable defaults
+(`WORKER_URL || "https://inneranimalmedia.com"`) and optional
+`tenant_id`/`workspace_id` query params — nothing hardwired to D1 or
+`auth_users`.
 
 ## Why this is a separate process, not part of the Worker
 
-Cloudflare Workers cannot spawn native processes or PTYs. This daemon runs
-as a normal Node process — on your Mac for the `local` lane, on a VM for
-the `vm` lane — and the Worker's `/api/terminal/local` and `/api/terminal/vm`
-routes (see `app/backend/src/index.ts`) proxy to it rather than executing
-anything themselves.
+Cloudflare Workers cannot spawn native processes or PTYs. This daemon
+runs as a normal Node process — on your Mac for the `local` lane, on a
+VM for the `vm` lane — and the Worker's `/api/terminal/local` and
+`/api/terminal/vm` routes proxy to it rather than executing anything
+themselves.
 
 ## Setup
 
 ```bash
 cd terminal-daemon
 npm install
-AGENTSAM_BRIDGE_KEY=<same value set via wrangler secret> node server.js
+AGENTSAM_BRIDGE_KEY=<same value set via wrangler secret> PTY_PORT=3199 node server.js
 ```
 
-Do not run this without `AGENTSAM_BRIDGE_KEY` set — check `server.js` and
-`lib/ws-pty.js` fail closed (refuse to serve) when it's missing, and keep
-it that way. Never add a hardcoded fallback value here — that exact
-mistake exists in ExecOS's dead `iam-pty/server.js`, untracked and never
-pushed, and it should stay deleted, not get copied forward.
+Default port is 3099 — same default as ExecOS itself. If ExecOS's real
+daemon is also running on this machine, set `PTY_PORT` to something else
+(verified working on 3199) or you'll hit `EADDRINUSE`.
+
+Never add a hardcoded fallback credential here — that mistake exists in
+ExecOS's dead, untracked `iam-pty/server.js` and should stay there, not
+get copied forward.
 
 ## Not yet wired
 
 The Worker routes currently 501. Proxying `/api/terminal/local` and
-`/api/terminal/vm` to this daemon over WebSocket is the next real step —
-this commit only adds the daemon itself.
+`/api/terminal/vm` to this daemon over WebSocket is the next real step.
