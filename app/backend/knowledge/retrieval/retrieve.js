@@ -3,6 +3,7 @@ import { resolveActiveCodeScopes } from './code-index-scope.js';
 import { searchStructuralAst } from './structural.js';
 import { searchLexicalAst } from './lexical.js';
 import { searchDenseAnn } from './dense.js';
+import { expandAstGraph } from './graph.js';
 import { reciprocalRankFusion } from './fusion.js';
 import { selectDiverseCandidates, redundantTokenRatio } from './diversity.js';
 import { maybeRerank } from './rerank.js';
@@ -44,6 +45,8 @@ function citationFor(row) {
     nodeType: row?.nodeType || null,
     lineStart: row?.lineStart || null,
     lineEnd: row?.lineEnd || null,
+    graphDistance: row?.graphDistance || null,
+    graphEdgeTypes: row?.graphEdgeTypes || [],
     score: Number(row?.score) || 0,
     embeddingSpaceKey: row?.embeddingSpaceKey || null,
     provenance: Array.isArray(row?.provenance) ? row.provenance : [],
@@ -65,8 +68,8 @@ function groundingBlock(selected) {
 
 /**
  * Retrieval V1: active AST generations + lexical exactness + injected ANN,
- * fused with RRF, ambiguity-gated reranking, MMR diversity, then hard token
- * packing. No model/provider/vector-index default exists here.
+ * one-hop call/import graph expansion, RRF, ambiguity-gated reranking, MMR
+ * diversity, then hard token packing. No model/provider/vector-index default.
  */
 export async function retrieveKnowledge(env, params, services = {}) {
   const totalStarted = performance.now();
@@ -138,10 +141,31 @@ export async function retrieveKnowledge(env, params, services = {}) {
     };
   }
 
+  const preFusionStage = await timed(async () => reciprocalRankFusion([
+    { name: 'ast', hits: structural.hits || [], weight: 1 },
+    { name: 'lexical', hits: lexical.hits || [], weight: 1 },
+    { name: 'dense', hits: dense.hits || [], weight: 1 },
+  ]).slice(0, Math.min(100, profile.candidateK * 2)));
+  stages.preFusionMs = preFusionStage.ms;
+  const preFused = preFusionStage.value || [];
+
+  const graphStage = await timed(() => expandAstGraph({
+    env,
+    workspaceId: scope.workspaceId,
+    scopes: codeScopes,
+    seeds: preFused.slice(0, Math.min(12, Math.max(4, profile.topK * 2))),
+    edgeTypes: params?.edgeTypes,
+    limit: Math.min(32, profile.candidateK),
+  }));
+  stages.graphMs = graphStage.ms;
+  const graph = graphStage.value || { ok: false, hits: [], error: String(graphStage.error?.message || graphStage.error || 'graph_failed') };
+  if (!graph.ok && graph.error) warnings.push(graph.error);
+
   const fusionStage = await timed(async () => reciprocalRankFusion([
     { name: 'ast', hits: structural.hits || [], weight: 1 },
     { name: 'lexical', hits: lexical.hits || [], weight: 1 },
     { name: 'dense', hits: dense.hits || [], weight: 1 },
+    { name: 'graph', hits: graph.hits || [], weight: 0.85 },
   ]).slice(0, Math.min(100, profile.candidateK * 2)));
   stages.fusionMs = fusionStage.ms;
   const fused = fusionStage.value || [];
@@ -187,6 +211,7 @@ export async function retrieveKnowledge(env, params, services = {}) {
     astCandidates: structural.hits?.length || 0,
     lexicalCandidates: lexical.hits?.length || 0,
     denseCandidates: dense.hits?.length || 0,
+    graphCandidates: graph.hits?.length || 0,
     fusedCandidates: fused.length,
     rerankEligible: Boolean(profile.rerankRecommended),
     rerankApplied: Boolean(rerank.applied),

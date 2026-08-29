@@ -38,6 +38,7 @@ export async function handleRetrievalHttpRequest(request, env, scope, services =
     topK: body.topK ?? body.top_k,
     tokenBudget: body.tokenBudget ?? body.token_budget,
     nodeTypes: Array.isArray(body.nodeTypes || body.node_types) ? (body.nodeTypes || body.node_types) : [],
+    edgeTypes: Array.isArray(body.edgeTypes || body.edge_types) ? (body.edgeTypes || body.edge_types) : [],
     forceRerank: body.forceRerank === true || body.force_rerank === true,
   }, services);
 
