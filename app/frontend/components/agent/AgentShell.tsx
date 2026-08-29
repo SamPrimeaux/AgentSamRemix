@@ -2,20 +2,12 @@ import React, { useMemo, useState } from 'react';
 import Editor from '@monaco-editor/react';
 import { Menu, Plus } from 'lucide-react';
 import type { IAMUser } from '../../sdk/types';
+import { BrowserPane } from '../../browser/BrowserPane';
 import { AgentChat } from './AgentChat';
 import { TerminalDrawer } from './TerminalDrawer';
 
 interface Props { user: IAMUser; onLogout: () => void | Promise<void>; }
 type RouteMode = 'home' | 'editor';
-
-type LiveView = {
-  ok?: boolean;
-  active?: boolean;
-  sessionId?: string;
-  expiresInMs?: number;
-  targets?: Array<{ targetId: string; url: string; pageUrl?: string; title?: string; type?: string }>;
-  error?: string;
-};
 
 function currentMode(): RouteMode {
   return window.location.pathname.includes('/editor') ? 'editor' : 'home';
@@ -178,7 +170,7 @@ export const AgentShell: React.FC<Props> = ({ user, onLogout }) => {
           </main>
         ) : (
           <main className="as-editor-shell">
-            <EditorWorkspace />
+            <EditorWorkspace agentName={agentName} />
             <aside className="as-agent-pane">
               <div className="as-pane-title"><strong>AGENT SAM</strong><span>live</span></div>
               <AgentChat key={agentName} agentName={agentName} compact />
@@ -215,7 +207,7 @@ type ExecStatus = {
   lanes?: Record<string, { ok?: boolean; state?: string; connection?: { name?: string; platform?: string; defaultCwd?: string } | null }>;
 };
 
-const EditorWorkspace: React.FC = () => {
+const EditorWorkspace: React.FC<{ agentName: string }> = ({ agentName }) => {
   const [file, setFile] = useState('README.md');
   const [contents, setContents] = useState(starterFiles);
   const [tab, setTab] = useState<WorkTab>('overview');
@@ -249,7 +241,7 @@ const EditorWorkspace: React.FC = () => {
             />
           </div>
         </div>
-      ) : <LiveBrowserPane />}
+      ) : <BrowserPane agentName={agentName} />}
     </section>
   );
 };
@@ -321,66 +313,6 @@ const WorkOverview: React.FC<{ onOpenScratch: () => void; onOpenBrowser: () => v
         <strong>Next product slice</strong>
         <span>Replace scratch with the selected repository's real tree/file/diff APIs, then keep this exact shell.</span>
       </div>
-    </div>
-  );
-};
-
-const LiveBrowserPane: React.FC = () => {
-  const [state, setState] = useState<LiveView | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  const refresh = React.useCallback(async () => {
-    try {
-      const response = await fetch('/api/browser/live-view', { credentials: 'same-origin' });
-      const data = await response.json().catch(() => ({})) as LiveView;
-      setState(data);
-    } catch (error) {
-      setState({ ok: false, active: false, error: error instanceof Error ? error.message : 'browser_live_view_failed' });
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  React.useEffect(() => {
-    void refresh();
-    const timer = window.setInterval(() => void refresh(), 15_000);
-    return () => window.clearInterval(timer);
-  }, [refresh]);
-
-  async function close() {
-    await fetch('/api/browser/live-view', { method: 'DELETE', credentials: 'same-origin' }).catch(() => undefined);
-    await refresh();
-  }
-
-  const target = state?.targets?.find((item) => item.type === 'page') || state?.targets?.[0];
-  if (target?.url) {
-    return (
-      <div className="as-live-browser">
-        <div className="as-live-browser-bar">
-          <span className="as-live-dot" />
-          <span className="as-live-url">{target.pageUrl || target.title || 'Browser Run'}</span>
-          <button onClick={() => void refresh()}>Refresh</button>
-          <button onClick={() => void close()}>Close session</button>
-        </div>
-        <iframe title="Agent Sam Browser Run Live View" src={target.url} allow="clipboard-read; clipboard-write" />
-      </div>
-    );
-  }
-
-  const sessionMissing = state?.error === 'session_required';
-  const browserTitle = loading ? 'Checking Browser Run…' : sessionMissing ? 'Sign in to use Browser Run' : 'No active browser session';
-  const browserCopy = sessionMissing
-    ? 'Your browser session is not currently authenticated. Re-authenticate Agent Sam, then Browser Run will reuse the same Think-agent session.'
-    : 'Ask Agent Sam to navigate or inspect a site. The reusable Browser Run session will appear here automatically as an interactive Live View.';
-
-  return (
-    <div className="as-browser-agent">
-      <div className="as-browser-icon">◎</div>
-      <h2>{browserTitle}</h2>
-      <p>{browserCopy}</p>
-      <p className="as-browser-note">WebMCP first when available, then CDP/DOM. Browser state belongs to the same Think Agent that owns the conversation.</p>
-      {state?.error && !sessionMissing && <p className="as-browser-error">Browser unavailable right now. Try again or inspect runtime status.</p>}
-      <button className="as-browser-refresh" onClick={() => void refresh()}>{sessionMissing ? 'Retry session' : 'Check now'}</button>
     </div>
   );
 };
