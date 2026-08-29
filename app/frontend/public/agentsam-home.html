@@ -928,6 +928,438 @@ main.agentsam-landing { padding-top: 76px; }
 </style>
 </head>
 <body data-footer-theme="dark" data-route="/agentsam">
+
+<!-- AGENTSAM:IAM_HEADER:START -->
+<!-- iam-header.html -->
+<!-- Inject via HTMLRewriter into <body> of every public page -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --iam-navy: #0A1628;
+    --iam-blue: #167BFC;
+    --header-h: 76px;
+  }
+
+  #iam-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9000;
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    background: transparent;
+    transform: translateY(0);
+    transition:
+      transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      background 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+    border-bottom: 1px solid transparent;
+    will-change: transform;
+  }
+
+  #iam-header.hide    { transform: translateY(-100%); }
+
+  #iam-header.scrolled,
+  #iam-header.iam-header--light-bg {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.07);
+  }
+
+  /* ── INNER ── */
+  .iam-header-inner {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* ── LOGO ── */
+  .iam-logo-wrap {
+    display: block;
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    position: relative;
+  }
+
+  .iam-logo-wrap img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity 0.3s ease;
+  }
+
+  .iam-logo-light { opacity: 1; }
+  .iam-logo-dark  { opacity: 0; }
+
+  #iam-header.scrolled .iam-logo-light,
+  #iam-header.iam-header--light-bg .iam-logo-light { opacity: 0; }
+  #iam-header.scrolled .iam-logo-dark,
+  #iam-header.iam-header--light-bg .iam-logo-dark  { opacity: 1; }
+
+  /* ── DESKTOP NAV (center) ── */
+  .iam-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .iam-nav a {
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.78);
+    text-decoration: none;
+    padding: 6px 14px;
+    letter-spacing: 0.01em;
+    position: relative;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .iam-nav a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 14px;
+    right: 14px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transform: scaleX(0);
+    transition: transform 0.22s ease;
+    transform-origin: center;
+  }
+
+  .iam-nav a:hover { color: #fff; }
+  .iam-nav a:hover::after { transform: scaleX(0.5); }
+  .iam-nav a.active { color: #fff; }
+  .iam-nav a.active::after { transform: scaleX(1); }
+
+  #iam-header.scrolled .iam-nav a,
+  #iam-header.iam-header--light-bg .iam-nav a       { color: rgba(10, 22, 40, 0.55); }
+  #iam-header.scrolled .iam-nav a::after,
+  #iam-header.iam-header--light-bg .iam-nav a::after { background: var(--iam-blue); }
+  #iam-header.scrolled .iam-nav a:hover,
+  #iam-header.iam-header--light-bg .iam-nav a:hover  { color: var(--iam-navy); }
+  #iam-header.scrolled .iam-nav a.active,
+  #iam-header.iam-header--light-bg .iam-nav a.active { color: var(--iam-blue); }
+
+  /* ── RIGHT SIDE ── */
+  .iam-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .iam-signup-btn {
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff !important;
+    background: var(--iam-blue);
+    text-decoration: none;
+    padding: 10px 22px;
+    border-radius: 10px;
+    display: inline-block;
+    box-shadow: 0 2px 14px rgba(22, 123, 252, 0.38);
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+
+  .iam-signup-btn:hover {
+    background: #0d6de8;
+    transform: translateY(-1px);
+  }
+
+  /* ── HAMBURGER ── */
+  .iam-hamburger {
+    display: none;
+    width: 44px;
+    height: 44px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .iam-hamburger .bar {
+    display: block;
+    width: 22px;
+    height: 1.5px;
+    background: #fff;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.3s ease, opacity 0.3s ease;
+    transform-origin: center;
+  }
+
+  #iam-header.scrolled .iam-hamburger .bar,
+  #iam-header.iam-header--light-bg .iam-hamburger .bar { background: var(--iam-navy); }
+
+  .iam-hamburger.open .bar:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .iam-hamburger.open .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .iam-hamburger.open .bar:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+  /* ── OVERLAY ── */
+  .iam-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 8998;
+    background: rgba(5, 10, 20, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .iam-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ── SIDENAV: glassmorphic, 50vw, slides from right ── */
+  .iam-sidenav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 8999;
+    width: 50vw;
+    max-width: 420px;
+    min-width: 260px;
+
+    /* GLASSMORPHIC */
+    background: rgba(10, 22, 40, 0.78);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: -8px 0 48px rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: calc(var(--header-h) + 24px) 40px 48px;
+    gap: 0;
+
+    transform: translateX(100%);
+    transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .iam-sidenav.active { transform: translateX(0); }
+
+  .iam-sidenav a {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    padding: 13px 0;
+    letter-spacing: -0.01em;
+    transition: color 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: block;
+  }
+
+  .iam-sidenav a:last-of-type { border-bottom: none; }
+  .iam-sidenav a:hover,
+  .iam-sidenav a.active { color: #fff; }
+
+  .iam-sidenav-cta {
+    margin-top: 32px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #fff !important;
+    background: var(--iam-blue);
+    padding: 13px 28px !important;
+    border-radius: 10px;
+    display: inline-block;
+    text-align: center;
+    border: none !important;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .iam-nav          { display: none; }
+    .iam-signup-btn   { display: none; }
+    .iam-hamburger    { display: flex; }
+    .iam-overlay.active { display: block; }
+    .iam-header-inner { padding: 0 20px; }
+  }
+
+  @media (max-width: 480px) {
+    .iam-sidenav { width: 75vw; }
+  }
+</style>
+
+<header id="iam-header">
+  <div class="iam-header-inner">
+
+    <!-- LEFT: Logo -->
+    <a href="https://inneranimalmedia.com/" class="iam-logo-wrap" aria-label="Inner Animal Media home">
+      <img
+        src="https://imagedelivery.net/g7wf09fCONpnidkRnR_5vw/dbb316af-9c97-4959-f09f-bf58b2783d00/avatar"
+        alt="Inner Animal Media" class="iam-logo-light"
+        width="60" height="60" loading="eager" fetchpriority="high"
+      >
+      <img
+        src="https://imagedelivery.net/g7wf09fCONpnidkRnR_5vw/11f6af46-0a3c-482a-abe8-83edc5a8a200/avatar"
+        alt="Inner Animal Media" class="iam-logo-dark"
+        width="60" height="60" loading="eager"
+      >
+    </a>
+
+    <!-- CENTER: Desktop nav -->
+    <nav class="iam-nav" aria-label="Main navigation">
+      <a href="/"         data-nav="home">Home</a>
+      <a href="https://inneranimalmedia.com/work"     data-nav="work">Work</a>
+      <a href="https://inneranimalmedia.com/about"    data-nav="about">About</a>
+      <a href="https://inneranimalmedia.com/services" data-nav="services">Services</a>
+      <a href="https://inneranimalmedia.com/contact"  data-nav="contact">Contact</a>
+    </nav>
+
+    <!-- RIGHT: Sign Up + Hamburger -->
+    <div class="iam-header-right">
+      <a href="/auth/login?next=/agent/workbench" class="iam-signup-btn">Open Workbench</a>
+      <button class="iam-hamburger" id="iamHamburger" aria-label="Open menu" aria-expanded="false">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- Overlay -->
+<div class="iam-overlay" id="iamOverlay" aria-hidden="true"></div>
+
+<!-- Glassmorphic sidenav -->
+<nav class="iam-sidenav" id="iamSidenav" aria-label="Mobile navigation" aria-hidden="true">
+  <a href="/"         data-nav="home">Home</a>
+  <a href="https://inneranimalmedia.com/work"     data-nav="work">Work</a>
+  <a href="https://inneranimalmedia.com/about"    data-nav="about">About</a>
+  <a href="https://inneranimalmedia.com/services" data-nav="services">Services</a>
+  <a href="https://inneranimalmedia.com/contact"  data-nav="contact">Contact</a>
+  <a href="/auth/login?next=/agent/workbench" class="iam-sidenav-cta">Open Workbench</a>
+</nav>
+
+<script>
+(function () {
+  var header    = document.getElementById('iam-header');
+  var hamburger = document.getElementById('iamHamburger');
+  var overlay   = document.getElementById('iamOverlay');
+  var sidenav   = document.getElementById('iamSidenav');
+
+  var forceLightHeader =
+    document.body.classList.contains('iam-light-header') ||
+    document.body.getAttribute('data-iam-header') === 'light' ||
+    /^\/(sitemap|terms|privacy)\b/.test(window.location.pathname);
+
+  if (forceLightHeader) {
+    header.classList.add('iam-header--light-bg');
+  }
+
+  // ── Active nav ──────────────────────────────────────────────
+  var seg = window.location.pathname === '/'
+    ? 'home'
+    : window.location.pathname.split('/').filter(Boolean)[0];
+  document.querySelectorAll('[data-nav]').forEach(function (a) {
+    if (a.dataset.nav === seg) a.classList.add('active');
+  });
+
+  // ── Hide on scroll down / show on scroll up ─────────────────
+  var lastY   = window.scrollY;
+  var ticking = false;
+
+  function handleScroll() {
+    var y     = window.scrollY;
+    var delta = y - lastY;
+
+    if (forceLightHeader) {
+      header.classList.add('scrolled');
+      header.classList.add('iam-header--light-bg');
+    } else {
+      header.classList.toggle('scrolled', y > 50);
+    }
+
+    if (y > 80) {
+      if (delta > 4)       header.classList.add('hide');
+      else if (delta < -4) header.classList.remove('hide');
+    } else {
+      header.classList.remove('hide');
+    }
+
+    lastY   = y;
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!ticking) { requestAnimationFrame(handleScroll); ticking = true; }
+  }, { passive: true });
+
+  handleScroll();
+
+  // ── Mobile menu ─────────────────────────────────────────────
+  function openMenu() {
+    sidenav.classList.add('active');
+    sidenav.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('active');
+    hamburger.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMenu() {
+    sidenav.classList.remove('active');
+    sidenav.setAttribute('aria-hidden', 'true');
+    overlay.classList.remove('active');
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  hamburger.addEventListener('click', function () {
+    sidenav.classList.contains('active') ? closeMenu() : openMenu();
+  });
+
+  overlay.addEventListener('click', closeMenu);
+  sidenav.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', closeMenu);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeMenu();
+  });
+})();
+</script>
+
+<!-- AGENTSAM:IAM_HEADER:END -->
+
 <main id="top" class="iam-public-page agentsam-landing" data-route="/agentsam">
 <section class="hero" data-section-key="hero" data-cms-section="hero" data-section-type="hero" aria-labelledby="hero-title">
         <div class="hero-grid" aria-hidden="true"></div>
@@ -1213,5 +1645,431 @@ const sections = [...document.querySelectorAll('[data-section]')];
     });
 
 </script>
+
+<!-- AGENTSAM:IAM_FOOTER:START -->
+<!-- iam-footer.html -->
+<!-- Each page <body> sets: data-footer-theme="dark" or data-footer-theme="light" -->
+
+<style>
+  #iam-footer {
+    font-family: 'Nunito', sans-serif;
+    position: relative;
+    overflow: hidden;
+  }
+
+  #iam-footer-canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 1.4s ease;
+  }
+  #iam-footer-canvas.visible { opacity: 0.13; }
+
+  /* ── DARK ── */
+  #iam-footer[data-theme="dark"] {
+    background: #1a1f2e;
+    color: #fff;
+  }
+  #iam-footer[data-theme="dark"] .ft-headline        { color: rgba(255,255,255,0.92); }
+  #iam-footer[data-theme="dark"] .ft-contact a       { color: rgba(255,255,255,0.52); }
+  #iam-footer[data-theme="dark"] .ft-contact a:hover { color: #fff; }
+  #iam-footer[data-theme="dark"] .ft-col-label       { color: rgba(255,255,255,0.28); }
+  #iam-footer[data-theme="dark"] .ft-col a           { color: rgba(255,255,255,0.6); }
+  #iam-footer[data-theme="dark"] .ft-col a:hover     { color: #fff; }
+  #iam-footer[data-theme="dark"] .ft-col a.active    { color: #fff; font-weight: 700; }
+  #iam-footer[data-theme="dark"] .ft-bar             { border-top: 1px solid rgba(255,255,255,0.07); }
+  #iam-footer[data-theme="dark"] .ft-copy            { color: rgba(255,255,255,0.28); }
+  #iam-footer[data-theme="dark"] .ft-legal a         { color: rgba(255,255,255,0.42); }
+  #iam-footer[data-theme="dark"] .ft-legal a:hover   { color: #fff; }
+  #iam-footer[data-theme="dark"] .ft-dev-label       { color: rgba(255,255,255,0.28); }
+  #iam-footer[data-theme="dark"] .ft-sig-dark        { display: none; }
+  #iam-footer[data-theme="dark"] .ft-sig-light       { display: block; }
+  #iam-footer[data-theme="dark"] .ft-logo-light      { opacity: 1; }
+  #iam-footer[data-theme="dark"] .ft-logo-dark       { opacity: 0; }
+
+  /* ── LIGHT ── */
+  #iam-footer[data-theme="light"] {
+    background: #F0F3F8;
+    color: #0A1628;
+  }
+  #iam-footer[data-theme="light"] .ft-headline        { color: rgba(10,22,40,0.88); }
+  #iam-footer[data-theme="light"] .ft-contact a       { color: rgba(10,22,40,0.48); }
+  #iam-footer[data-theme="light"] .ft-contact a:hover { color: #0A1628; }
+  #iam-footer[data-theme="light"] .ft-col-label       { color: rgba(10,22,40,0.28); }
+  #iam-footer[data-theme="light"] .ft-col a           { color: rgba(10,22,40,0.58); }
+  #iam-footer[data-theme="light"] .ft-col a:hover     { color: #0A1628; }
+  #iam-footer[data-theme="light"] .ft-col a.active    { color: #167BFC; font-weight: 700; }
+  #iam-footer[data-theme="light"] .ft-bar             { border-top: 1px solid rgba(10,22,40,0.08); }
+  #iam-footer[data-theme="light"] .ft-copy            { color: rgba(10,22,40,0.28); }
+  #iam-footer[data-theme="light"] .ft-legal a         { color: rgba(10,22,40,0.42); }
+  #iam-footer[data-theme="light"] .ft-legal a:hover   { color: #0A1628; }
+  #iam-footer[data-theme="light"] .ft-dev-label       { color: rgba(10,22,40,0.28); }
+  #iam-footer[data-theme="light"] .ft-sig-light       { display: none; }
+  #iam-footer[data-theme="light"] .ft-sig-dark        { display: block; }
+  #iam-footer[data-theme="light"] .ft-logo-light      { opacity: 0; }
+  #iam-footer[data-theme="light"] .ft-logo-dark       { opacity: 1; }
+
+  /* ── MAIN BODY ── */
+  .ft-body {
+    position: relative;
+    z-index: 1;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 96px 48px 80px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 80px;
+    align-items: start;
+  }
+
+  /* LEFT */
+  .ft-logo-wrap {
+    display: block;
+    width: 64px;
+    height: 64px;
+    position: relative;
+    margin-bottom: 36px;
+  }
+  .ft-logo-wrap img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity 0.3s ease;
+  }
+
+  .ft-headline {
+    font-size: clamp(3.2rem, 6.5vw, 5.5rem);
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 28px;
+  }
+
+  .ft-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+  }
+  .ft-contact a {
+    font-size: 15px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s ease;
+  }
+
+  /* RIGHT */
+  .ft-right {
+    display: flex;
+    gap: 56px;
+    padding-top: 4px;
+  }
+
+  .ft-col-label {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .ft-col ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .ft-col a {
+    font-size: 17px;
+    font-weight: 600;
+    text-decoration: none;
+    letter-spacing: -0.01em;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+    display: block;
+  }
+
+  /* ── BOTTOM BAR ── */
+  .ft-bar {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 48px 28px;
+  }
+
+  /* center section */
+  .ft-bar-center {
+    display: flex;
+    align-items: center;
+    gap: 28px;
+  }
+
+  .ft-copy {
+    font-size: 12px;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+  }
+
+  .ft-legal {
+    display: flex;
+    gap: 20px;
+  }
+
+  .ft-legal a {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    transition: color 0.2s ease;
+  }
+
+  /* right: Developed by + signature */
+  .ft-dev {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+
+  .ft-dev-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .ft-sig-light,
+  .ft-sig-dark {
+    height: 28px;
+    width: auto;
+    opacity: 0.5;
+    display: block;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 900px) {
+    .ft-body {
+      grid-template-columns: 1fr;
+      gap: 56px;
+      padding: 72px 28px 64px;
+    }
+    .ft-bar {
+      padding: 18px 28px 24px;
+      flex-wrap: wrap;
+      gap: 14px;
+    }
+    .ft-bar-center { flex-wrap: wrap; gap: 12px; }
+  }
+
+  @media (max-width: 540px) {
+    .ft-right { gap: 36px; }
+    .ft-headline { font-size: clamp(2.6rem, 11vw, 3.5rem); }
+  }
+</style>
+
+<footer id="iam-footer" data-theme="dark">
+  <canvas id="iam-footer-canvas" aria-hidden="true"></canvas>
+
+  <div class="ft-body">
+
+    <!-- LEFT -->
+    <div class="ft-left">
+      <a href="https://inneranimalmedia.com/" class="ft-logo-wrap" aria-label="Inner Animal Media">
+        <img src="https://imagedelivery.net/g7wf09fCONpnidkRnR_5vw/dbb316af-9c97-4959-f09f-bf58b2783d00/avatar"
+             alt="" class="ft-logo-light" width="64" height="64" loading="lazy">
+        <img src="https://imagedelivery.net/g7wf09fCONpnidkRnR_5vw/11f6af46-0a3c-482a-abe8-83edc5a8a200/avatar"
+             alt="" class="ft-logo-dark"  width="64" height="64" loading="lazy">
+      </a>
+
+      <div class="ft-headline">Let's Talk</div>
+
+      <div class="ft-contact">
+        <a href="mailto:hey@inneranimalmedia.com">hey@inneranimalmedia.com</a>
+        <a href="tel:+13374509998">337-450-9998</a>
+      </div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="ft-right">
+      <div class="ft-col">
+        <div class="ft-col-label">Company</div>
+        <ul>
+          <li><a href="https://inneranimalmedia.com/work"     data-fnav="work">Work</a></li>
+          <li><a href="https://inneranimalmedia.com/about"    data-fnav="about">About</a></li>
+          <li><a href="https://inneranimalmedia.com/services" data-fnav="services">Services</a></li>
+          <li><a href="https://inneranimalmedia.com/contact"  data-fnav="contact">Contact</a></li>
+        </ul>
+      </div>
+      <div class="ft-col">
+        <div class="ft-col-label">Products</div>
+        <ul>
+          <li><a href="https://inneranimalmedia.com/games"   data-fnav="games">Games</a></li>
+          <li><a href="https://inneranimalmedia.com/pricing" data-fnav="pricing">Pricing</a></li>
+        </ul>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM BAR -->
+  <div class="ft-bar">
+    <div class="ft-bar-center">
+      <span class="ft-copy">&copy; 2026 Inner Animal Media</span>
+      <nav class="ft-legal" aria-label="Legal">
+        <a href="https://inneranimalmedia.com/privacy">Privacy</a>
+        <a href="https://inneranimalmedia.com/terms">Terms</a>
+        <a href="https://inneranimalmedia.com/sitemap">Sitemap</a>
+      </nav>
+    </div>
+
+    <div class="ft-dev">
+      <span class="ft-dev-label">Developed by</span>
+      <!-- White sig — dark footer -->
+      <img
+        src="https://imagedelivery.net/g7wf09fCONpnidkRnR_5vw/238de9d1-a470-4fe5-5424-9182f4bc0500/small"
+        alt="Inner Animal Media" class="ft-sig-light" width="80" height="28" loading="lazy"
+      >
+      <!-- Black sig — light footer -->
+      <img
+        src="https://imagedelivery.net/g7wf09fCONpnidkRnR_5vw/87aac7e9-d6c7-4a53-df89-605e8020e000/small"
+        alt="Inner Animal Media" class="ft-sig-dark" width="80" height="28" loading="lazy"
+      >
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var footer = document.getElementById('iam-footer');
+  var canvas = document.getElementById('iam-footer-canvas');
+
+  // Theme
+  var theme = document.body.dataset.footerTheme || 'dark';
+  footer.setAttribute('data-theme', theme);
+
+  // Active nav
+  var seg = window.location.pathname === '/'
+    ? 'home'
+    : window.location.pathname.split('/').filter(Boolean)[0];
+  document.querySelectorAll('[data-fnav]').forEach(function (a) {
+    if (a.dataset.fnav === seg) a.classList.add('active');
+  });
+
+  // GLB lazy load
+  var loaded = false;
+
+  function loadScript(src, cb) {
+    var s = document.createElement('script');
+    s.src = src;
+    s.onload = cb;
+    document.head.appendChild(s);
+  }
+
+  function boot() {
+    if (loaded) return;
+    loaded = true;
+    loadScript(
+      'https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js',
+      function () {
+        loadScript(
+          'https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js',
+          initScene
+        );
+      }
+    );
+  }
+
+  function initScene() {
+    var W = footer.offsetWidth;
+    var H = footer.offsetHeight;
+
+    var renderer = new THREE.WebGLRenderer({ canvas: canvas, alpha: true, antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setSize(W, H);
+    renderer.setClearColor(0x000000, 0);
+
+    var scene  = new THREE.Scene();
+    var camera = new THREE.PerspectiveCamera(50, W / H, 0.1, 1000);
+    camera.position.set(0, 0, 6);
+
+    scene.add(new THREE.AmbientLight(0xffffff, 1.4));
+    var dir = new THREE.DirectionalLight(0xffffff, 0.9);
+    dir.position.set(4, 6, 4);
+    scene.add(dir);
+
+    var isDark   = footer.dataset.theme === 'dark';
+    var matColor = isDark ? 0xffffff : 0x0a1628;
+
+    var loader = new THREE.GLTFLoader();
+    loader.load('https://assets.inneranimalmedia.com/glb/inneranimalmediafooterglb.glb',
+      function (gltf) {
+        var model = gltf.scene;
+        model.traverse(function (child) {
+          if (child.isMesh) {
+            child.material = new THREE.MeshStandardMaterial({
+              color: matColor,
+              roughness: 0.55,
+              metalness: 0.15,
+            });
+          }
+        });
+
+        var box = new THREE.Box3().setFromObject(model);
+        var sz  = new THREE.Vector3();
+        box.getSize(sz);
+        model.scale.setScalar(5.5 / Math.max(sz.x, sz.y, sz.z));
+
+        box.setFromObject(model);
+        var ctr = new THREE.Vector3();
+        box.getCenter(ctr);
+        model.position.sub(ctr);
+        model.position.y -= 0.4;
+
+        scene.add(model);
+        canvas.classList.add('visible');
+
+        (function animate() {
+          requestAnimationFrame(animate);
+          model.rotation.y += 0.0016;
+          model.rotation.x += 0.0004;
+          renderer.render(scene, camera);
+        })();
+      }
+    );
+
+    window.addEventListener('resize', function () {
+      W = footer.offsetWidth;
+      H = footer.offsetHeight;
+      camera.aspect = W / H;
+      camera.updateProjectionMatrix();
+      renderer.setSize(W, H);
+    }, { passive: true });
+  }
+
+  if ('IntersectionObserver' in window) {
+    var obs = new IntersectionObserver(function (e) {
+      if (e[0].isIntersecting) { boot(); obs.disconnect(); }
+    }, { rootMargin: '500px' });
+    obs.observe(footer);
+  } else {
+    boot();
+  }
+})();
+</script>
+
+<!-- AGENTSAM:IAM_FOOTER:END -->
+
 </body>
 </html>

@@ -41,10 +41,11 @@
 
   "assets": {
     "directory": "./app/frontend/dist",
-    "binding": "FRONTEND_ASSETS",
+    "binding": "APP_ASSETS",
     "not_found_handling": "single-page-application",
     "run_worker_first": [
       "/",
+      "/workbench",
       "/api/*",
       "/auth/*"
     ]

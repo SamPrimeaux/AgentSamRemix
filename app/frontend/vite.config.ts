@@ -5,26 +5,42 @@ import react from '@vitejs/plugin-react';
 const rootDir = path.resolve(__dirname);
 
 export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, rootDir, '');
-    return {
-      root: rootDir,
-      build: {
-        outDir: path.resolve(rootDir, 'dist'),
-        emptyOutDir: true,
+  const env = loadEnv(mode, rootDir, '');
+
+  return {
+    root: rootDir,
+
+    build: {
+      outDir: path.resolve(rootDir, 'dist'),
+      emptyOutDir: true,
+
+      // AgentSamRemix has one SPA plus standalone auth documents.
+      rollupOptions: {
+        input: {
+          app: path.resolve(rootDir, 'index.html'),
+          'auth/login': path.resolve(rootDir, 'auth/login.html'),
+          'auth/signup': path.resolve(rootDir, 'auth/signup.html'),
+          'auth/reset': path.resolve(rootDir, 'auth/reset.html'),
+        },
       },
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
+    },
+
+    server: {
+      port: 3000,
+      host: '0.0.0.0',
+    },
+
+    plugins: [react()],
+
+    define: {
+      'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+    },
+
+    resolve: {
+      alias: {
+        '@': rootDir,
       },
-      plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
-      },
-      resolve: {
-        alias: {
-          '@': rootDir,
-        }
-      }
-    };
+    },
+  };
 });

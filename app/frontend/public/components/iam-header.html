@@ -1,0 +1,427 @@
+<!-- iam-header.html -->
+<!-- Inject via HTMLRewriter into <body> of every public page -->
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --iam-navy: #0A1628;
+    --iam-blue: #167BFC;
+    --header-h: 76px;
+  }
+
+  #iam-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 9000;
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    background: transparent;
+    transform: translateY(0);
+    transition:
+      transform 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+      background 0.3s ease,
+      box-shadow 0.3s ease,
+      border-color 0.3s ease;
+    border-bottom: 1px solid transparent;
+    will-change: transform;
+  }
+
+  #iam-header.hide    { transform: translateY(-100%); }
+
+  #iam-header.scrolled,
+  #iam-header.iam-header--light-bg {
+    background: rgba(255, 255, 255, 0.88);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.07);
+    box-shadow: 0 2px 20px rgba(0, 0, 0, 0.07);
+  }
+
+  /* ── INNER ── */
+  .iam-header-inner {
+    width: 100%;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  /* ── LOGO ── */
+  .iam-logo-wrap {
+    display: block;
+    flex-shrink: 0;
+    width: 60px;
+    height: 60px;
+    position: relative;
+  }
+
+  .iam-logo-wrap img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: opacity 0.3s ease;
+  }
+
+  .iam-logo-light { opacity: 1; }
+  .iam-logo-dark  { opacity: 0; }
+
+  #iam-header.scrolled .iam-logo-light,
+  #iam-header.iam-header--light-bg .iam-logo-light { opacity: 0; }
+  #iam-header.scrolled .iam-logo-dark,
+  #iam-header.iam-header--light-bg .iam-logo-dark  { opacity: 1; }
+
+  /* ── DESKTOP NAV (center) ── */
+  .iam-nav {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  .iam-nav a {
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.78);
+    text-decoration: none;
+    padding: 6px 14px;
+    letter-spacing: 0.01em;
+    position: relative;
+    transition: color 0.2s ease;
+    white-space: nowrap;
+  }
+
+  .iam-nav a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 14px;
+    right: 14px;
+    height: 2px;
+    background: #fff;
+    border-radius: 2px;
+    transform: scaleX(0);
+    transition: transform 0.22s ease;
+    transform-origin: center;
+  }
+
+  .iam-nav a:hover { color: #fff; }
+  .iam-nav a:hover::after { transform: scaleX(0.5); }
+  .iam-nav a.active { color: #fff; }
+  .iam-nav a.active::after { transform: scaleX(1); }
+
+  #iam-header.scrolled .iam-nav a,
+  #iam-header.iam-header--light-bg .iam-nav a       { color: rgba(10, 22, 40, 0.55); }
+  #iam-header.scrolled .iam-nav a::after,
+  #iam-header.iam-header--light-bg .iam-nav a::after { background: var(--iam-blue); }
+  #iam-header.scrolled .iam-nav a:hover,
+  #iam-header.iam-header--light-bg .iam-nav a:hover  { color: var(--iam-navy); }
+  #iam-header.scrolled .iam-nav a.active,
+  #iam-header.iam-header--light-bg .iam-nav a.active { color: var(--iam-blue); }
+
+  /* ── RIGHT SIDE ── */
+  .iam-header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .iam-signup-btn {
+    font-family: 'Nunito', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    color: #fff !important;
+    background: var(--iam-blue);
+    text-decoration: none;
+    padding: 10px 22px;
+    border-radius: 10px;
+    display: inline-block;
+    box-shadow: 0 2px 14px rgba(22, 123, 252, 0.38);
+    transition: background 0.2s ease, transform 0.15s ease;
+  }
+
+  .iam-signup-btn:hover {
+    background: #0d6de8;
+    transform: translateY(-1px);
+  }
+
+  /* ── HAMBURGER ── */
+  .iam-hamburger {
+    display: none;
+    width: 44px;
+    height: 44px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    flex-shrink: 0;
+  }
+
+  .iam-hamburger .bar {
+    display: block;
+    width: 22px;
+    height: 1.5px;
+    background: #fff;
+    border-radius: 2px;
+    transition: background 0.2s, transform 0.3s ease, opacity 0.3s ease;
+    transform-origin: center;
+  }
+
+  #iam-header.scrolled .iam-hamburger .bar,
+  #iam-header.iam-header--light-bg .iam-hamburger .bar { background: var(--iam-navy); }
+
+  .iam-hamburger.open .bar:nth-child(1) { transform: translateY(6.5px) rotate(45deg); }
+  .iam-hamburger.open .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+  .iam-hamburger.open .bar:nth-child(3) { transform: translateY(-6.5px) rotate(-45deg); }
+
+  /* ── OVERLAY ── */
+  .iam-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 8998;
+    background: rgba(5, 10, 20, 0.45);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+  .iam-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+  }
+
+  /* ── SIDENAV: glassmorphic, 50vw, slides from right ── */
+  .iam-sidenav {
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 8999;
+    width: 50vw;
+    max-width: 420px;
+    min-width: 260px;
+
+    /* GLASSMORPHIC */
+    background: rgba(10, 22, 40, 0.78);
+    backdrop-filter: blur(24px) saturate(1.4);
+    -webkit-backdrop-filter: blur(24px) saturate(1.4);
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: -8px 0 48px rgba(0, 0, 0, 0.25);
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: calc(var(--header-h) + 24px) 40px 48px;
+    gap: 0;
+
+    transform: translateX(100%);
+    transition: transform 0.38s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .iam-sidenav.active { transform: translateX(0); }
+
+  .iam-sidenav a {
+    font-family: 'Nunito', sans-serif;
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.72);
+    text-decoration: none;
+    padding: 13px 0;
+    letter-spacing: -0.01em;
+    transition: color 0.2s ease;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    display: block;
+  }
+
+  .iam-sidenav a:last-of-type { border-bottom: none; }
+  .iam-sidenav a:hover,
+  .iam-sidenav a.active { color: #fff; }
+
+  .iam-sidenav-cta {
+    margin-top: 32px;
+    font-family: 'Nunito', sans-serif;
+    font-size: 15px !important;
+    font-weight: 700 !important;
+    color: #fff !important;
+    background: var(--iam-blue);
+    padding: 13px 28px !important;
+    border-radius: 10px;
+    display: inline-block;
+    text-align: center;
+    border: none !important;
+    letter-spacing: 0.01em;
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 768px) {
+    .iam-nav          { display: none; }
+    .iam-signup-btn   { display: none; }
+    .iam-hamburger    { display: flex; }
+    .iam-overlay.active { display: block; }
+    .iam-header-inner { padding: 0 20px; }
+  }
+
+  @media (max-width: 480px) {
+    .iam-sidenav { width: 75vw; }
+  }
+</style>
+
+<header id="iam-header">
+  <div class="iam-header-inner">
+
+    <!-- LEFT: Logo -->
+    <a href="/" class="iam-logo-wrap" aria-label="Inner Animal Media home">
+      <img
+        src="https://imagedelivery.net/g7wf09fCONpnidkRnR_5vw/dbb316af-9c97-4959-f09f-bf58b2783d00/avatar"
+        alt="Inner Animal Media" class="iam-logo-light"
+        width="60" height="60" loading="eager" fetchpriority="high"
+      >
+      <img
+        src="https://imagedelivery.net/g7wf09fCONpnidkRnR_5vw/11f6af46-0a3c-482a-abe8-83edc5a8a200/avatar"
+        alt="Inner Animal Media" class="iam-logo-dark"
+        width="60" height="60" loading="eager"
+      >
+    </a>
+
+    <!-- CENTER: Desktop nav -->
+    <nav class="iam-nav" aria-label="Main navigation">
+      <a href="/"         data-nav="home">Home</a>
+      <a href="/work"     data-nav="work">Work</a>
+      <a href="/about"    data-nav="about">About</a>
+      <a href="/services" data-nav="services">Services</a>
+      <a href="/contact"  data-nav="contact">Contact</a>
+    </nav>
+
+    <!-- RIGHT: Sign Up + Hamburger -->
+    <div class="iam-header-right">
+      <a href="/auth/signup" class="iam-signup-btn">Sign Up</a>
+      <button class="iam-hamburger" id="iamHamburger" aria-label="Open menu" aria-expanded="false">
+        <span class="bar"></span>
+        <span class="bar"></span>
+        <span class="bar"></span>
+      </button>
+    </div>
+
+  </div>
+</header>
+
+<!-- Overlay -->
+<div class="iam-overlay" id="iamOverlay" aria-hidden="true"></div>
+
+<!-- Glassmorphic sidenav -->
+<nav class="iam-sidenav" id="iamSidenav" aria-label="Mobile navigation" aria-hidden="true">
+  <a href="/"         data-nav="home">Home</a>
+  <a href="/work"     data-nav="work">Work</a>
+  <a href="/about"    data-nav="about">About</a>
+  <a href="/services" data-nav="services">Services</a>
+  <a href="/contact"  data-nav="contact">Contact</a>
+  <a href="/auth/signup" class="iam-sidenav-cta">Sign Up</a>
+</nav>
+
+<script>
+(function () {
+  var header    = document.getElementById('iam-header');
+  var hamburger = document.getElementById('iamHamburger');
+  var overlay   = document.getElementById('iamOverlay');
+  var sidenav   = document.getElementById('iamSidenav');
+
+  var forceLightHeader =
+    document.body.classList.contains('iam-light-header') ||
+    document.body.getAttribute('data-iam-header') === 'light' ||
+    /^\/(sitemap|terms|privacy)\b/.test(window.location.pathname);
+
+  if (forceLightHeader) {
+    header.classList.add('iam-header--light-bg');
+  }
+
+  // ── Active nav ──────────────────────────────────────────────
+  var seg = window.location.pathname === '/'
+    ? 'home'
+    : window.location.pathname.split('/').filter(Boolean)[0];
+  document.querySelectorAll('[data-nav]').forEach(function (a) {
+    if (a.dataset.nav === seg) a.classList.add('active');
+  });
+
+  // ── Hide on scroll down / show on scroll up ─────────────────
+  var lastY   = window.scrollY;
+  var ticking = false;
+
+  function handleScroll() {
+    var y     = window.scrollY;
+    var delta = y - lastY;
+
+    if (forceLightHeader) {
+      header.classList.add('scrolled');
+      header.classList.add('iam-header--light-bg');
+    } else {
+      header.classList.toggle('scrolled', y > 50);
+    }
+
+    if (y > 80) {
+      if (delta > 4)       header.classList.add('hide');
+      else if (delta < -4) header.classList.remove('hide');
+    } else {
+      header.classList.remove('hide');
+    }
+
+    lastY   = y;
+    ticking = false;
+  }
+
+  window.addEventListener('scroll', function () {
+    if (!ticking) { requestAnimationFrame(handleScroll); ticking = true; }
+  }, { passive: true });
+
+  handleScroll();
+
+  // ── Mobile menu ─────────────────────────────────────────────
+  function openMenu() {
+    sidenav.classList.add('active');
+    sidenav.setAttribute('aria-hidden', 'false');
+    overlay.classList.add('active');
+    hamburger.classList.add('open');
+    hamburger.setAttribute('aria-expanded', 'true');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeMenu() {
+    sidenav.classList.remove('active');
+    sidenav.setAttribute('aria-hidden', 'true');
+    overlay.classList.remove('active');
+    hamburger.classList.remove('open');
+    hamburger.setAttribute('aria-expanded', 'false');
+    document.body.style.overflow = '';
+  }
+
+  hamburger.addEventListener('click', function () {
+    sidenav.classList.contains('active') ? closeMenu() : openMenu();
+  });
+
+  overlay.addEventListener('click', closeMenu);
+  sidenav.querySelectorAll('a').forEach(function (a) {
+    a.addEventListener('click', closeMenu);
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closeMenu();
+  });
+})();
+</script>

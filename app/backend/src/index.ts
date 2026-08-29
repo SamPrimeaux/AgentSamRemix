@@ -9,6 +9,7 @@ export interface Env {
   AGENTSAM_WAI: any; // Workers AI binding
   DB: D1Database;
   WEBSITE_ASSETS: R2Bucket;
+  APP_ASSETS: Fetcher; // Vite/static frontend assets
   IAM_VPC: Fetcher; // Service binding for VPC
   AGENTSAM_BRIDGE_KEY?: string; // machine-to-machine only — see auth/bridge-key.ts
 }
@@ -17,15 +18,37 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
+    // Legacy route: keep old links working while /agent/workbench is canonical.
+    if (url.pathname === '/workbench') {
+      return Response.redirect(
+        new URL('/agent/workbench', request.url).toString(),
+        308,
+      );
+    }
+
+    // Identity is resolved once per request.
+    const identityAdapter = createCloudflareD1Adapter(env.DB);
+    const identity = createIdentityService({
+      adapter: identityAdapter,
+    });
+
+    // AgentSam SDK expects ASSETS.fetch() to mean static frontend assets.
+    // AgentSamRemix reserves env.ASSETS for the inneranimalmedia R2 bucket,
+    // so adapt the name only at the SDK boundary.
+    const identityEnv = {
+      ...env,
+      ASSETS: env.APP_ASSETS,
+    };
+
     // Public Agent Sam landing page.
-    // /workbench remains the React application.
+    // /agent/workbench is the canonical React Agent Sam application.
     if (
       url.pathname === '/' &&
       request.method === 'GET' &&
-      env.FRONTEND_ASSETS
+      env.APP_ASSETS
     ) {
       const homeUrl = new URL('/agentsam-home.html', request.url);
-      return env.FRONTEND_ASSETS.fetch(
+      return env.APP_ASSETS.fetch(
         new Request(homeUrl.toString(), request),
       );
     }
