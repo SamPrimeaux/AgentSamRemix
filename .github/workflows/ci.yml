@@ -29,6 +29,9 @@ jobs:
       - name: Browser ownership tests
         run: npm run test:browser
 
+      - name: Settings control-plane tests
+        run: npm run test:settings
+
       - name: Retrieval unit tests
         run: npm run test:retrieval
 
@@ -42,6 +45,23 @@ jobs:
             find app/dashboard -type f -print
             exit 1
           fi
+
+      - name: Single credential authority invariant
+        run: |
+          if grep -R -E "USER_SECRET_ENCRYPTION_KEY|SECRETS_ENCRYPTION_KEY" app/backend --include='*.js' --include='*.ts'; then
+            echo "Provider/user credentials must use the canonical VAULT_MASTER_KEY crypto path"
+            exit 1
+          fi
+          for dead in \
+            app/backend/src/lib/aiKeyStore.ts \
+            app/backend/src/lib/secretsCrypto.ts \
+            app/backend/credentials/user-secrets.js \
+            app/frontend/components/AiKeySettings.tsx; do
+            if [ -e "$dead" ]; then
+              echo "Retired credential authority returned: $dead"
+              exit 1
+            fi
+          done
 
       - name: No donor runtime imports
         run: |

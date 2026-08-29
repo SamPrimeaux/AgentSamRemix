@@ -40,11 +40,11 @@ Never copy a donor folder wholesale when it would create a second identity resol
 | Browser Run live view | `app/agentsam/frontend/workbench/browser/**` + `backend/browser/**` | `app/frontend/browser/**` + Think `AgentSam` BrowserConnector | **LANDED in PR #6** | Keep the useful live-view UX, but **do not** reproduce IAM's second `BROWSER_SESSION`/job/trust router. Think AgentSam remains the sole Browser Run session authority. |
 | Terminal setup browser client | dashboard PTY setup helper | `app/frontend/services/terminal/` | **LANDED in PR #6** | Browser-client behavior belongs under frontend; `app/dashboard/` is retired as a Remix source root. |
 | Public/auth surfaces | `app/frontend/auth/**` | `app/frontend/auth/**` | **GREEN** | Same ownership model; audit identity endpoints before copying presentation changes. |
-| Keys & Secrets settings | `app/dashboard` settings UI + IAM credential/backend routes | `app/frontend/settings/` + `app/backend/credentials/` + `app/backend/http/settings/` | **YELLOW** | Harvest provider-neutral BYOK/security behavior; reuse one vault and one `user_secrets` authority. Do not keep Gemini-only or duplicate secret stores. |
-| Index Rules | IAM settings UI + code-index policy backend | `app/frontend/settings/` + code-index policy authority | **GREEN/YELLOW** | Good vertical slice; retain fail-loud policy and exact repo authorization. Reuse shared D1 code-index authority. |
-| Chat/Work shell | `app/dashboard/components/ChatAssistant/**` and dashboard shell | `app/frontend/agent/` + `app/frontend/workbench/` | **YELLOW** | Harvest activity/provenance UX selectively; Remix Think chat/runtime stays authoritative. Avoid donor mission/demo runtimes. |
-| Repository intelligence UI | IAM dashboard intelligence/code-index views | `app/frontend/intelligence/` | **YELLOW** | UI is useful once backed by Remix retrieval/repo-intelligence contracts; do not copy synchronous historian/indexer behavior into browser code. |
-| Projects/tickets UI | IAM dashboard project/ticket surfaces | `app/frontend/projects/` | **YELLOW** | Reuse Remix ticket/domain authority first; then port browser client/UI. |
+| Keys & Secrets settings | IAM settings UI + credentials domain | `app/frontend/components/settings/` + `app/backend/credentials/` + `app/backend/http/settings/` | **LANDED in PR #7** | `user_secrets` is the persisted BYOK authority and existing vault crypto is the encryption authority. Internal PTY/tunnel rows are outside the Settings domain. Gemini-only and parallel secret stores are retired. |
+| Index Rules | IAM settings UI + code-index policy backend | `app/frontend/components/settings/` + `app/backend/agentsam/codebase/ignore-policy.js` | **LANDED in PR #7** | Reuses shared `agentsam_ignore_pattern`, requires exact GitHub repo authorization, fails loud on empty policy, and uses optimistic policy versions. |
+| Chat/Work shell | IAM ChatAssistant/dashboard shell | `app/frontend/agent/` + `app/frontend/workbench/` | **YELLOW** | Harvest activity/provenance UX selectively; Remix Think chat/runtime stays authoritative. Avoid donor mission/demo runtimes. |
+| Repository intelligence UI | IAM intelligence/code-index views | `app/frontend/intelligence/` | **YELLOW** | UI is useful once backed by Remix retrieval/repo-intelligence contracts; do not copy synchronous historian/indexer behavior into browser code. |
+| Projects/tickets UI | IAM project/ticket surfaces | `app/frontend/projects/` | **YELLOW** | Reuse Remix ticket/domain authority first; then port browser client/UI. |
 | Legacy `src/**` bridges | IAM migration/compat modules | none | **RED** | Inspect only to discover behavior/callers. Never make them permanent Remix dependencies. |
 | IAM `BROWSER_SESSION` control plane | IAM browser DO/session router | none for current Remix Browser Run | **RED for Remix** | Remix already has a reusable BrowserConnector session inside the Think Agent. A second browser session owner would duplicate state. |
 
@@ -64,10 +64,10 @@ If the answer to #5 is no, redesign the seam before copying code.
 
 ## Next candidates
 
-After Browser Run is green, prefer small visible slices with already-existing backend truth:
+After Keys & Secrets / Index Rules is green, prefer small visible slices with already-existing backend truth:
 
-1. Keys & Secrets / Index Rules closure.
-2. Real repository tree/file/diff Work surface over the existing execution/retrieval authorities.
-3. Chat/Work activity timeline fed by real tool/file/terminal/browser events.
+1. Real repository tree/file/diff Work surface over the existing execution/retrieval authorities.
+2. Chat/Work activity timeline fed by real tool/file/terminal/browser events.
+3. Projects/tickets browser surface over the existing ticket authority.
 
 Take one at a time. Merge green. Then move to the next layer.

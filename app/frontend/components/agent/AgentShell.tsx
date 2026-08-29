@@ -56,6 +56,11 @@ export const AgentShell: React.FC<Props> = ({ user, onLogout }) => {
     setMobileNav(false);
   };
 
+  const openSettings = () => {
+    go('/dashboard/settings/keys');
+    setMobileNav(false);
+  };
+
   const startNewChat = () => {
     setConversationSuffix(newConversationSuffix());
     setPrompt(undefined);
@@ -147,6 +152,7 @@ export const AgentShell: React.FC<Props> = ({ user, onLogout }) => {
             <button className="as-nav-child">Examples</button>
             <button className="as-nav-child">Workflows</button>
             <button className="as-nav-child">Database</button>
+            <button className="as-nav-child" onClick={openSettings}>Settings</button>
           </nav>
           <div className="as-sidebar-bottom">
             <div className="as-user-row"><span className="as-user-dot">{(user.name || 'S')[0]}</span><span>{user.name || user.email}</span></div>
