@@ -1,10 +1,12 @@
-import { estimateTokens, tokenizeText } from './math.js';
+import { clamp, estimateTokens, tokenizeText } from './math.js';
 import { buildActiveScopeSql } from './code-index-scope.js';
+
+const STOP = new Set(['the', 'and', 'for', 'with', 'from', 'where', 'what', 'when', 'why', 'how', 'does', 'this', 'that', 'into', 'are', 'was']);
 
 function searchNeedles(query) {
   const raw = String(query || '');
   const codeTokens = raw.match(/[A-Za-z_$][A-Za-z0-9_$.-]{2,}/g) || [];
-  const general = tokenizeText(raw).filter((token) => token.length >= 3);
+  const general = tokenizeText(raw).filter((token) => token.length >= 3 && !STOP.has(token));
   return [...new Set([...codeTokens, ...general])].slice(0, 8);
 }
 
@@ -18,6 +20,7 @@ function normalizedNodeTypes(nodeTypes) {
 function scoreRow(row, needles) {
   const name = String(row?.node_name || '').toLowerCase();
   const signature = String(row?.signature || '').toLowerCase();
+  const docstring = String(row?.docstring || '').toLowerCase();
   const path = String(row?.file_path || '').toLowerCase();
   let score = 0;
   let matched = 0;
@@ -27,11 +30,14 @@ function scoreRow(row, needles) {
     if (name === needle) local = 1;
     else if (name.includes(needle)) local = 0.88;
     else if (signature.includes(needle)) local = 0.72;
+    else if (docstring.includes(needle)) local = 0.6;
     else if (path.includes(needle)) local = 0.52;
     if (local > 0) matched += 1;
     score = Math.max(score, local);
   }
-  if (needles.length > 1) score += Math.min(0.18, (matched / needles.length) * 0.18);
+  if (needles.length > 1) score += Math.min(0.16, (matched / needles.length) * 0.16);
+  const quality = clamp(Number(row?.structural_quality) || 0, 0, 1);
+  score += quality * 0.04;
   return Math.min(1, score);
 }
 
@@ -39,6 +45,7 @@ function toCandidate(row, score, revisionSha) {
   const filePath = String(row.file_path || '');
   const nodeName = String(row.node_name || '');
   const signature = String(row.signature || '').trim();
+  const docstring = String(row.docstring || '').trim();
   const lineStart = Number(row.line_start) || null;
   const lineEnd = Number(row.line_end) || null;
   const text = [
@@ -46,6 +53,7 @@ function toCandidate(row, score, revisionSha) {
     `Symbol: ${nodeName || 'anonymous'}`,
     `Type: ${String(row.node_type || 'symbol')}`,
     signature ? `Signature: ${signature}` : '',
+    docstring ? `Documentation: ${docstring.slice(0, 2400)}` : '',
     lineStart ? `Lines: ${lineStart}${lineEnd && lineEnd !== lineStart ? `-${lineEnd}` : ''}` : '',
   ].filter(Boolean).join('\n');
   return {
@@ -64,6 +72,7 @@ function toCandidate(row, score, revisionSha) {
     tokenCount: estimateTokens(text),
     score,
     retrievalScore: score,
+    structuralQuality: Number(row.structural_quality) || 0,
     provenance: ['ast_structural'],
   };
 }
@@ -80,8 +89,8 @@ export async function searchStructuralAst({ env, workspaceId, query, scopes, can
   const needleClauses = [];
   for (const raw of needles) {
     const like = `%${String(raw).toLowerCase()}%`;
-    needleClauses.push(`(LOWER(COALESCE(node_name,'')) LIKE ? OR LOWER(COALESCE(signature,'')) LIKE ? OR LOWER(COALESCE(file_path,'')) LIKE ?)`);
-    params.push(like, like, like);
+    needleClauses.push(`(LOWER(COALESCE(node_name,'')) LIKE ? OR LOWER(COALESCE(signature,'')) LIKE ? OR LOWER(COALESCE(docstring,'')) LIKE ? OR LOWER(COALESCE(file_path,'')) LIKE ?)`);
+    params.push(like, like, like, like);
   }
   const types = normalizedNodeTypes(nodeTypes);
   let typeSql = '';
@@ -95,7 +104,7 @@ export async function searchStructuralAst({ env, workspaceId, query, scopes, can
   try {
     const { results } = await env.DB.prepare(
       `SELECT id, repo_full_name, index_generation_id, file_path, node_type, node_name,
-              signature, line_start, line_end, updated_at
+              signature, docstring, line_start, line_end, structural_quality, updated_at
          FROM codebase_ast_nodes
         WHERE workspace_id = ?
           AND (${scopeSql})

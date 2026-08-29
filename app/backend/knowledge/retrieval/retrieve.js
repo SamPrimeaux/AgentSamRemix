@@ -11,6 +11,7 @@ import { rankingEntropy, scoreMargin } from './math.js';
 import { recordRetrievalObservation } from './observations.js';
 
 export const RETRIEVAL_POLICY_VERSION = 'retrieval-v1.0';
+const RERANK_ENTROPY_THRESHOLD = 0.72;
 
 async function timed(fn) {
   const started = performance.now();
@@ -64,8 +65,8 @@ function groundingBlock(selected) {
 
 /**
  * Retrieval V1: active AST generations + lexical exactness + injected ANN,
- * fused with RRF, optionally reranked, diversified with MMR, then packed to a
- * hard token budget. No model/provider/vector-index default exists here.
+ * fused with RRF, ambiguity-gated reranking, MMR diversity, then hard token
+ * packing. No model/provider/vector-index default exists here.
  */
 export async function retrieveKnowledge(env, params, services = {}) {
   const totalStarted = performance.now();
@@ -147,7 +148,10 @@ export async function retrieveKnowledge(env, params, services = {}) {
   const fusionEntropy = rankingEntropy(fused);
   const fusionMargin = scoreMargin(fused);
 
-  const rerankEnabled = Boolean(params?.forceRerank || profile.rerankRecommended) && typeof services?.rerank === 'function';
+  const rerankEnabled = typeof services?.rerank === 'function' && Boolean(
+    params?.forceRerank ||
+    (profile.rerankRecommended && fusionEntropy.normalized >= RERANK_ENTROPY_THRESHOLD),
+  );
   const rerankStage = await timed(() => maybeRerank({
     query: profile.query,
     candidates: fused.slice(0, Math.min(40, profile.candidateK)),
@@ -184,6 +188,8 @@ export async function retrieveKnowledge(env, params, services = {}) {
     lexicalCandidates: lexical.hits?.length || 0,
     denseCandidates: dense.hits?.length || 0,
     fusedCandidates: fused.length,
+    rerankEligible: Boolean(profile.rerankRecommended),
+    rerankApplied: Boolean(rerank.applied),
     rerankedCandidates: rerank.applied ? rerank.candidates.length : 0,
     selectedChunks: selected.length,
     selectedTokens: packed.selectedTokens,
@@ -210,7 +216,7 @@ export async function retrieveKnowledge(env, params, services = {}) {
     policyVersion: RETRIEVAL_POLICY_VERSION,
     denseRouteKey: dense.routeKey,
     embeddingSpaceKey: dense.embeddingSpaceKey,
-    annK: profile.candidateK,
+    annK: dense.ok ? profile.candidateK : 0,
     metrics,
   });
 
@@ -224,6 +230,7 @@ export async function retrieveKnowledge(env, params, services = {}) {
       candidateK: profile.candidateK,
       topK: profile.topK,
       tokenBudget: profile.tokenBudget,
+      rerankRecommended: profile.rerankRecommended,
     },
     scope: {
       workspaceId: scope.workspaceId,

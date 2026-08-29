@@ -10,8 +10,9 @@ function termsForQuery(query) {
 function lexicalScore(row, terms) {
   const name = String(row?.node_name || '').toLowerCase();
   const signature = String(row?.signature || '').toLowerCase();
+  const docstring = String(row?.docstring || '').toLowerCase();
   const path = String(row?.file_path || '').toLowerCase();
-  const haystack = `${name} ${signature} ${path}`;
+  const haystack = `${name} ${signature} ${docstring} ${path}`;
   let covered = 0;
   let exact = 0;
   for (const term of terms) {
@@ -25,12 +26,14 @@ function lexicalScore(row, terms) {
 
 function toCandidate(row, score, revisionSha) {
   const signature = String(row.signature || '').trim();
+  const docstring = String(row.docstring || '').trim();
   const filePath = String(row.file_path || '');
   const nodeName = String(row.node_name || '');
   const text = [
     `File: ${filePath}`,
     `Symbol: ${nodeName || 'anonymous'}`,
     signature ? `Signature: ${signature}` : '',
+    docstring ? `Documentation: ${docstring.slice(0, 2400)}` : '',
     Number(row.line_start) ? `Lines: ${Number(row.line_start)}${Number(row.line_end) && Number(row.line_end) !== Number(row.line_start) ? `-${Number(row.line_end)}` : ''}` : '',
   ].filter(Boolean).join('\n');
   return {
@@ -66,8 +69,8 @@ export async function searchLexicalAst({ env, workspaceId, query, scopes, candid
   const clauses = [];
   for (const term of terms) {
     const like = `%${term}%`;
-    clauses.push(`(LOWER(COALESCE(node_name,'')) LIKE ? OR LOWER(COALESCE(signature,'')) LIKE ? OR LOWER(COALESCE(file_path,'')) LIKE ?)`);
-    params.push(like, like, like);
+    clauses.push(`(LOWER(COALESCE(node_name,'')) LIKE ? OR LOWER(COALESCE(signature,'')) LIKE ? OR LOWER(COALESCE(docstring,'')) LIKE ? OR LOWER(COALESCE(file_path,'')) LIKE ?)`);
+    params.push(like, like, like, like);
   }
   const limit = Math.max(4, Math.min(100, Math.round(Number(candidateK) || 24)));
   params.push(Math.min(240, limit * 4));
@@ -75,7 +78,7 @@ export async function searchLexicalAst({ env, workspaceId, query, scopes, candid
   try {
     const { results } = await env.DB.prepare(
       `SELECT id, repo_full_name, index_generation_id, file_path, node_type, node_name,
-              signature, line_start, line_end, updated_at
+              signature, docstring, line_start, line_end, updated_at
          FROM codebase_ast_nodes
         WHERE workspace_id = ?
           AND (${scopeSql})

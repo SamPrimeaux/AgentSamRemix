@@ -36,10 +36,13 @@ export function softmaxScores(values, temperature = 1) {
   return exp.map((value) => value / total);
 }
 
-export function rankingEntropy(candidates, scoreKey = 'score') {
+export function rankingEntropy(candidates, scoreKey = 'score', temperature = 0.15) {
   const list = Array.isArray(candidates) ? candidates : [];
   if (list.length <= 1) return { entropy: 0, normalized: 0 };
-  const probabilities = softmaxScores(list.map((row) => Number(row?.[scoreKey]) || 0));
+  const probabilities = softmaxScores(
+    list.map((row) => Number(row?.[scoreKey]) || 0),
+    temperature,
+  );
   const entropy = probabilities.reduce(
     (sum, p) => sum - (p > 0 ? p * Math.log(p) : 0),
     0,

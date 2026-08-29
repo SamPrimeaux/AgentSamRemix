@@ -6,6 +6,7 @@ import { packEvidence } from '../app/backend/knowledge/retrieval/budget.js';
 import { rankingEntropy, scoreMargin } from '../app/backend/knowledge/retrieval/math.js';
 import { analyzeRetrievalQuery } from '../app/backend/knowledge/retrieval/policy.js';
 import { searchDenseAnn } from '../app/backend/knowledge/retrieval/dense.js';
+import { createDenseSearchService } from '../app/backend/knowledge/retrieval/dense-service.js';
 import { recallAtK, precisionAtK, meanReciprocalRank, ndcgAtK } from '../app/backend/knowledge/retrieval/evaluate.js';
 
 test('RRF rewards evidence returned by multiple retrievers', () => {
@@ -67,6 +68,28 @@ test('dense adapter fails closed on mixed embedding spaces', async () => {
   });
   assert.equal(result.ok, false);
   assert.match(result.error, /embedding_space_mismatch/);
+});
+
+test('dense search service enforces route dimensions before vector search', async () => {
+  let searched = false;
+  const denseSearch = createDenseSearchService({
+    resolveRoute: async () => ({
+      routeKey: 'code:v1',
+      provider: 'workers_ai',
+      model: 'bge',
+      dimensions: 3,
+      embeddingSpaceKey: 'workers_ai:bge:3:mean:v1',
+    }),
+    embed: async () => ({
+      vector: [0.1, 0.2],
+      embeddingSpaceKey: 'workers_ai:bge:3:mean:v1',
+    }),
+    vectorRepository: {
+      search: async () => { searched = true; return { hits: [] }; },
+    },
+  });
+  await assert.rejects(() => denseSearch({ query: 'x', scope: { sourceType: 'code' }, topK: 5 }), /embedding_dimensions_mismatch/);
+  assert.equal(searched, false);
 });
 
 test('offline relevance metrics are deterministic', () => {
