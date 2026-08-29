@@ -1,0 +1,42 @@
+{
+  "name": "@inneranimalmedia/client-cms-editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Portable Agent Sam client CMS editor — boring backend/frontend split for repurposable site authoring.",
+  "type": "module",
+  "exports": {
+    ".": "./frontend/src/index.ts",
+    "./backend": "./backend/src/index.ts",
+    "./frontend": "./frontend/src/index.ts",
+    "./routing": "./backend/src/routing/index.js",
+    "./styles/studio.css": "./frontend/src/styles/studio.css"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "peerDependencies": {
+    "react": ">=18",
+    "react-dom": ">=18"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "^5.4.0",
+    "vite": "^6.0.0"
+  },
+  "keywords": [
+    "agentsam",
+    "cms",
+    "editor",
+    "client"
+  ],
+  "author": "Inner Animal Media",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/SamPrimeaux/agentsam-sdk.git",
+    "directory": "packages/client-cms-editor"
+  }
+}

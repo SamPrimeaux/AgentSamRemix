@@ -5,8 +5,8 @@ import {
   applyRepoIgnorePolicy,
   matchIgnoreGlob,
   normalizeIgnorePolicyRepo,
-} from '../app/backend/agentsam/codebase/ignore-policy.js';
-import { normalizeApiKeySecret } from '../app/backend/credentials/provider-validation.js';
+} from '../backend/agentsam/codebase/ignore-policy.js';
+import { normalizeApiKeySecret } from '../backend/credentials/provider-validation.js';
 
 test('index-rule glob semantics match production policy', () => {
   assert.equal(matchIgnoreGlob('src/core/a.js', 'src/**'), true);

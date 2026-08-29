@@ -1,0 +1,225 @@
+/*
+ * Inner Animal Media — global design tokens and chrome styles
+ *
+ * Defaults below load before JavaScript. They are overridden at runtime when
+ * GET /api/themes/active returns theme variables from the cms_themes table
+ * (workspace-scoped). applyCmsThemeToDocument() sets matching custom
+ * properties on document.documentElement so the UI tracks DB-driven theme
+ * changes without a full reload.
+ *
+ * Expected shape from API: { slug?, name?, is_dark?, data?: { "--token-name": "value", ... } }
+ * Cached for first paint: localStorage keys inneranimalmedia_theme_css,
+ * inneranimalmedia_theme_is_dark (see src/applyCmsTheme.ts).
+ */
+
+:root {
+  /* Base palette (Solarized-dark–inspired; safe offline default) */
+  --solar-base03:  #00212b;
+  --solar-base02:  #0a2d38;
+  --solar-base01:  #4a7a87;
+  --solar-base00:  #6e8d96;
+  --solar-base0:   #9cb5bc;
+  --solar-base1:   #b0ccd2;
+
+  --solar-yellow:  #e6ac00;
+  --solar-orange:  #d95f1c;
+  --solar-red:     #e63333;
+  --solar-magenta: #d33682;
+  --solar-violet:  #7c83d4;
+  --solar-blue:    #3a9fe8;
+  --solar-cyan:    #2dd4bf;
+  --solar-green:   #a3b800;
+
+  /* Semantic layout (override via cms_themes.data) */
+  /* shell.css (linked on index.html) sets light marketing defaults for --bg-canvas; keep canvas aligned
+     with dashboard chrome so translucent panels (glass) and body chains match cms_themes before/without JS. */
+  --bg-canvas:     var(--solar-base03);
+  --bg-app:        var(--solar-base03);
+  --bg-panel:      var(--solar-base02);
+  --bg-hover:      rgba(42, 161, 152, 0.08);
+  --border-subtle: #1e3e4a;
+  --border-focus:  var(--solar-cyan);
+
+  --text-main:     var(--solar-base0);
+  --text-primary:  var(--text-main);
+  --text-muted:    #7a9aaa;
+  --text-heading:  var(--solar-base1);
+
+  --bg-elevated:   color-mix(in srgb, var(--bg-panel) 88%, var(--solar-cyan) 12%);
+
+  --scene-bg:      #060e14;
+
+  /* Terminal component aliases resolve through dashboard semantic tokens. */
+  --terminal-chrome:   var(--dashboard-topbar);
+  --terminal-surface:  var(--dashboard-canvas);
+  --terminal-tab-muted: var(--text-nav-muted, var(--dashboard-muted));
+
+  --bg-code-pre:             #030a0d;
+  /* Keep above ~4.5:1 on panel/scene — Safari/PWA was reading ~2.2:1 with #2e5464. */
+  --text-placeholder-strong: #7a9aaa;
+  --text-chrome-muted:       #2a4d58;
+  --bg-disabled:             #0a1c22;
+  --toggle-knob:             var(--solar-base1);
+
+  --editor-selection-bg:     color-mix(in srgb, var(--solar-cyan) 24%, transparent);
+  --monaco-scrollbar-thumb:  color-mix(in srgb, var(--border-subtle) 50%, transparent);
+  --monaco-scrollbar-hover:  color-mix(in srgb, var(--solar-cyan) 25%, transparent);
+
+  --accent-primary:   var(--solar-blue);
+  --color-primary:    var(--solar-blue);
+  --accent-secondary: var(--solar-cyan);
+  --accent-warning:   var(--solar-yellow);
+  --accent-danger:    var(--solar-red);
+
+  /*
+   * Authenticated dashboard aliases — always derived from CMS/live tokens on :root.
+   * shell.css loads before this file and sets light marketing defaults; these names must not
+   * self-reference. Use fallbacks only to earlier tokens in this block.
+   */
+  --dashboard-canvas: var(--bg-app, var(--bg-canvas, #02080b));
+  --dashboard-panel: var(--bg-panel, var(--bg-surface, var(--bg-elevated, #0a1620)));
+  --dashboard-card: var(--bg-card, var(--bg-elevated, var(--bg-panel, #0a1620)));
+  --dashboard-border: var(--border, var(--color-border, var(--border-subtle, rgba(148, 163, 184, 0.14))));
+  --dashboard-text: var(--color-text, var(--text-primary, var(--text-main, #e5eef2)));
+  --dashboard-muted: var(--text-muted, #8aa0aa);
+  --dashboard-topbar: var(--bg-nav, var(--dashboard-panel));
+  --dashboard-topbar-text: var(--text-nav, var(--dashboard-text));
+  --dashboard-sidebar: var(--bg-shell, var(--dashboard-panel));
+  --dashboard-sidebar-text: var(--text-sidebar, var(--dashboard-text));
+  --dashboard-sidebar-muted: var(--text-sidebar-muted, var(--dashboard-muted));
+}
+
+/*
+ * When CMS theme vars are applied (inline on :root), re-bind dashboard aliases so nothing
+ * resolves through shell.css marketing defaults. Presence of data-cms-theme / bootstrap flag
+ * keeps overlays and late-loaded surfaces aligned with /api/themes/active.
+ */
+:root[data-dashboard-theme-ready="true"],
+:root[data-cms-theme] {
+  --dashboard-canvas: var(--bg-app, var(--bg-canvas, #02080b));
+  --dashboard-panel: var(--bg-panel, var(--bg-surface, var(--bg-elevated, #0a1620)));
+  --dashboard-card: var(--bg-card, var(--bg-elevated, var(--bg-panel, #0a1620)));
+  --dashboard-border: var(--border, var(--color-border, var(--border-subtle, rgba(148, 163, 184, 0.14))));
+  --dashboard-text: var(--color-text, var(--text-primary, var(--text-main, #e5eef2)));
+  --dashboard-muted: var(--text-muted, #8aa0aa);
+  --dashboard-topbar: var(--bg-nav, var(--dashboard-panel));
+  --dashboard-topbar-text: var(--text-nav, var(--dashboard-text));
+  --dashboard-sidebar: var(--bg-shell, var(--dashboard-panel));
+  --dashboard-sidebar-text: var(--text-sidebar, var(--dashboard-text));
+  --dashboard-sidebar-muted: var(--text-sidebar-muted, var(--dashboard-muted));
+}
+
+body {
+  background: var(--dashboard-canvas);
+  color: var(--dashboard-text);
+  margin: 0;
+  overflow: hidden;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--solar-cyan) 20%, transparent);
+  color: var(--solar-cyan);
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--dashboard-canvas);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--dashboard-panel);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-subtle);
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+@keyframes pulse-dirty {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+.animate-pulse-dirty {
+  animation: pulse-dirty 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/*
+ * Glass blur — use only on transient overlays (dropdowns, popovers, small floating controls).
+ * Do not apply to main shell: nav rail, Agent Sam column, workspace root, settings canvas, Monaco host.
+ */
+.glass-panel-overlay {
+  background: color-mix(in srgb, var(--dashboard-panel) 82%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.glow-border {
+  position: relative;
+}
+.glow-border::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  box-shadow: 0 0 0 0 transparent;
+  transition: box-shadow 0.2s ease, background-color 0.2s ease;
+  pointer-events: none;
+}
+.glow-border:hover::after, .glow-border:active::after {
+  box-shadow: 0 0 10px var(--solar-cyan);
+  background-color: color-mix(in srgb, var(--solar-cyan) 50%, transparent);
+}
+
+/* Dashboard chrome — remap token text utilities inside topbar/sidebar (no nested arbitrary Tailwind) */
+.iam-chrome-topbar {
+  background: var(--dashboard-topbar);
+  color: var(--dashboard-topbar-text);
+  /*
+   * iOS PWA (apple-mobile-web-app-status-bar-style=black-translucent + viewport-fit=cover)
+   * paints under the status bar. Pad interactive chrome so the hamburger clears the clock.
+   * Background still fills the inset so the translucent status bar stays on-brand.
+   */
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-left: env(safe-area-inset-left, 0px);
+  padding-right: env(safe-area-inset-right, 0px);
+}
+.iam-chrome-topbar .text-main {
+  color: var(--dashboard-topbar-text);
+}
+.iam-chrome-topbar .text-muted {
+  color: var(--text-nav-muted, var(--dashboard-muted));
+}
+
+.iam-chrome-sidebar {
+  background: var(--dashboard-sidebar);
+  color: var(--dashboard-sidebar-text, var(--dashboard-text));
+}
+.iam-chrome-sidebar .text-main {
+  color: var(--dashboard-sidebar-text, var(--dashboard-text));
+}
+.iam-chrome-sidebar .text-muted {
+  color: var(--dashboard-sidebar-muted, var(--dashboard-muted));
+}
+
+@keyframes slide-up {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.xterm-shell-viewport .xterm {
+  padding: 8px 12px 12px;
+}
+.xterm-shell-viewport .xterm-viewport {
+  overflow-y: auto !important;
+}
+.xterm-shell-viewport:focus-within .xterm-focus .xterm-cursor-layer {
+  z-index: 2;
+}

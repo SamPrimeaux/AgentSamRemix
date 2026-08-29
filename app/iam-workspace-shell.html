@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="solarized-dark">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="iam-workspace-slug" content="" />
+  <meta name="iam-tools-public-origin" content="https://tools.inneranimalmedia.com" />
+  <title>Workspace — Inner Animal Media</title>
+  <link id="ws-shell-css" rel="stylesheet" href="/static/dashboard/shell.css" />
+  <style id="flash-guard">html:not([data-theme-ready]) body { visibility: hidden; }</style>
+  <script>
+  (function () {
+    /** cms_themes via GET /api/settings/theme?slug= (unauthenticated OK). Do not clobber localStorage — other dashboard pages use it. */
+    var THEME_SLUG = 'solarized-dark';
+    var TOOLS_PUBLIC_ORIGIN = 'https://tools.inneranimalmedia.com';
+    function resolveShellWorkspaceId() {
+      try {
+        var q = new URLSearchParams(location.search);
+        var fromQuery = (q.get('workspace_id') || q.get('workspace') || '').trim();
+        if (fromQuery) return fromQuery;
+      } catch (e) {}
+      try {
+        var boot = window.__IAM_BOOTSTRAP__;
+        if (boot && boot.identity && boot.identity.workspace_id) {
+          return String(boot.identity.workspace_id).trim();
+        }
+        if (boot && boot.me && boot.me.workspace && boot.me.workspace.id) {
+          return String(boot.me.workspace.id).trim();
+        }
+      } catch (e) {}
+      return '';
+    }
+    var WORKSPACE_ID = resolveShellWorkspaceId();
+    var API_ORIGIN = '';
+    try {
+      var h = location.hostname || '';
+      if (h === 'tools.inneranimalmedia.com' || /\.r2\.dev$/i.test(h)) {
+        API_ORIGIN = 'https://inneranimalmedia.com';
+      }
+    } catch (e) {}
+    try {
+      window.__IAM_WORKSPACE__ = {
+        workspaceId: WORKSPACE_ID,
+        toolsPublicOrigin: TOOLS_PUBLIC_ORIGIN,
+        apiOrigin: API_ORIGIN || (typeof location !== 'undefined' ? location.origin : ''),
+      };
+    } catch (e) {}
+    if (WORKSPACE_ID) {
+      document.documentElement.setAttribute('data-workspace-id', WORKSPACE_ID);
+      var slugMeta = document.querySelector('meta[name="iam-workspace-slug"]');
+      if (slugMeta) slugMeta.setAttribute('content', WORKSPACE_ID);
+      document.title = WORKSPACE_ID + ' — Inner Animal Media';
+    }
+    var sl = document.getElementById('ws-shell-css');
+    if (sl && API_ORIGIN) {
+      sl.href = API_ORIGIN + '/static/dashboard/shell.css';
+    }
+    document.documentElement.setAttribute('data-theme', THEME_SLUG);
+
+    function reveal() {
+      document.documentElement.setAttribute('data-theme-ready', '1');
+      var fg = document.getElementById('flash-guard');
+      if (fg) fg.textContent = '';
+    }
+
+    function applyCmsTheme(slug, apiVariables) {
+      if (!slug) slug = THEME_SLUG;
+      document.documentElement.setAttribute('data-theme', slug);
+      var cssVars = apiVariables && typeof apiVariables === 'object' ? apiVariables : {};
+      var esc = String(slug).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+      var cssText = ':root[data-theme="' + esc + '"] {';
+      for (var k in cssVars) {
+        if (!Object.prototype.hasOwnProperty.call(cssVars, k)) continue;
+        var key = String(k).indexOf('--') === 0 ? k : '--' + String(k).replace(/^-+/, '');
+        cssText += key + ':' + cssVars[k] + ';';
+      }
+      cssText += '}';
+      var el = document.getElementById('theme-dynamic-inject');
+      if (!el) { el = document.createElement('style'); el.id = 'theme-dynamic-inject'; document.head.appendChild(el); }
+      el.textContent = cssText;
+      reveal();
+    }
+
+    var url = (API_ORIGIN || '') + '/api/settings/theme?slug=' + encodeURIComponent(THEME_SLUG);
+    fetch(url, { credentials: API_ORIGIN ? 'omit' : 'same-origin' })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && d.variables && typeof d.variables === 'object' && Object.keys(d.variables).length) {
+          applyCmsTheme(d.theme || THEME_SLUG, d.variables);
+        } else {
+          reveal();
+        }
+      })
+      .catch(reveal);
+  })();
+  </script>
+  <style id="iam-workspace-tokens">
+    /*
+      IAM workspace shell — colors alias cms_themes.config.cssVars (themeApiPayloadFromRow).
+      Fallbacks match solarized-dark base when API unavailable (e.g. file:// or offline).
+      System B: workflow_runs / workflow_artifacts.
+    */
+    :root[data-theme="solarized-dark"],
+    :root[data-theme] {
+      --ws-activity-w: 52px;
+      --ws-explorer-w: min(280px, 32vw);
+      --ws-agent-w: min(360px, 100%);
+      --ws-tab-h: 36px;
+      --ws-status-h: 26px;
+      --ws-font: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      --ws-mono: ui-monospace, "SF Mono", Consolas, monospace;
+      --ws-bg-deep: var(--bg-canvas, hsl(193 100% 11%));
+      --ws-bg-raised: var(--bg-elevated, var(--bg-surface, hsl(194 49% 14%)));
+      --ws-bg-panel: var(--bg-panel, var(--bg-elevated, hsl(194 49% 14%)));
+      --ws-border: var(--color-border, var(--border, hsl(193 24% 38% / 0.35)));
+      --ws-text: var(--text-primary, var(--color-text, hsl(180 7% 55%)));
+      --ws-muted: var(--text-muted, var(--text-secondary, hsl(193 14% 40%)));
+      --ws-accent: var(--color-primary, hsl(205 82% 45%));
+      --ws-accent-soft: color-mix(in srgb, var(--color-primary, hsl(205 82% 45%)) 18%, transparent);
+      --ws-warn: var(--accent-warning, hsl(45 100% 45%));
+      --ws-radius: var(--radius, 10px);
+      --ws-btn-fg: var(--text-on-primary, hsl(0 0% 98%));
+    }
+
+    .ws-mono { font-family: var(--ws-mono); }
+    .ws-text-muted { color: var(--ws-muted); }
+
+    html, body {
+      margin: 0;
+      height: 100%;
+      font-family: var(--ws-font);
+      background: var(--ws-bg-deep);
+      color: var(--ws-text);
+    }
+
+    .ws-app {
+      display: grid;
+      grid-template-columns: var(--ws-activity-w) var(--ws-explorer-w) 1fr minmax(280px, var(--ws-agent-w));
+      grid-template-rows: 1fr var(--ws-status-h);
+      height: 100vh;
+      min-height: 0;
+    }
+
+    @media (max-width: 1100px) {
+      .ws-app {
+        grid-template-columns: var(--ws-activity-w) 1fr minmax(260px, 34vw);
+      }
+      .ws-explorer { display: none; }
+      .ws-app.ws-explorer-open .ws-explorer { display: flex; }
+    }
+
+    @media (max-width: 820px) {
+      .ws-app {
+        grid-template-columns: var(--ws-activity-w) 1fr;
+      }
+      .ws-agent { display: none; }
+      .ws-app.ws-agent-open .ws-agent { display: flex; }
+    }
+
+    /* Activity bar — slot icons map to future modules */
+    .ws-activity {
+      grid-row: 1 / -1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      padding: 8px 0;
+      background: var(--ws-bg-raised);
+      border-right: 1px solid var(--ws-border);
+    }
+
+    .ws-activity button {
+      width: 40px;
+      height: 40px;
+      border: none;
+      border-radius: 8px;
+      background: transparent;
+      color: var(--ws-muted);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .ws-activity button:hover,
+    .ws-activity button:focus-visible {
+      background: var(--ws-accent-soft);
+      color: var(--ws-accent);
+      outline: 2px solid var(--ws-accent);
+      outline-offset: 2px;
+    }
+
+    .ws-activity button[aria-pressed="true"] {
+      background: var(--ws-accent-soft);
+      color: var(--ws-accent);
+    }
+
+    .ws-activity-spacer { flex: 1; min-height: 12px; }
+
+    /* Explorer */
+    .ws-explorer {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: var(--ws-bg-panel);
+      border-right: 1px solid var(--ws-border);
+    }
+
+    .ws-explorer-header {
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ws-muted);
+      border-bottom: 1px solid var(--ws-border);
+    }
+
+    .ws-explorer-scroll {
+      flex: 1;
+      overflow: auto;
+      padding: 8px 0;
+    }
+
+    .ws-disclosure {
+      border-bottom: 1px solid color-mix(in srgb, var(--ws-border) 55%, transparent);
+    }
+
+    .ws-disclosure summary {
+      list-style: none;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--ws-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .ws-disclosure summary::-webkit-details-marker { display: none; }
+
+    .ws-disclosure[open] summary { color: var(--ws-text); }
+
+    .ws-tree {
+      padding: 0 8px 10px 12px;
+      font-size: 12px;
+      color: var(--ws-muted);
+      font-family: var(--ws-mono);
+    }
+
+    .ws-tree ul {
+      margin: 0;
+      padding-left: 14px;
+      list-style: none;
+    }
+
+    .ws-tree li { margin: 4px 0; }
+
+    .ws-pill {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 6px 10px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 6px;
+      background: var(--ws-accent-soft);
+      color: var(--ws-accent);
+      border: 1px solid var(--ws-border);
+      cursor: default;
+    }
+
+    /* Main */
+    .ws-main {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: var(--ws-bg-deep);
+    }
+
+    .ws-tabs {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      min-height: var(--ws-tab-h);
+      padding: 0 8px;
+      background: var(--ws-bg-raised);
+      border-bottom: 1px solid var(--ws-border);
+      overflow-x: auto;
+    }
+
+    .ws-tab {
+      padding: 8px 14px;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--ws-muted);
+      background: transparent;
+      border: 1px solid transparent;
+      border-bottom: none;
+      border-radius: var(--ws-radius) var(--ws-radius) 0 0;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .ws-tab:hover { color: var(--ws-text); }
+
+    .ws-tab[aria-selected="true"] {
+      color: var(--ws-text);
+      background: var(--ws-bg-deep);
+      border-color: var(--ws-border);
+      margin-bottom: -1px;
+      padding-bottom: 9px;
+    }
+
+    .ws-tab[disabled] {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .ws-main-body {
+      flex: 1;
+      overflow: auto;
+      padding: clamp(16px, 3vw, 32px);
+    }
+
+    .ws-welcome {
+      max-width: 640px;
+    }
+
+    .ws-brand {
+      font-size: clamp(1.5rem, 3vw, 2rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin: 0 0 8px;
+    }
+
+    .ws-sub {
+      margin: 0 0 28px;
+      font-size: 14px;
+      color: var(--ws-muted);
+      line-height: 1.5;
+    }
+
+    .ws-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+
+    .ws-btn {
+      padding: 10px 18px;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: var(--ws-radius);
+      border: 1px solid var(--ws-border);
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .ws-btn-primary {
+      background: var(--ws-accent);
+      color: var(--ws-btn-fg);
+      border-color: transparent;
+    }
+
+    .ws-btn-primary:hover { filter: brightness(1.06); }
+
+    .ws-btn-ghost {
+      background: var(--ws-bg-panel);
+      color: var(--ws-text);
+    }
+
+    .ws-btn-ghost:hover { background: var(--ws-accent-soft); border-color: var(--ws-accent); }
+
+    .ws-roadmap {
+      margin-top: 32px;
+      padding-top: 24px;
+      border-top: 1px solid var(--ws-border);
+    }
+
+    .ws-roadmap h2 {
+      margin: 0 0 12px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ws-muted);
+    }
+
+    .ws-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .ws-chip {
+      font-size: 11px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: var(--ws-bg-panel);
+      border: 1px solid var(--ws-border);
+      color: var(--ws-muted);
+    }
+
+    .ws-chip[data-ready="1"] {
+      border-color: var(--ws-accent);
+      color: var(--ws-accent);
+    }
+
+    .ws-workspaces {
+      margin-top: 8px;
+    }
+
+    .ws-workspaces h2 {
+      margin: 0 0 10px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--ws-muted);
+    }
+
+    .ws-ws-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .ws-ws-list li {
+      padding: 10px 12px;
+      border-radius: var(--ws-radius);
+      border: 1px solid var(--ws-border);
+      margin-bottom: 8px;
+      font-size: 13px;
+      background: var(--ws-bg-panel);
+    }
+
+    .ws-ws-list li strong { display: block; color: var(--ws-text); }
+    .ws-ws-list li span { font-size: 12px; color: var(--ws-muted); font-family: var(--ws-mono); }
+
+    .ws-active-tag {
+      display: inline-block;
+      margin-left: 8px;
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--ws-accent);
+    }
+
+    /* Monaco / editor slot */
+    .ws-editor-slot {
+      display: none;
+      height: 100%;
+      min-height: 200px;
+      border-radius: var(--ws-radius);
+      border: 1px dashed var(--ws-border);
+      align-items: center;
+      justify-content: center;
+      color: var(--ws-muted);
+      font-size: 13px;
+    }
+
+    .ws-main[data-center="editor"] .ws-welcome { display: none; }
+    .ws-main[data-center="editor"] .ws-editor-slot { display: flex; }
+
+    /* Agent column */
+    .ws-agent {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      background: var(--ws-bg-panel);
+      border-left: 1px solid var(--ws-border);
+    }
+
+    .ws-agent-header {
+      padding: 10px 12px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--ws-muted);
+      border-bottom: 1px solid var(--ws-border);
+    }
+
+    .ws-agent-toolbar {
+      display: flex;
+      gap: 8px;
+      padding: 8px 12px;
+      border-bottom: 1px solid var(--ws-border);
+      flex-wrap: wrap;
+    }
+
+    .ws-agent-toolbar select {
+      flex: 1;
+      min-width: 120px;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid var(--ws-border);
+      background: var(--ws-bg-deep);
+      color: var(--ws-text);
+      font-size: 12px;
+    }
+
+    .ws-agent-feed {
+      flex: 1;
+      overflow: auto;
+      padding: 12px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--ws-muted);
+    }
+
+    .ws-agent-msg {
+      margin-bottom: 14px;
+      padding: 10px 12px;
+      border-radius: var(--ws-radius);
+      background: var(--ws-bg-deep);
+      border: 1px solid var(--ws-border);
+    }
+
+    .ws-agent-msg .who {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--ws-accent);
+      margin-bottom: 6px;
+    }
+
+    .ws-agent-compose {
+      padding: 10px 12px;
+      border-top: 1px solid var(--ws-border);
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+    }
+
+    .ws-agent-compose textarea {
+      flex: 1;
+      min-height: 44px;
+      max-height: 120px;
+      resize: vertical;
+      padding: 10px 12px;
+      border-radius: var(--ws-radius);
+      border: 1px solid var(--ws-border);
+      background: var(--ws-bg-deep);
+      color: var(--ws-text);
+      font-family: inherit;
+      font-size: 13px;
+    }
+
+    .ws-agent-compose button {
+      padding: 10px 16px;
+      font-weight: 600;
+      font-size: 12px;
+      border-radius: var(--ws-radius);
+      border: none;
+      background: var(--ws-accent);
+      color: var(--ws-btn-fg);
+      cursor: pointer;
+    }
+
+    /* Status bar */
+    .ws-status {
+      grid-column: 2 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 12px;
+      font-size: 11px;
+      font-family: var(--ws-mono);
+      color: var(--ws-muted);
+      background: linear-gradient(90deg, var(--ws-bg-raised), var(--ws-bg-panel));
+      border-top: 1px solid var(--ws-border);
+    }
+
+    .ws-status-left,
+    .ws-status-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      min-width: 0;
+    }
+
+    .ws-status span { white-space: nowrap; }
+
+    .ws-skip {
+      position: absolute;
+      left: -9999px;
+      top: auto;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    }
+
+    .ws-skip:focus {
+      left: 8px;
+      top: 8px;
+      width: auto;
+      height: auto;
+      padding: 8px 12px;
+      background: var(--ws-accent);
+      color: var(--ws-btn-fg);
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <a class="ws-skip" href="#ws-main">Skip to main</a>
+
+  <div class="ws-app" id="ws-app" data-tools-origin="https://tools.inneranimalmedia.com">
+    <nav class="ws-activity" aria-label="Primary workspace modules">
+      <button type="button" id="act-files" aria-pressed="true" title="Explorer (local + remotes)" data-slot="explorer">&#9776;</button>
+      <button type="button" id="act-search" aria-pressed="false" title="Search (stub)" data-slot="search">&#8981;</button>
+      <button type="button" id="act-git" aria-pressed="false" title="Git (stub)" data-slot="git">&#9082;</button>
+      <button type="button" id="act-cloud" aria-pressed="false" title="R2 / S3 (stub)" data-slot="r2-s3">&#9729;</button>
+      <button type="button" id="act-db" aria-pressed="false" title="D1 / data (stub)" data-slot="db">&#9632;</button>
+      <button type="button" id="act-term" aria-pressed="false" title="Terminal tunnel (PTY) — stub" data-slot="terminal">&#9552;</button>
+      <div class="ws-activity-spacer" aria-hidden="true"></div>
+      <button type="button" id="act-draw" aria-pressed="false" title="Excalidraw / draw (stub)" data-slot="draw">&#9634;</button>
+      <button type="button" id="act-mcp" aria-pressed="false" title="MCP tools (stub)" data-slot="mcp">&#9883;</button>
+      <button type="button" id="act-agent" aria-pressed="false" title="Toggle agent panel" data-slot="agent-toggle">&#9733;</button>
+    </nav>
+
+    <aside class="ws-explorer" aria-label="IAM Explorer" data-workflow-artifact-region="explorer">
+      <div class="ws-explorer-header">IAM Explorer</div>
+      <div class="ws-explorer-scroll">
+        <details class="ws-disclosure" open>
+          <summary>Local workspace</summary>
+          <div class="ws-tree">
+            <span class="ws-pill" title="Native folder API — not wired">Connect native folder</span>
+            <p style="margin:10px 0 0;font-size:11px;">SSH / devcontainer hooks align here later.</p>
+          </div>
+        </details>
+        <details class="ws-disclosure" open>
+          <summary>Cloudflare R2</summary>
+          <div class="ws-tree">
+            <ul>
+              <li>agent-sam (dashboard)</li>
+              <li>tools (code, pages, draw) — public <span class="ws-mono">tools.inneranimalmedia.com</span> (R2 custom domain)</li>
+              <li>iam-platform (memory)</li>
+              <li>autorag / iam-docs</li>
+            </ul>
+            <p class="ws-text-muted" style="margin:8px 0 0;font-size:11px;"><span id="ws-shell-workspace-blurb">This workspace</span> uses TOOLS bucket URLs under this host for agent-built assets.</p>
+          </div>
+        </details>
+        <details class="ws-disclosure">
+          <summary>GitHub sync</summary>
+          <div class="ws-tree">Clone, PR status, Actions — stub.</div>
+        </details>
+        <details class="ws-disclosure">
+          <summary>Google Drive</summary>
+          <div class="ws-tree">OAuth pickers — stub.</div>
+        </details>
+      </div>
+    </aside>
+
+    <main class="ws-main" id="ws-main" data-center="welcome" data-workflow-artifact-region="editor-surface">
+      <div class="ws-tabs" role="tablist" aria-label="Editor tabs">
+        <button type="button" class="ws-tab" role="tab" aria-selected="true" data-tab="welcome">Welcome</button>
+        <button type="button" class="ws-tab" role="tab" aria-selected="false" disabled title="Voxel / 3D — later">Voxel</button>
+        <button type="button" class="ws-tab" role="tab" aria-selected="false" disabled title="Headless browser — later">Browser</button>
+        <button type="button" class="ws-tab" role="tab" aria-selected="false" disabled title="GLB preview — later">GLB</button>
+        <button type="button" class="ws-tab" role="tab" aria-selected="false" disabled title="Excalidraw — later">Draw</button>
+        <button type="button" class="ws-tab" role="tab" aria-selected="false" data-tab="editor" id="tab-monaco">Editor</button>
+      </div>
+      <div class="ws-main-body">
+        <section class="ws-welcome" aria-label="Welcome">
+          <h1 class="ws-brand">Inner Animal Media</h1>
+          <p class="ws-sub">
+            Workspace shell v0 — layout for model comparisons, efficiency runs, and staged rollout.
+            Ledger targets: <span class="ws-mono ws-text-muted">workflow_runs</span>,
+            <span class="ws-mono ws-text-muted">workflow_steps</span>,
+            <span class="ws-mono ws-text-muted">workflow_artifacts</span> (System B).
+          </p>
+          <div class="ws-actions">
+            <button type="button" class="ws-btn ws-btn-primary" disabled title="File System Access API — wire next">Open folder</button>
+            <button type="button" class="ws-btn ws-btn-ghost" disabled title="Link to /dashboard/agent">Agent manager</button>
+            <button type="button" class="ws-btn ws-btn-ghost" disabled title="Git clone flow">Clone repository</button>
+          </div>
+
+          <div class="ws-workspaces">
+            <h2>Workspaces</h2>
+            <ul class="ws-ws-list">
+              <li>
+                <strong><span class="ws-mono" id="ws-shell-workspace-active">Workspace</span> <span class="ws-active-tag">Active</span></strong>
+                <span><a href="https://tools.inneranimalmedia.com/">https://tools.inneranimalmedia.com</a> — R2 bucket <span class="ws-mono">tools</span> (custom domain)</span>
+              </li>
+              <li>
+                <strong>Production app</strong>
+                <span>https://inneranimalmedia.com (worker + dashboard; theme/API origin when shell is on tools host)</span>
+              </li>
+              <li>
+                <strong>Sandbox worker</strong>
+                <span>inneranimal-dashboard.meauxbility.workers.dev (CIDI UI; R2 staging <span class="ws-mono">agent-sam-sandbox-cidi</span>)</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="ws-roadmap">
+            <h2>Integration slots (build order)</h2>
+            <div class="ws-chips">
+              <span class="ws-chip" data-ready="1">Layout shell</span>
+              <span class="ws-chip">PTY / terminal.inneranimalmedia.com</span>
+              <span class="ws-chip">SSH / remote attach</span>
+              <span class="ws-chip">Monaco</span>
+              <span class="ws-chip">R2 + S3 API</span>
+              <span class="ws-chip">GitHub</span>
+              <span class="ws-chip">Google Drive</span>
+              <span class="ws-chip">Excalidraw embed</span>
+              <span class="ws-chip">MCP client</span>
+              <span class="ws-chip">Agent workforce / queue</span>
+            </div>
+          </div>
+        </section>
+
+        <div class="ws-editor-slot" aria-hidden="true">
+          Monaco surface mounts here (read-only preview first).
+        </div>
+      </div>
+    </main>
+
+    <aside class="ws-agent" aria-label="Agent workforce" data-workflow-artifact-region="agent-panel">
+      <div class="ws-agent-header">Agent</div>
+      <div class="ws-agent-toolbar">
+        <label class="ws-skip" for="ws-model">Model</label>
+        <select id="ws-model" aria-label="Model" disabled title="Wire to /api/agent/bootstrap models">
+          <option>Compare models (wire API)</option>
+        </select>
+      </div>
+      <div class="ws-agent-feed" id="ws-agent-feed">
+        <div class="ws-agent-msg">
+          <div class="who">System</div>
+          Agent panel is a stub. Connect streaming to <span class="ws-mono">/api/agent/chat</span> or embed existing Agent dashboard component after bundle split.
+        </div>
+      </div>
+      <div class="ws-agent-compose">
+        <textarea id="ws-agent-input" placeholder="Ask the agent (stub)" aria-label="Message" disabled></textarea>
+        <button type="button" disabled>Send</button>
+      </div>
+    </aside>
+
+    <footer class="ws-status" role="contentinfo">
+      <div class="ws-status-left">
+        <span>IAM</span>
+        <span class="ws-mono" id="ws-shell-workspace-footer" title="Workspace slug">Workspace</span>
+        <span>main</span>
+        <span id="ws-user">samprimeaux</span>
+        <span>0 errors</span>
+      </div>
+      <div class="ws-status-right">
+        <span>Ln 1, Col 1</span>
+        <span>UTF-8</span>
+        <span>LF</span>
+        <span>shell v0.1.0</span>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+  (function () {
+    var wsId = '';
+    try {
+      wsId = (window.__IAM_WORKSPACE__ && window.__IAM_WORKSPACE__.workspaceId) || '';
+    } catch (e) {}
+    var app = document.getElementById('ws-app');
+    if (app && wsId) app.setAttribute('data-workspace-id', wsId);
+    if (wsId) {
+      var blurb = document.getElementById('ws-shell-workspace-blurb');
+      if (blurb) blurb.textContent = wsId;
+      var active = document.getElementById('ws-shell-workspace-active');
+      if (active) active.textContent = wsId;
+      var footer = document.getElementById('ws-shell-workspace-footer');
+      if (footer) footer.textContent = wsId;
+    }
+
+    var main = document.getElementById('ws-main');
+    var tabs = document.querySelectorAll('.ws-tab[role="tab"]');
+    var tabEditor = document.getElementById('tab-monaco');
+
+    function setTab(selected) {
+      tabs.forEach(function (t) {
+        var on = t === selected;
+        t.setAttribute('aria-selected', on ? 'true' : 'false');
+      });
+      if (selected === tabEditor) {
+        main.setAttribute('data-center', 'editor');
+      } else {
+        main.setAttribute('data-center', 'welcome');
+      }
+    }
+
+    tabs.forEach(function (t) {
+      if (t.disabled) return;
+      t.addEventListener('click', function () { setTab(t); });
+    });
+
+    document.getElementById('act-agent').addEventListener('click', function () {
+      app.classList.toggle('ws-agent-open');
+    });
+
+    document.getElementById('act-files').addEventListener('click', function () {
+      app.classList.toggle('ws-explorer-open');
+    });
+  })();
+  </script>
+</body>
+</html>

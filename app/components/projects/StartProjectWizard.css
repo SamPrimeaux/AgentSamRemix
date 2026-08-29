@@ -1,0 +1,201 @@
+.iam-start-project-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 140;
+  background: rgba(4, 8, 14, 0.72);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.iam-start-project-modal {
+  width: min(560px, 100%);
+  max-height: min(88vh, 720px);
+  overflow: auto;
+  border-radius: 22px;
+  border: 1px solid var(--iam-home-border, var(--border-subtle, rgba(148, 163, 184, 0.16)));
+  background: var(--iam-home-panel, var(--bg-panel, #101827));
+  box-shadow: 0 28px 80px rgba(0, 0, 0, 0.48);
+  display: flex;
+  flex-direction: column;
+  color: var(--iam-home-text, var(--text-main, #e8eaf0));
+}
+
+.iam-start-project-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 20px 20px 8px;
+}
+
+.iam-start-project-kicker {
+  margin: 0 0 4px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--iam-home-muted, var(--text-muted, rgba(232, 234, 240, 0.48)));
+}
+
+.iam-start-project-head h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.iam-start-project-close {
+  border: 0;
+  background: transparent;
+  color: var(--iam-home-muted, var(--text-muted));
+  padding: 6px;
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.iam-start-project-body {
+  padding: 8px 20px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.iam-start-project-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--iam-home-muted, var(--text-muted));
+}
+
+.iam-start-project-field input,
+.iam-start-project-field textarea {
+  border: 1px solid var(--iam-home-border, var(--border-subtle));
+  border-radius: 12px;
+  padding: 10px 12px;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: inherit;
+  resize: vertical;
+}
+
+.iam-start-project-hint {
+  margin: 0;
+  font-size: 12px;
+  color: var(--iam-home-muted, var(--text-muted));
+  line-height: 1.45;
+}
+
+.iam-start-project-hint.ok { color: #22c55e; }
+.iam-start-project-hint.warn { color: #f97316; }
+
+.iam-start-project-error {
+  margin: 0 20px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(239, 68, 68, 0.12);
+  color: #fca5a5;
+  font-size: 12px;
+}
+
+.iam-start-project-stack {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.iam-start-project-pill {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid var(--iam-home-border, var(--border-subtle));
+  font-size: 12px;
+}
+
+.iam-start-project-pill.ok {
+  border-color: color-mix(in srgb, #22c55e 40%, transparent);
+  background: color-mix(in srgb, #22c55e 8%, transparent);
+}
+
+.iam-start-project-pill.warn {
+  border-color: color-mix(in srgb, #f97316 35%, transparent);
+}
+
+.iam-start-project-pill strong {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--iam-home-muted, var(--text-muted));
+}
+
+.iam-start-project-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--iam-home-muted, var(--text-muted));
+}
+
+.iam-start-project-review h3 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.iam-start-project-review p {
+  margin: 0 0 12px;
+  color: var(--iam-home-muted, var(--text-muted));
+  font-size: 13px;
+}
+
+.iam-start-project-review ul {
+  margin: 0;
+  padding-left: 18px;
+  font-size: 12px;
+  color: var(--iam-home-muted, var(--text-muted));
+  line-height: 1.6;
+}
+
+.iam-start-project-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--iam-home-border, var(--border-subtle));
+}
+
+.iam-start-project-foot button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 10px 16px;
+  font-size: 13px;
+  font-weight: 700;
+  border: 1px solid var(--iam-home-border, var(--border-subtle));
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+}
+
+.iam-start-project-foot button.primary {
+  background: var(--iam-home-blue, var(--solar-blue, #4ea7ff));
+  border-color: transparent;
+  color: #041018;
+}
+
+.iam-start-project-foot button:disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.iam-start-project-connect-grid {
+  margin-top: 4px;
+}

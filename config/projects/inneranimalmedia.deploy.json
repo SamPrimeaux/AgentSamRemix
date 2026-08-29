@@ -1,0 +1,35 @@
+{
+  "project": "inneranimalmedia",
+  "deployPackage": "@inneranimalmedia/inneranimalmedia-deploy",
+  "deployVersion": "2.0.0-alpha.deploy.1",
+  "workerConfig": "wrangler.production.toml",
+  "assets": {
+    "binding": "ASSETS",
+    "bucket": "inneranimalmedia",
+    "prefix": "static/dashboard/app",
+    "viteDist": "app/dashboard/dist"
+  },
+  "cms": {
+    "binding": "CMS_BUCKET",
+    "bucket": "cms"
+  },
+  "artifacts": {
+    "binding": "ARTIFACTS",
+    "bucket": "artifacts"
+  },
+  "database": {
+    "binding": "DB",
+    "name": "inneranimalmedia-business",
+    "id": "cf87b717-d4e2-4cf8-bab0-a81268e32d49"
+  },
+  "implementation": {
+    "fast": "tools/deploy/fast.sh",
+    "full": "tools/deploy/full.sh"
+  },
+  "remote": {
+    "script": "scripts/ship-remote.sh"
+  },
+  "verification": {
+    "defaultGate": false
+  }
+}

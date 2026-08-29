@@ -1,0 +1,289 @@
+@import './inneranimalmedia.css';
+@import './styles/mobile-nav-hamburger.css';
+@import './styles/mobile-activity-drawer.css';
+@import './styles/terminal-mobile.css';
+@import './styles/mobile-header.css';
+@import './styles/image-generation.css';
+@import './components/database/database-page.css';
+@import './features/mode-presence/agentModePresenceMotion.css';
+@import './features/agent-run/agentRunPresence.css';
+@import './features/agent-presence/presenceMotion.css';
+@import './features/agent-presence/presenceIcons.css';
+
+@import "tailwindcss";
+@config "./tailwind.config.js";
+
+/* Theme-linked text colors — use text-main / text-muted instead of text-[var(--text-*)] */
+@theme inline {
+  --color-main: var(--text-main);
+  --color-muted: var(--text-muted);
+}
+
+/* Tailwind v4: phone shell breakpoint (iPhone 13 Pro 390px → Pro Max 428px + slack) */
+@custom-variant max-phone (@media (max-width: 430px));
+@custom-variant tablet-up (@media (min-width: 431px));
+@source "./index.html";
+@source "./index.tsx";
+@source "./App.tsx";
+@source "./components/**/*.{js,jsx,ts,tsx}";
+@source "./pages/**/*.{js,jsx,ts,tsx}";
+@source "./features/**/*.{js,jsx,ts,tsx}";
+@source "./src/**/*.{js,jsx,ts,tsx}";
+@source "./lib/**/*.{js,jsx,ts,tsx}";
+@source "!./dist/**";
+@source "!./node_modules/**";
+
+:root {
+  --font-sans: 'Nunito', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, Monaco, 'Courier New', monospace;
+
+  /* Agent Sam mode tokens (theme-safe fallbacks). */
+  --agent-mode-agent: var(--solar-cyan, #13d6c6);
+  --agent-mode-ask: var(--solar-green, #31d983);
+  --agent-mode-plan: var(--solar-yellow, #f6c85f);
+  --agent-mode-debug: var(--solar-red, #ff5d6c);
+  --agent-mode-multitask: #a879ff;
+
+  /* Presence tri-color (used by swarm) */
+  --presence-classy: #9fb7ff;
+  --presence-ember: #ff8a4c;
+  --presence-mono: #f2f2f2;
+}
+
+body {
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  letter-spacing: -0.011em;
+  line-height: 1.5;
+}
+
+/* Horizontal split-pane drag (Agent Sam + activity sidebar) — set on body from App.tsx */
+body.is-resizing {
+  cursor: col-resize !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: none;
+}
+body.is-resizing * {
+  cursor: col-resize !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+body.is-terminal-resizing {
+  cursor: ns-resize !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: none;
+}
+body.is-terminal-resizing * {
+  cursor: ns-resize !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+code, kbd, pre, samp {
+  font-family: var(--font-mono) !important;
+  letter-spacing: -0.02em;
+}
+
+/* IAM: Tailwind `font-mono` uses Nunito for UI chrome; real monospace on code/pre/kbd/samp */
+.font-mono {
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif !important;
+}
+pre.font-mono,
+code.font-mono,
+kbd.font-mono,
+samp.font-mono {
+  font-family: var(--font-mono) !important;
+}
+
+.terminal-wrapper {
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+  flex: 1 1 0% !important;
+}
+
+.xterm-shell-viewport {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  height: auto !important;
+}
+
+:root {
+  /* Cursor quick-input-widget defaults: 600px wide, ~440px list */
+  --shell-dropdown-width: 600px;
+  --shell-dropdown-list-max-height: 440px;
+  --shell-dropdown-max-height: min(520px, 70vh);
+  --shell-dropdown-radius: 6px;
+  --dashboard-topbar-height: 2.5rem;
+}
+
+.nav-search-container {
+  position: relative;
+  z-index: 120;
+  width: var(--shell-dropdown-width);
+  max-width: min(var(--shell-dropdown-width), calc(100vw - 1.5rem));
+}
+
+/* One-panel command palette — dropdown matches trigger width exactly */
+.nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  width: 100%;
+  max-height: var(--shell-dropdown-max-height);
+  z-index: 121;
+  border-top: none;
+  border-radius: 0 0 var(--shell-dropdown-radius) var(--shell-dropdown-radius);
+}
+
+.nav-search-container[data-palette-open='true'] .nav-search-trigger {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-bottom-color: transparent;
+}
+
+.nav-search-container[data-palette-open='true'] .nav-dropdown {
+  margin-top: -1px;
+}
+
+.nav-dropdown__results {
+  max-height: var(--shell-dropdown-list-max-height);
+}
+
+/* Mobile top bar: icon trigger + ~60vw centered palette */
+.iam-nav-search--mobile {
+  width: auto;
+  flex: 0 0 auto;
+}
+
+.iam-nav-search--mobile .nav-dropdown {
+  width: var(--shell-dropdown-width);
+  max-width: min(var(--shell-dropdown-width), calc(100vw - 1.5rem));
+}
+
+.iam-nav-search--toolbar .nav-dropdown {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+/* Mobile: escape narrow top-bar trigger — fixed centered panel, tappable chips */
+.nav-search-container[data-palette-open='true'].iam-nav-search--mobile .nav-dropdown,
+.nav-search-container[data-palette-open='true'].iam-nav-search--toolbar .nav-dropdown {
+  position: fixed;
+  left: 50%;
+  right: auto;
+  top: var(--dashboard-topbar-height, 2.5rem);
+  transform: translateX(-50%);
+  width: min(var(--shell-dropdown-width, 600px), calc(100vw - 1.5rem));
+  max-height: min(70vh, var(--shell-dropdown-max-height, 28rem));
+  z-index: 250;
+  border-radius: 0 0 var(--shell-dropdown-radius, 6px) var(--shell-dropdown-radius, 6px);
+}
+
+.iam-palette-chips button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Split Editor Layout */
+[data-editor-split="true"] {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: var(--border-subtle);
+}
+
+[data-editor-split="true"] > * {
+  background: var(--bg-app);
+}
+
+/* Agent chat text size — driven by settings Agents → Text Size */
+[data-text-size="small"] .agent-content,
+[data-text-size="small"] .chat-message {
+  font-size: 0.8125rem;
+}
+[data-text-size="default"] .agent-content,
+[data-text-size="default"] .chat-message {
+  font-size: 0.8125rem;
+}
+[data-text-size="large"] .agent-content,
+[data-text-size="large"] .chat-message {
+  font-size: 1rem;
+}
+[data-text-size="xl"] .agent-content,
+[data-text-size="xl"] .chat-message {
+  font-size: 1.0625rem;
+}
+
+/* Readable copy surfaces — override chrome/parent select-none where users expect highlight */
+.agent-content,
+.agent-scroll-area .agent-content,
+.chat-message,
+.mail-detail-pane,
+.mail-detail-pane * {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+/* Inline markdown code in Agent Sam — readable chips, not dark redaction bars */
+.agent-content :not(pre) > code,
+.agent-scroll-area .agent-content :not(pre) > code {
+  background: color-mix(in srgb, var(--solar-cyan, #2dd4bf) 14%, var(--dashboard-panel, #0a1620)) !important;
+  color: var(--dashboard-text, #e8eef4) !important;
+  border: 1px solid color-mix(in srgb, var(--dashboard-border, #1e3e4a) 50%, transparent);
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: normal;
+  max-width: 100%;
+}
+
+.agent-content pre code {
+  background: transparent !important;
+  border: none !important;
+  padding: 0 !important;
+}
+
+/* Terminal — override global resize drag lock so logs stay copyable */
+body.is-resizing .iam-terminal-pane-root,
+body.is-resizing .iam-terminal-output-panel,
+body.is-resizing .iam-terminal-problems-panel,
+body.is-resizing .iam-terminal-live-output,
+body.is-resizing .iam-terminal-native-text,
+body.is-terminal-resizing .iam-terminal-pane-root,
+body.is-terminal-resizing .iam-terminal-output-panel,
+body.is-terminal-resizing .iam-terminal-problems-panel,
+body.is-terminal-resizing .iam-terminal-live-output,
+body.is-terminal-resizing .iam-terminal-native-text {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+/* Claude-style subtle scrollbar for agent message thread */
+.agent-scroll-area {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-subtle, rgba(255, 255, 255, 0.12)) transparent;
+}
+
+.agent-scroll-area::-webkit-scrollbar {
+  width: 4px;
+}
+
+.agent-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.agent-scroll-area::-webkit-scrollbar-thumb {
+  background: var(--border-subtle, rgba(255, 255, 255, 0.12));
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.agent-scroll-area:hover::-webkit-scrollbar-thumb {
+  opacity: 1;
+}

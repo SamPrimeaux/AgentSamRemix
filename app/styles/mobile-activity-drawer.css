@@ -1,0 +1,93 @@
+/* Mobile activity panels — bottom sheet (repos / explorer / git), not side split */
+@media (max-width: 430px) {
+  .iam-mobile-activity-scrim {
+    position: fixed;
+    z-index: 45;
+    top: calc(2.5rem + env(safe-area-inset-top, 0px));
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 0;
+    background: color-mix(in srgb, var(--dashboard-canvas, #07111d) 55%, transparent);
+    backdrop-filter: blur(2px);
+    animation: iam-mobile-activity-scrim-in 180ms ease;
+  }
+
+  @keyframes iam-mobile-activity-scrim-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  .iam-mobile-activity-sheet {
+    position: fixed;
+    z-index: 46;
+    left: 0;
+    right: 0;
+    bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));
+    width: 100% !important;
+    max-width: none;
+    min-width: 0;
+    height: var(--iam-mobile-activity-vh, 35dvh);
+    max-height: calc(100dvh - 2.5rem - env(safe-area-inset-top, 0px) - 1.5rem - env(safe-area-inset-bottom, 0px) - 8px);
+    border-radius: 18px 18px 0 0;
+    border: 1px solid var(--dashboard-border, rgba(148, 163, 184, 0.16));
+    border-bottom: none;
+    box-shadow: 0 -16px 48px rgba(0, 0, 0, 0.42);
+    transition: transform 220ms ease, height 80ms ease, opacity 180ms ease;
+    touch-action: pan-y;
+  }
+
+  .iam-mobile-activity-sheet[data-open='false'] {
+    transform: translateY(110%);
+    pointer-events: none;
+    opacity: 0;
+  }
+
+  .iam-mobile-activity-sheet[data-open='true'] {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  .iam-mobile-activity-sheet-handle {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 3;
+    height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: ns-resize;
+    touch-action: none;
+    flex-shrink: 0;
+  }
+
+  .iam-mobile-activity-sheet-handle::after {
+    content: '';
+    width: 44px;
+    height: 5px;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--dashboard-border, rgba(148, 163, 184, 0.16)) 85%, #fff);
+    transition: background 120ms ease, transform 120ms ease;
+  }
+
+  .iam-mobile-activity-sheet-handle:active::after,
+  .iam-mobile-activity-sheet-handle:hover::after {
+    background: var(--solar-cyan, #13d6c6);
+    transform: scaleX(1.08);
+  }
+
+  .iam-mobile-activity-sheet-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    padding-top: 22px;
+    height: 100%;
+  }
+}

@@ -30,10 +30,10 @@
   "exclude": [
     "node_modules",
     "app/bin",
-    "app/frontend/dist"
+    "app/dist"
   ],
   "include": [
-    "app/backend/src/index.ts",
-    "app/frontend/index.tsx"
+    "backend/src/index.ts",
+    "app/index.tsx"
   ]
 }

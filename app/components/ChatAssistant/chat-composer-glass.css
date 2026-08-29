@@ -1,0 +1,269 @@
+/* Floating glass composer — Cursor-style input over chat thread */
+.iam-chat-composer-shell {
+  background: transparent !important;
+  border: none !important;
+  position: relative;
+  z-index: 4;
+  overflow: visible;
+}
+
+.iam-composer-toolbar {
+  min-height: 40px;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+/* Under-composer status — logo-weight glyph when running, not a competing pill */
+.iam-composer-status-row {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  min-height: 2.75rem;
+  max-width: 100%;
+  padding: 0.45rem 0.35rem 0.2rem;
+  margin: 0;
+  font-size: 0.875rem;
+  font-family: var(--font-sans, 'Assistant', ui-sans-serif, system-ui, sans-serif);
+  font-weight: 550;
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  color: var(--dashboard-muted);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.iam-composer-status-row--active {
+  color: var(--dashboard-text);
+}
+
+.iam-composer-status-glyph {
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+}
+
+.iam-composer-status-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  flex-shrink: 0;
+  transition: opacity 160ms ease, background-color 160ms ease;
+}
+
+.iam-composer-status-model {
+  min-width: 0;
+  max-width: min(16rem, 52vw);
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.iam-composer-status-sep {
+  flex-shrink: 0;
+  opacity: 0.35;
+}
+
+.iam-composer-status-meta {
+  min-width: 0;
+  max-width: 12rem;
+  opacity: 0.78;
+  font-weight: 500;
+  font-size: 0.8125rem;
+}
+
+.iam-composer-status-elapsed {
+  flex-shrink: 0;
+  opacity: 0.7;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono, ui-monospace, SFMono-Regular, Menlo, monospace);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iam-composer-status-dot {
+    transition: none;
+  }
+}
+
+.iam-chat-composer-glass {
+  /* Mode accent — set --agent-composer-accent from composer UI mode (agent/ask/plan/debug/multitask). */
+  --agent-composer-accent: var(--agent-mode-agent, var(--solar-cyan, #13d6c6));
+  background: color-mix(in srgb, var(--dashboard-panel) 74%, transparent);
+  backdrop-filter: blur(20px) saturate(1.25);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  border: 1px solid color-mix(in srgb, var(--agent-composer-accent) 22%, var(--dashboard-border));
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.38),
+    0 2px 8px rgba(0, 0, 0, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    0 0 18px color-mix(in srgb, var(--agent-composer-accent) 10%, transparent);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.iam-chat-composer-glass:focus-within {
+  border-color: color-mix(in srgb, var(--agent-composer-accent) 48%, var(--dashboard-border));
+  box-shadow:
+    0 18px 52px rgba(0, 0, 0, 0.42),
+    0 0 0 1px color-mix(in srgb, var(--agent-composer-accent) 28%, transparent),
+    0 0 26px color-mix(in srgb, var(--agent-composer-accent) 16%, transparent);
+}
+
+.iam-chat-composer-glass--dragging {
+  border-color: color-mix(in srgb, var(--agent-composer-accent) 55%, var(--dashboard-border));
+  box-shadow:
+    0 18px 52px rgba(0, 0, 0, 0.42),
+    0 0 0 1px color-mix(in srgb, var(--agent-composer-accent) 32%, transparent),
+    0 0 22px color-mix(in srgb, var(--agent-composer-accent) 18%, transparent);
+}
+
+/* Atmospheric /agent home — extra frost over the scene */
+.iam-chat-composer-glass--atmospheric {
+  background: color-mix(in srgb, rgba(180, 210, 220, 0.14) 55%, var(--dashboard-panel) 45%);
+  backdrop-filter: blur(22px) saturate(1.35);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  border: 1px solid color-mix(in srgb, var(--agent-composer-accent) 26%, var(--dashboard-border));
+  box-shadow:
+    0 20px 56px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.06) inset,
+    0 0 28px color-mix(in srgb, var(--agent-composer-accent) 12%, transparent);
+}
+
+.iam-chat-composer-glass .bg-\[var\(--scene-bg\)\] {
+  background: transparent !important;
+}
+
+.iam-chat-composer-glass textarea,
+.iam-chat-composer-glass input {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+}
+
+@media (max-width: 430px) {
+  .iam-chat-composer-shell {
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  .iam-chat-composer-glass {
+    border-radius: 24px;
+  }
+
+  .iam-chat-composer-glass--mobile {
+    background: color-mix(in srgb, var(--dashboard-panel) 82%, transparent);
+    border-color: color-mix(in srgb, var(--agent-composer-accent) 18%, var(--dashboard-border));
+    box-shadow:
+      0 10px 30px rgba(0, 0, 0, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  }
+
+  .iam-chat-composer-glass--mobile:focus-within {
+    border-color: color-mix(in srgb, var(--agent-composer-accent) 34%, var(--dashboard-border));
+    box-shadow:
+      0 12px 34px rgba(0, 0, 0, 0.32),
+      0 0 0 1px color-mix(in srgb, var(--agent-composer-accent) 14%, transparent);
+  }
+
+  .iam-chat-composer-glass--mobile .iam-composer-textarea {
+    min-height: 40px !important;
+    padding: 8px 12px 3px !important;
+    line-height: 1.4 !important;
+  }
+
+  .iam-chat-composer-glass--mobile .iam-composer-toolbar {
+    min-height: 38px;
+    gap: 4px;
+    padding: 2px 6px 6px;
+    align-items: center;
+  }
+
+  .iam-composer-toolbar__left {
+    flex: 1 1 auto;
+    gap: 4px !important;
+    overflow: hidden;
+  }
+
+  .iam-composer-toolbar__right {
+    gap: 2px !important;
+    margin-left: 2px;
+  }
+
+  .iam-composer-toolbar__left .iam-composer-pill {
+    min-height: 30px;
+    padding: 4px 8px;
+    border-color: color-mix(in srgb, var(--dashboard-border) 72%, transparent);
+    background: color-mix(in srgb, var(--dashboard-panel) 48%, transparent);
+  }
+
+  .iam-composer-toolbar__left .iam-composer-pill:first-child {
+    max-width: 6.25rem !important;
+  }
+
+  .iam-composer-toolbar__left .iam-composer-pill:nth-child(2) {
+    flex-shrink: 1;
+    max-width: min(7.5rem, 31vw) !important;
+  }
+
+  .iam-composer-toolbar__right > div {
+    gap: 0 !important;
+  }
+
+  /* Phone gets one obvious speech affordance. Realtime/persona controls remain
+     available on wider surfaces instead of squeezing desktop chrome into 390px. */
+  .iam-composer-toolbar__right [data-testid='composer-voice-options'] {
+    display: none !important;
+  }
+
+  .iam-composer-toolbar__right [data-testid='composer-voice-realtime'],
+  .iam-composer-toolbar__right [data-testid='composer-mic-dictation'] {
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .iam-composer-connection {
+    min-width: 34px;
+    height: 30px;
+    padding: 0 6px;
+    background: color-mix(in srgb, var(--solar-cyan) 7%, transparent);
+  }
+
+  .iam-composer-connection__at {
+    color: var(--solar-cyan);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1;
+  }
+
+  .iam-composer-attach,
+  .iam-composer-send {
+    width: 32px !important;
+    height: 32px !important;
+    padding: 0 !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iam-chat-composer-glass {
+    transition: none !important;
+  }
+}
+
+/* Atmospheric /dashboard/agent — centered composer column over the scene */
+.iam-chat-composer-shell--atmospheric {
+  width: 100%;
+  max-width: min(680px, calc(100vw - 48px));
+  margin-inline: auto;
+  padding-left: 0 !important;
+  padding-right: 0 !important;
+}
+
+.iam-chat-composer-shell--atmospheric .iam-chat-composer-glass {
+  width: 100%;
+}

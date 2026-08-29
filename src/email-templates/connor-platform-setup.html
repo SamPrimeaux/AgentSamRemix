@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agent Sam — Platform Setup</title>
+</head>
+<body style="margin:0;padding:0;background:#001a22;font-family:'Courier New',monospace;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background:#001a22;padding:32px 16px;">
+<tr><td align="center">
+
+  <table width="580" cellpadding="0" cellspacing="0" style="max-width:580px;width:100%;background:#00212b;border:1px solid #1e3e4a;border-radius:8px;overflow:hidden;">
+
+    <tr>
+      <td style="background:#001a22;padding:0;border-bottom:2px solid #2dd4bf;">
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="padding:20px 32px;">
+              <span style="color:#2dd4bf;font-size:11px;letter-spacing:3px;text-transform:uppercase;">Inner Animal Media</span>
+            </td>
+            <td align="right" style="padding:20px 32px;">
+              <span style="color:#4a6a7a;font-size:11px;letter-spacing:2px;">PLATFORM SETUP</span>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:40px 32px 28px;border-bottom:1px solid #1e3e4a;">
+        <p style="margin:0 0 8px;color:#4a6a7a;font-size:11px;letter-spacing:3px;">AGENT SAM · {{USER_NAME}}</p>
+        <h1 style="margin:0 0 20px;color:#e8f4f8;font-family:Georgia,serif;font-size:28px;font-weight:normal;line-height:1.3;">
+          Your workspace setup.<br><span style="color:#2dd4bf;">GitHub, MCP &amp; terminal.</span>
+        </h1>
+        <p style="margin:0;color:#7a9aaa;font-size:13px;line-height:1.8;">
+          Work through these steps when you're ready. Everything runs under <strong style="color:#2dd4bf;">your</strong> accounts
+          (<strong>connordmcneely96</strong> / <strong>ws_connor_mcneely</strong>) — not shared platform credentials.
+        </p>
+        <p style="margin:16px 0 0;color:#fde68a;font-size:12px;line-height:1.7;background:rgba(251,191,36,0.08);padding:12px 14px;border:1px solid rgba(251,191,36,0.35);border-radius:6px;">
+          <strong style="color:#fef3c7;">Attached:</strong> interactive checklist guide (open in Chrome/Edge — progress saves in your browser).
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:28px 32px;border-bottom:1px solid #1e3e4a;">
+        <p style="margin:0 0 18px;color:#2dd4bf;font-size:10px;letter-spacing:3px;">START HERE</p>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+          <tr>
+            <td width="32" valign="top"><div style="width:22px;height:22px;background:#0a3040;border:1px solid #2dd4bf;border-radius:4px;text-align:center;line-height:22px;"><span style="color:#2dd4bf;font-size:11px;">01</span></div></td>
+            <td style="padding-left:12px;">
+              <p style="margin:0 0 4px;color:#c8e0e8;font-size:13px;">Sign in to Agent Sam</p>
+              <a href="https://www.inneranimalmedia.com/dashboard/agent" style="color:#2dd4bf;font-size:12px;">inneranimalmedia.com/dashboard/agent</a>
+            </td>
+          </tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+          <tr>
+            <td width="32" valign="top"><div style="width:22px;height:22px;background:#0a3040;border:1px solid #2dd4bf;border-radius:4px;text-align:center;line-height:22px;"><span style="color:#2dd4bf;font-size:11px;">02</span></div></td>
+            <td style="padding-left:12px;">
+              <p style="margin:0 0 4px;color:#c8e0e8;font-size:13px;">Connect GitHub (OAuth)</p>
+              <a href="https://www.inneranimalmedia.com/api/oauth/github/start?return_to=%2Fdashboard%2Fagent" style="color:#2dd4bf;font-size:12px;">Connect GitHub → connordmcneely96</a>
+              <p style="margin:6px 0 0;color:#4a6a7a;font-size:11px;line-height:1.6;">Enough for most agent + MCP file work.</p>
+            </td>
+          </tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+          <tr>
+            <td width="32" valign="top"><div style="width:22px;height:22px;background:#0a3040;border:1px solid #1e3e4a;border-radius:4px;text-align:center;line-height:22px;"><span style="color:#7a9aaa;font-size:11px;">03</span></div></td>
+            <td style="padding-left:12px;">
+              <p style="margin:0 0 4px;color:#c8e0e8;font-size:13px;">Connect ChatGPT (MCP)</p>
+              <p style="margin:0;color:#4a6a7a;font-size:11px;line-height:1.6;">ChatGPT → Settings → Connectors → add MCP URL:</p>
+              <p style="margin:6px 0 0;color:#2dd4bf;font-size:11px;">https://mcp.inneranimalmedia.com/mcp</p>
+            </td>
+          </tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:14px;">
+          <tr>
+            <td width="32" valign="top"><div style="width:22px;height:22px;background:#0a3040;border:1px solid #1e3e4a;border-radius:4px;text-align:center;line-height:22px;"><span style="color:#7a9aaa;font-size:11px;">04</span></div></td>
+            <td style="padding-left:12px;">
+              <p style="margin:0 0 4px;color:#c8e0e8;font-size:13px;">Your VM / PowerShell terminal</p>
+              <p style="margin:0;color:#4a6a7a;font-size:11px;line-height:1.6;">Dashboard → Settings → Local terminal → activate your tunnel. Use <strong style="color:#c8e0e8;">Start local</strong>, not Cloud.</p>
+            </td>
+          </tr>
+        </table>
+
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="32" valign="top"><div style="width:22px;height:22px;background:#0a3040;border:1px solid #1e3e4a;border-radius:4px;text-align:center;line-height:22px;"><span style="color:#7a9aaa;font-size:11px;">05</span></div></td>
+            <td style="padding-left:12px;">
+              <p style="margin:0 0 4px;color:#c8e0e8;font-size:13px;">GitHub CLI on your VM (optional)</p>
+              <p style="margin:0;color:#4a6a7a;font-size:11px;line-height:1.6;">Only if you want <code style="color:#7a9aaa;">git push</code> from the terminal. See attached guide — Step 5.</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:32px;border-bottom:1px solid #1e3e4a;" align="center">
+        <a href="https://www.inneranimalmedia.com/dashboard/agent" style="display:inline-block;padding:14px 36px;background:#2dd4bf;color:#00212b;font-size:13px;font-weight:bold;letter-spacing:2px;text-decoration:none;border-radius:4px;">OPEN AGENT DASHBOARD</a>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:24px 32px;border-bottom:1px solid #1e3e4a;background:#001a22;">
+        <p style="margin:0 0 8px;color:#fecaca;font-size:11px;line-height:1.7;">
+          <strong style="color:#fca5a5;">Do not use</strong> the shared Cloud terminal (<code style="color:#7a9aaa;">terminal.inneranimalmedia.com</code>) for your Git identity — use your VM with Start local.
+        </p>
+        <p style="margin:0 0 10px;color:#4a6a7a;font-size:11px;line-height:1.7;">
+          <strong style="color:#c8e0e8;">Need help?</strong> Reply to this email with a screenshot, what you clicked, and whether you used <strong>Start local</strong> vs <strong>Cloud</strong>.
+          Replies go to our agent inbox for triage.
+        </p>
+        <p style="margin:0;color:#4a6a7a;font-size:11px;line-height:1.7;">
+          You can also email <a href="mailto:agent@inneranimalmedia.com" style="color:#2dd4bf;">agent@inneranimalmedia.com</a>
+          or <a href="mailto:ai@inneranimalmedia.com" style="color:#2dd4bf;">ai@inneranimalmedia.com</a> directly.
+        </p>
+      </td>
+    </tr>
+
+    <tr>
+      <td style="padding:32px;background:#001a22;" align="center">
+        <img src="https://imagedelivery.net/g7wf09fCONpnidkRnR_5vw/238de9d1-a470-4fe5-5424-9182f4bc0500/medium" alt="Inner Animal Media" width="120" style="display:block;margin:0 auto 16px;opacity:0.85;" />
+        <p style="margin:0 0 6px;color:#2a4a5a;font-size:10px;letter-spacing:2px;">INNER ANIMAL MEDIA</p>
+        <p style="margin:0 0 12px;color:#2a4a5a;font-size:10px;">Turning Ideas Into Live Applications</p>
+        <p style="margin:0;color:#1e3040;font-size:10px;line-height:1.6;">
+          Sent to {{USER_EMAIL}} · Agent Sam platform setup guide
+        </p>
+      </td>
+    </tr>
+
+  </table>
+
+</td></tr>
+</table>
+
+</body>
+</html>

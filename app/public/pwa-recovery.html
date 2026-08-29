@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Recover — Inner Animal Media</title>
+    <link rel="stylesheet" href="/static/dashboard/shell.css" />
+    <style>
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: Nunito, system-ui, sans-serif;
+        background: var(--bg-app, #00212b);
+        color: var(--text-main, #9cb5bc);
+      }
+      .card {
+        max-width: 420px;
+        padding: 28px 24px;
+        border-radius: 14px;
+        border: 1px solid var(--border-subtle, #1e3e4a);
+        background: var(--bg-panel, #0a2d38);
+        text-align: center;
+      }
+      h1 {
+        margin: 0 0 10px;
+        font-size: 20px;
+        color: var(--text-heading, #b0ccd2);
+      }
+      p {
+        margin: 0 0 16px;
+        line-height: 1.55;
+        font-size: 14px;
+      }
+      .actions {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      a,
+      button {
+        display: block;
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: 10px;
+        padding: 12px 16px;
+        font: inherit;
+        font-weight: 700;
+        font-size: 14px;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      .primary {
+        border: none;
+        background: #e2e8f0;
+        color: #0d1117;
+      }
+      .secondary {
+        border: 1px solid rgba(45, 212, 191, 0.45);
+        background: rgba(45, 212, 191, 0.12);
+        color: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <h1>App needs a refresh</h1>
+      <p>
+        After an update, the home-screen app may show a blank screen until you sign in again or reload.
+        You do <strong>not</strong> need to delete and reinstall the app.
+      </p>
+      <div class="actions">
+        <a class="primary" id="sign-in" href="/auth/login">Sign in</a>
+        <button type="button" class="secondary" onclick="location.reload()">Reload</button>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var next = location.pathname + location.search + location.hash;
+        if (next && next !== '/') {
+          document.getElementById('sign-in').href =
+            '/auth/login?next=' + encodeURIComponent(next.startsWith('/dashboard') ? next : '/dashboard/agent');
+        }
+      })();
+    </script>
+  </body>
+</html>

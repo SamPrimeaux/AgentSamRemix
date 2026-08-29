@@ -1,0 +1,104 @@
+/**
+ * AGENTSAM_BRIDGE_KEY — authoritative machine-to-machine credential (SSOT).
+ *
+ * Accepts the same secret via legacy header names (same plaintext as bridge):
+ *   Authorization: Bearer
+ *   X-Internal-Secret
+ *   X-Ingest-Secret
+ *   X-IAM-Service-Key
+ *   X-ExecOS-Key
+ *
+ * Inbound verify reads only AGENTSAM_BRIDGE_KEY from env — retired Wrangler secrets
+ * (INTERNAL_API_SECRET, INGEST_SECRET, IAM_SERVICE_KEY, EXECOS_KEY) are not accepted.
+ */
+
+function trim(v) {
+  return v == null ? '' : String(v).trim();
+}
+
+/**
+ * Outbound key for platform machine-to-machine calls.
+ * @param {any} env
+ */
+export function resolveOutboundBridgeKey(env) {
+  return trim(env?.AGENTSAM_BRIDGE_KEY) || '';
+}
+
+/**
+ * Configured machine-auth secrets on this Worker (bridge only).
+ * @param {any} env
+ * @returns {string[]}
+ */
+export function configuredMachineAuthSecrets(env) {
+  const key = trim(env?.AGENTSAM_BRIDGE_KEY);
+  return key ? [key] : [];
+}
+
+/**
+ * @param {Request} request
+ * @returns {string[]}
+ */
+export function presentedMachineAuthCredentials(request) {
+  const auth = request.headers.get('Authorization') || '';
+  const bearer = auth.startsWith('Bearer ') ? auth.slice(7).trim() : '';
+  const vals = [
+    bearer,
+    request.headers.get('X-Internal-Secret'),
+    request.headers.get('X-Ingest-Secret'),
+    request.headers.get('X-IAM-Service-Key'),
+    request.headers.get('X-ExecOS-Key'),
+    request.headers.get('X-Bridge-Key'),
+  ]
+    .map(trim)
+    .filter(Boolean);
+  return [...new Set(vals)];
+}
+
+/**
+ * @param {Request} request
+ * @param {any} env
+ */
+export function verifyBridgeKey(request, env) {
+  const expected = configuredMachineAuthSecrets(env);
+  if (!expected.length) return false;
+  const presented = presentedMachineAuthCredentials(request);
+  if (!presented.length) return false;
+  return presented.some((p) => expected.includes(p));
+}
+
+/**
+ * Resolve an authenticated platform bridge request without treating it as MCP.
+ * The delegated actor is only a routing hint here; identity resolution still
+ * loads the canonical auth_users, tenant, workspace, and capability rows.
+ *
+ * @param {Request} request
+ * @param {any} env
+ * @returns {{ type: 'bridge', delegatedUserId: string, tenantId: string|null, workspaceId: string|null }|null}
+ */
+export function resolveMachineProof(request, env) {
+  if (!verifyBridgeKey(request, env)) return null;
+  const delegatedUserId = trim(request?.headers?.get?.('X-User-Id'));
+  if (!/^au_[A-Za-z0-9_]+$/.test(delegatedUserId)) return null;
+  return {
+    type: 'bridge',
+    delegatedUserId,
+    tenantId: trim(request?.headers?.get?.('X-Tenant-Id')) || null,
+    workspaceId: trim(request?.headers?.get?.('X-Workspace-Id')) || null,
+  };
+}
+
+/**
+ * Outbound headers for platform machine-to-machine calls.
+ * @param {any} env
+ * @param {Record<string, string>} [extra]
+ */
+export function buildBridgeAuthHeaders(env, extra = {}) {
+  const key = resolveOutboundBridgeKey(env);
+  /** @type {Record<string, string>} */
+  const headers = { ...extra };
+  if (key) {
+    if (!headers.Authorization) headers.Authorization = `Bearer ${key}`;
+    if (!headers['X-IAM-Service-Key']) headers['X-IAM-Service-Key'] = key;
+  }
+  return headers;
+}

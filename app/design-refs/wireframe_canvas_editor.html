@@ -1,0 +1,622 @@
+
+<h2 class="sr-only">Low-fidelity wireframe and mockup canvas editor with component palette, layers panel, and properties inspector</h2>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);font-size:13px;color:var(--text-primary);background:var(--surface-0)}
+.app{display:grid;grid-template-columns:220px 1fr 240px;grid-template-rows:44px 1fr;height:600px;border:0.5px solid var(--border);border-radius:12px;overflow:hidden;background:var(--surface-0)}
+.topbar{grid-column:1/-1;display:flex;align-items:center;gap:8px;padding:0 12px;border-bottom:0.5px solid var(--border);background:var(--surface-2)}
+.logo{font-weight:500;font-size:13px;color:var(--text-primary);padding-right:12px;border-right:0.5px solid var(--border);margin-right:4px}
+.tb-btn{display:flex;align-items:center;gap:5px;padding:5px 8px;border-radius:var(--radius);border:none;background:none;color:var(--text-secondary);cursor:pointer;font-size:12px;font-family:var(--font-sans)}
+.tb-btn:hover{background:var(--surface-1);color:var(--text-primary)}
+.tb-btn.active{background:var(--bg-accent);color:var(--text-accent)}
+.tb-sep{width:0.5px;height:20px;background:var(--border);margin:0 4px}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.btn-primary{background:var(--text-primary);color:var(--surface-2);border:none;border-radius:var(--radius);padding:5px 12px;font-size:12px;cursor:pointer;font-family:var(--font-sans)}
+.zoom-ctrl{display:flex;align-items:center;gap:4px;font-size:12px;color:var(--text-secondary);background:var(--surface-1);border-radius:var(--radius);padding:4px 8px;border:0.5px solid var(--border)}
+.sidebar-l{border-right:0.5px solid var(--border);background:var(--surface-1);display:flex;flex-direction:column;overflow:hidden}
+.sidebar-r{border-left:0.5px solid var(--border);background:var(--surface-1);display:flex;flex-direction:column;overflow:hidden}
+.panel-tabs{display:flex;border-bottom:0.5px solid var(--border)}
+.ptab{flex:1;padding:8px 0;font-size:12px;text-align:center;cursor:pointer;color:var(--text-muted);border:none;background:none;font-family:var(--font-sans)}
+.ptab.active{color:var(--text-primary);font-weight:500;border-bottom:1.5px solid var(--text-primary)}
+.panel-body{flex:1;overflow-y:auto;padding:8px}
+.panel-body::-webkit-scrollbar{width:3px}.panel-body::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:2px}
+.section-label{font-size:10px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;margin:10px 0 6px;padding:0 2px}
+.comp-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:4px}
+.comp-item{background:var(--surface-2);border:0.5px solid var(--border);border-radius:8px;padding:8px 6px;cursor:grab;text-align:center;transition:border-color .15s}
+.comp-item:hover{border-color:var(--border-accent);background:var(--bg-accent)}
+.comp-item i{font-size:18px;color:var(--text-secondary);display:block;margin-bottom:3px}
+.comp-item:hover i{color:var(--text-accent)}
+.comp-item span{font-size:10px;color:var(--text-secondary);display:block}
+.canvas-area{background:var(--surface-0);position:relative;overflow:hidden;cursor:crosshair}
+.canvas-grid{position:absolute;inset:0;pointer-events:none;background-image:radial-gradient(circle,var(--border) 1px,transparent 1px);background-size:20px 20px;opacity:.6}
+.canvas-frame{position:absolute;background:#fff;border:0.5px solid var(--border-strong);border-radius:2px;box-shadow:0 2px 16px rgba(0,0,0,.06)}
+.frame-label{position:absolute;top:-20px;left:0;font-size:11px;color:var(--text-muted);white-space:nowrap}
+.wf-el{position:absolute;cursor:move;border-radius:4px}
+.wf-el.selected{outline:2px solid var(--fill-accent);outline-offset:1px}
+.wf-el:hover:not(.selected){outline:1.5px dashed var(--border-accent);outline-offset:1px}
+.wf-nav{background:#f8f8f8;border-bottom:1px solid #e5e5e5;display:flex;align-items:center;gap:0;height:36px;padding:0 8px}
+.wf-nav-link{font-size:11px;color:#666;padding:0 10px;height:100%;display:flex;align-items:center;border-bottom:2px solid transparent}
+.wf-nav-link.active{color:#111;border-bottom-color:#111}
+.wf-logo{width:28px;height:20px;background:#ccc;border-radius:2px;margin-right:8px}
+.wf-btn{background:#222;color:#fff;border:none;border-radius:3px;padding:4px 10px;font-size:11px;margin-left:auto}
+.wf-hero{background:#f5f5f5;padding:20px 16px;display:flex;gap:12px;align-items:flex-start}
+.wf-hero-text{flex:1}
+.wf-h1{font-size:17px;font-weight:600;color:#111;margin-bottom:4px}
+.wf-sub{font-size:11px;color:#666;margin-bottom:10px;line-height:1.5}
+.wf-img{width:120px;height:80px;background:#ddd;border-radius:4px;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.wf-img i{font-size:22px;color:#bbb}
+.wf-action{display:flex;gap:6px;margin-top:2px}
+.wf-btn-s{background:#111;color:#fff;border:none;border-radius:3px;padding:5px 12px;font-size:11px}
+.wf-btn-o{background:none;color:#333;border:1px solid #ccc;border-radius:3px;padding:5px 12px;font-size:11px}
+.wf-section{padding:14px 16px;border-top:1px solid #eee}
+.wf-sec-title{font-size:13px;font-weight:600;color:#111;margin-bottom:8px;text-align:center}
+.wf-card-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:8px}
+.wf-card{background:#f9f9f9;border:1px solid #e5e5e5;border-radius:6px;padding:8px}
+.wf-card-img{background:#e0e0e0;height:50px;border-radius:3px;margin-bottom:6px;display:flex;align-items:center;justify-content:center}
+.wf-card-img i{font-size:16px;color:#bbb}
+.wf-card-title{font-size:10px;font-weight:600;color:#333;margin-bottom:2px}
+.wf-line{height:7px;background:#e8e8e8;border-radius:2px;margin-bottom:3px}
+.wf-line.short{width:60%}
+.wf-footer{background:#f0f0f0;padding:10px 16px;display:flex;gap:16px;align-items:center;border-top:1px solid #e0e0e0;margin-top:0}
+.wf-footer-logo{width:20px;height:14px;background:#ccc;border-radius:2px}
+.wf-footer-link{font-size:10px;color:#666}
+.layer-item{display:flex;align-items:center;gap:6px;padding:5px 6px;border-radius:6px;cursor:pointer;margin-bottom:2px}
+.layer-item:hover{background:var(--surface-2)}
+.layer-item.selected{background:var(--bg-accent)}
+.layer-item i{font-size:14px;color:var(--text-muted)}
+.layer-item.selected i{color:var(--text-accent)}
+.layer-name{font-size:12px;flex:1;color:var(--text-secondary)}
+.layer-item.selected .layer-name{color:var(--text-accent)}
+.layer-vis{opacity:.4;font-size:12px}
+.prop-row{margin-bottom:10px}
+.prop-label{font-size:11px;color:var(--text-muted);margin-bottom:4px}
+.prop-2col{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.prop-input{width:100%;background:var(--surface-2);border:0.5px solid var(--border);border-radius:var(--radius);padding:5px 8px;font-size:12px;color:var(--text-primary);font-family:var(--font-sans)}
+.prop-input:focus{outline:none;border-color:var(--border-accent)}
+.fidelity-toggle{display:flex;gap:4px;margin-bottom:12px;background:var(--surface-2);border-radius:var(--radius);padding:3px;border:0.5px solid var(--border)}
+.ftog{flex:1;padding:4px 0;font-size:11px;text-align:center;border-radius:6px;cursor:pointer;color:var(--text-muted);border:none;background:none;font-family:var(--font-sans)}
+.ftog.active{background:var(--surface-0);color:var(--text-primary);font-weight:500}
+.color-row{display:flex;gap:5px;flex-wrap:wrap;margin-top:4px}
+.color-swatch{width:20px;height:20px;border-radius:4px;cursor:pointer;border:0.5px solid var(--border)}
+.color-swatch.active{border:2px solid var(--text-primary)}
+.ruler-h{position:absolute;top:0;left:0;right:0;height:20px;background:var(--surface-1);border-bottom:0.5px solid var(--border);pointer-events:none;z-index:2}
+.ruler-v{position:absolute;top:0;left:0;bottom:0;width:20px;background:var(--surface-1);border-right:0.5px solid var(--border);pointer-events:none;z-index:2}
+.status-bar{position:absolute;bottom:0;left:0;right:0;height:22px;background:var(--surface-1);border-top:0.5px solid var(--border);display:flex;align-items:center;padding:0 12px;gap:16px;z-index:3}
+.status-item{font-size:11px;color:var(--text-muted);display:flex;align-items:center;gap:4px}
+</style>
+
+<div class="app">
+  <div class="topbar">
+    <span class="logo">✦ Sketch</span>
+    <button class="tb-btn" id="tool-select" onclick="setTool('select')" title="Select"><i class="ti ti-cursor-text" aria-hidden="true"></i></button>
+    <button class="tb-btn" id="tool-frame" onclick="setTool('frame')" title="Frame"><i class="ti ti-square" aria-hidden="true"></i></button>
+    <button class="tb-btn" id="tool-rect" onclick="setTool('rect')" title="Rectangle"><i class="ti ti-rectangle" aria-hidden="true"></i></button>
+    <button class="tb-btn" id="tool-text" onclick="setTool('text')" title="Text"><i class="ti ti-letter-t" aria-hidden="true"></i></button>
+    <button class="tb-btn" id="tool-line" onclick="setTool('line')" title="Line"><i class="ti ti-minus" aria-hidden="true"></i></button>
+    <div class="tb-sep"></div>
+    <button class="tb-btn" onclick="undo()" title="Undo"><i class="ti ti-arrow-back-up" aria-hidden="true"></i></button>
+    <button class="tb-btn" onclick="redo()" title="Redo"><i class="ti ti-arrow-forward-up" aria-hidden="true"></i></button>
+    <div class="tb-right">
+      <div class="zoom-ctrl"><i class="ti ti-minus" style="cursor:pointer;font-size:12px" onclick="zoom(-10)" aria-hidden="true"></i><span id="zoom-val" style="width:34px;text-align:center">100%</span><i class="ti ti-plus" style="cursor:pointer;font-size:12px" onclick="zoom(10)" aria-hidden="true"></i></div>
+      <button class="btn-primary">Export</button>
+    </div>
+  </div>
+
+  <div class="sidebar-l">
+    <div class="panel-tabs">
+      <button class="ptab active" onclick="switchLTab(this,'components')">Components</button>
+      <button class="ptab" onclick="switchLTab(this,'layers')">Layers</button>
+    </div>
+    <div class="panel-body" id="ltab-components">
+      <div class="fidelity-toggle">
+        <button class="ftog active" onclick="setFidelity(this,'lo')">Lo-fi</button>
+        <button class="ftog" onclick="setFidelity(this,'med')">Med-fi</button>
+        <button class="ftog" onclick="setFidelity(this,'hi')">Hi-fi</button>
+      </div>
+      <div class="section-label">Layout</div>
+      <div class="comp-grid">
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'navbar')"><i class="ti ti-layout-navbar" aria-hidden="true"></i><span>Navbar</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'hero')"><i class="ti ti-layout-distribute-horizontal" aria-hidden="true"></i><span>Hero</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'footer')"><i class="ti ti-layout-bottombar" aria-hidden="true"></i><span>Footer</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'sidebar')"><i class="ti ti-layout-sidebar" aria-hidden="true"></i><span>Sidebar</span></div>
+      </div>
+      <div class="section-label">Content</div>
+      <div class="comp-grid">
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'card')"><i class="ti ti-id" aria-hidden="true"></i><span>Card</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'image')"><i class="ti ti-photo" aria-hidden="true"></i><span>Image</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'text-block')"><i class="ti ti-align-left" aria-hidden="true"></i><span>Text block</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'list')"><i class="ti ti-list" aria-hidden="true"></i><span>List</span></div>
+      </div>
+      <div class="section-label">Controls</div>
+      <div class="comp-grid">
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'button')"><i class="ti ti-square-rounded" aria-hidden="true"></i><span>Button</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'input')"><i class="ti ti-forms" aria-hidden="true"></i><span>Input</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'checkbox')"><i class="ti ti-checkbox" aria-hidden="true"></i><span>Checkbox</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'toggle')"><i class="ti ti-toggle-left" aria-hidden="true"></i><span>Toggle</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'dropdown')"><i class="ti ti-selector" aria-hidden="true"></i><span>Dropdown</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'badge')"><i class="ti ti-tag" aria-hidden="true"></i><span>Badge</span></div>
+      </div>
+      <div class="section-label">Data</div>
+      <div class="comp-grid">
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'table')"><i class="ti ti-table" aria-hidden="true"></i><span>Table</span></div>
+        <div class="comp-item" draggable="true" ondragstart="startDrag(event,'chart')"><i class="ti ti-chart-bar" aria-hidden="true"></i><span>Chart</span></div>
+      </div>
+    </div>
+    <div class="panel-body" id="ltab-layers" style="display:none">
+      <div id="layers-list"></div>
+    </div>
+  </div>
+
+  <div class="canvas-area" id="canvas" ondrop="dropComp(event)" ondragover="event.preventDefault()">
+    <div class="canvas-grid"></div>
+    <div class="ruler-h"></div>
+    <div class="ruler-v"></div>
+    <div class="status-bar">
+      <span class="status-item"><i class="ti ti-cursor-arrow" aria-hidden="true"></i><span id="cursor-pos">0, 0</span></span>
+      <span class="status-item"><i class="ti ti-frame" aria-hidden="true"></i><span id="sel-size">—</span></span>
+      <span class="status-item" style="margin-left:auto"><i class="ti ti-layers-intersect" aria-hidden="true"></i><span id="layer-count">0 layers</span></span>
+    </div>
+    <div id="canvas-content" style="position:absolute;inset:0;overflow:hidden"></div>
+  </div>
+
+  <div class="sidebar-r">
+    <div class="panel-tabs">
+      <button class="ptab active" onclick="switchRTab(this,'format')">Format</button>
+      <button class="ptab" onclick="switchRTab(this,'layout')">Layout</button>
+    </div>
+    <div class="panel-body" id="rtab-format">
+      <div class="prop-row">
+        <div class="prop-label">Position</div>
+        <div class="prop-2col">
+          <input class="prop-input" id="prop-x" placeholder="X" oninput="updateProp('x',this.value)" />
+          <input class="prop-input" id="prop-y" placeholder="Y" oninput="updateProp('y',this.value)" />
+        </div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-label">Size</div>
+        <div class="prop-2col">
+          <input class="prop-input" id="prop-w" placeholder="W" oninput="updateProp('w',this.value)" />
+          <input class="prop-input" id="prop-h" placeholder="H" oninput="updateProp('h',this.value)" />
+        </div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-label">Fill</div>
+        <div class="color-row">
+          <div class="color-swatch active" style="background:#ffffff;border-color:#ccc" onclick="setPropColor('fill','#ffffff',this)" title="White"></div>
+          <div class="color-swatch" style="background:#f5f5f5" onclick="setPropColor('fill','#f5f5f5',this)" title="Off-white"></div>
+          <div class="color-swatch" style="background:#e0e0e0" onclick="setPropColor('fill','#e0e0e0',this)" title="Light gray"></div>
+          <div class="color-swatch" style="background:#c0c0c0" onclick="setPropColor('fill','#c0c0c0',this)" title="Gray"></div>
+          <div class="color-swatch" style="background:#333333" onclick="setPropColor('fill','#333333',this)" title="Dark"></div>
+          <div class="color-swatch" style="background:transparent;background-image:linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%),linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%);background-size:6px 6px;background-position:0 0,3px 3px" onclick="setPropColor('fill','transparent',this)" title="None"></div>
+        </div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-label">Stroke</div>
+        <div class="color-row">
+          <div class="color-swatch active" style="background:#cccccc" onclick="setPropColor('stroke','#cccccc',this)" title="Light gray"></div>
+          <div class="color-swatch" style="background:#999999" onclick="setPropColor('stroke','#999999',this)" title="Gray"></div>
+          <div class="color-swatch" style="background:#333333" onclick="setPropColor('stroke','#333333',this)" title="Dark"></div>
+          <div class="color-swatch" style="background:transparent;background-image:linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%),linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%);background-size:6px 6px;background-position:0 0,3px 3px" onclick="setPropColor('stroke','none',this)" title="None"></div>
+        </div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-label">Opacity</div>
+        <input type="range" min="0" max="100" value="100" id="prop-opacity" oninput="updateOpacity(this.value)" style="width:100%" />
+        <div style="text-align:right;font-size:11px;color:var(--text-muted);margin-top:2px" id="opacity-val">100%</div>
+      </div>
+      <div class="prop-row">
+        <div class="prop-label">Corner radius</div>
+        <input class="prop-input" id="prop-radius" placeholder="0" oninput="updateRadius(this.value)" style="width:80px" />
+      </div>
+      <div style="margin-top:8px;padding-top:10px;border-top:0.5px solid var(--border)">
+        <button class="tb-btn" style="width:100%;justify-content:center;font-size:12px" onclick="deleteSelected()"><i class="ti ti-trash" aria-hidden="true"></i> Delete element</button>
+      </div>
+    </div>
+    <div class="panel-body" id="rtab-layout" style="display:none">
+      <div class="prop-row">
+        <div class="prop-label">Page</div>
+        <select class="prop-input">
+          <option>Desktop — 1440px</option>
+          <option>Tablet — 768px</option>
+          <option>Mobile — 390px</option>
+          <option>Custom…</option>
+        </select>
+      </div>
+      <div class="prop-row">
+        <div class="prop-label">Grid</div>
+        <select class="prop-input">
+          <option>8px grid</option>
+          <option>4px grid</option>
+          <option>12 columns</option>
+          <option>None</option>
+        </select>
+      </div>
+      <div class="prop-row">
+        <div class="prop-label">Fidelity</div>
+        <select class="prop-input">
+          <option>Lo-fi — sketch</option>
+          <option>Mid-fi — wireframe</option>
+          <option>Hi-fi — mockup</option>
+        </select>
+      </div>
+      <div style="margin-top:12px;padding-top:10px;border-top:0.5px solid var(--border)">
+        <button class="tb-btn" style="width:100%;justify-content:center;font-size:12px;margin-bottom:6px" onclick="loadTemplate('landing')"><i class="ti ti-layout" aria-hidden="true"></i> Load landing template</button>
+        <button class="tb-btn" style="width:100%;justify-content:center;font-size:12px;margin-bottom:6px" onclick="loadTemplate('dashboard')"><i class="ti ti-dashboard" aria-hidden="true"></i> Load dashboard template</button>
+        <button class="tb-btn" style="width:100%;justify-content:center;font-size:12px" onclick="clearCanvas()"><i class="ti ti-trash" aria-hidden="true"></i> Clear canvas</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentTool = 'select';
+let elements = [];
+let selectedId = null;
+let zoomLevel = 100;
+let dragComp = null;
+let isDragging = false;
+let dragOffset = {x:0,y:0};
+let elIdCounter = 1;
+let history = [];
+let future = [];
+
+function setTool(t){
+  currentTool = t;
+  document.querySelectorAll('[id^="tool-"]').forEach(b=>b.classList.remove('active'));
+  const btn = document.getElementById('tool-'+t);
+  if(btn) btn.classList.add('active');
+  const canvas = document.getElementById('canvas');
+  canvas.style.cursor = t==='select'?'default':'crosshair';
+}
+
+function switchLTab(btn, tab){
+  document.querySelectorAll('.sidebar-l .ptab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('ltab-components').style.display = tab==='components'?'':'none';
+  document.getElementById('ltab-layers').style.display = tab==='layers'?'':'none';
+  if(tab==='layers') renderLayers();
+}
+
+function switchRTab(btn, tab){
+  document.querySelectorAll('.sidebar-r .ptab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('rtab-format').style.display = tab==='format'?'':'none';
+  document.getElementById('rtab-layout').style.display = tab==='layout'?'':'none';
+}
+
+function setFidelity(btn, level){
+  document.querySelectorAll('.ftog').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+
+function zoom(delta){
+  zoomLevel = Math.max(25, Math.min(200, zoomLevel + delta));
+  document.getElementById('zoom-val').textContent = zoomLevel + '%';
+  const content = document.getElementById('canvas-content');
+  content.style.transform = `scale(${zoomLevel/100})`;
+  content.style.transformOrigin = 'top left';
+}
+
+let startX, startY, drawingEl = null;
+
+document.getElementById('canvas').addEventListener('mousemove', e => {
+  const rect = document.getElementById('canvas').getBoundingClientRect();
+  const x = Math.round((e.clientX - rect.left - 20) / (zoomLevel/100));
+  const y = Math.round((e.clientY - rect.top - 20) / (zoomLevel/100));
+  document.getElementById('cursor-pos').textContent = x + ', ' + y;
+});
+
+document.getElementById('canvas').addEventListener('mousedown', e => {
+  if(e.target === document.getElementById('canvas') || e.target === document.getElementById('canvas-content') || e.target.classList.contains('canvas-grid')){
+    if(currentTool !== 'select'){
+      const rect = document.getElementById('canvas').getBoundingClientRect();
+      startX = (e.clientX - rect.left - 20) / (zoomLevel/100);
+      startY = (e.clientY - rect.top - 20) / (zoomLevel/100);
+      const id = 'el-' + (elIdCounter++);
+      let el = {id, type: currentTool, x: startX, y: startY, w: 2, h: 2, fill: '#ffffff', stroke: '#cccccc', opacity: 1, radius: currentTool==='rect'?4:0, label: currentTool};
+      elements.push(el);
+      drawingEl = el;
+      renderElement(el);
+      e.preventDefault();
+    } else {
+      selectElement(null);
+    }
+  }
+});
+
+document.addEventListener('mousemove', e => {
+  if(drawingEl && currentTool !== 'select'){
+    const rect = document.getElementById('canvas').getBoundingClientRect();
+    const cx = (e.clientX - rect.left - 20) / (zoomLevel/100);
+    const cy = (e.clientY - rect.top - 20) / (zoomLevel/100);
+    drawingEl.w = Math.max(10, cx - startX);
+    drawingEl.h = Math.max(10, cy - startY);
+    const domEl = document.getElementById(drawingEl.id);
+    if(domEl){ domEl.style.width = drawingEl.w + 'px'; domEl.style.height = drawingEl.h + 'px'; }
+  }
+  if(isDragging && selectedId){
+    const rect = document.getElementById('canvas').getBoundingClientRect();
+    const el = elements.find(x=>x.id===selectedId);
+    if(el){
+      el.x = (e.clientX - rect.left - 20) / (zoomLevel/100) - dragOffset.x;
+      el.y = (e.clientY - rect.top - 20) / (zoomLevel/100) - dragOffset.y;
+      const domEl = document.getElementById(el.id);
+      if(domEl){ domEl.style.left = el.x+'px'; domEl.style.top = el.y+'px'; }
+      document.getElementById('prop-x').value = Math.round(el.x);
+      document.getElementById('prop-y').value = Math.round(el.y);
+    }
+  }
+});
+
+document.addEventListener('mouseup', e => {
+  if(drawingEl){
+    saveHistory();
+    updateLayerCount();
+    renderLayers();
+    drawingEl = null;
+    setTool('select');
+  }
+  isDragging = false;
+});
+
+function startDrag(e, type){ dragComp = type; e.dataTransfer.effectAllowed = 'copy'; }
+
+function dropComp(e){
+  e.preventDefault();
+  if(!dragComp) return;
+  const rect = document.getElementById('canvas').getBoundingClientRect();
+  const x = (e.clientX - rect.left - 20) / (zoomLevel/100);
+  const y = (e.clientY - rect.top - 20) / (zoomLevel/100);
+  addComponent(dragComp, x, y);
+  dragComp = null;
+}
+
+function addComponent(type, x, y){
+  const id = 'el-' + (elIdCounter++);
+  const defaults = {
+    navbar: {w:520, h:40, fill:'#f8f8f8', stroke:'#e0e0e0', label:'Navbar'},
+    hero: {w:520, h:160, fill:'#f5f5f5', stroke:'#e0e0e0', label:'Hero'},
+    footer: {w:520, h:60, fill:'#f0f0f0', stroke:'#e0e0e0', label:'Footer'},
+    sidebar: {w:180, h:300, fill:'#f5f5f5', stroke:'#e0e0e0', label:'Sidebar'},
+    card: {w:160, h:120, fill:'#ffffff', stroke:'#e0e0e0', label:'Card', radius:8},
+    image: {w:140, h:100, fill:'#e0e0e0', stroke:'#cccccc', label:'Image'},
+    'text-block': {w:200, h:60, fill:'transparent', stroke:'none', label:'Text block'},
+    list: {w:180, h:120, fill:'transparent', stroke:'none', label:'List'},
+    button: {w:100, h:36, fill:'#222222', stroke:'none', label:'Button', radius:6},
+    input: {w:200, h:36, fill:'#ffffff', stroke:'#cccccc', label:'Input', radius:6},
+    checkbox: {w:120, h:24, fill:'transparent', stroke:'none', label:'Checkbox'},
+    toggle: {w:80, h:28, fill:'transparent', stroke:'none', label:'Toggle'},
+    dropdown: {w:160, h:36, fill:'#ffffff', stroke:'#cccccc', label:'Dropdown', radius:6},
+    badge: {w:70, h:24, fill:'#e8e8e8', stroke:'none', label:'Badge', radius:12},
+    table: {w:280, h:180, fill:'#ffffff', stroke:'#e0e0e0', label:'Table'},
+    chart: {w:240, h:160, fill:'#f8f8f8', stroke:'#e0e0e0', label:'Chart'},
+  };
+  const d = defaults[type] || {w:120, h:60, fill:'#ffffff', stroke:'#cccccc', label:type};
+  const el = {id, type, x: x - d.w/2, y: y - d.h/2, ...d, opacity: 1, radius: d.radius||0};
+  elements.push(el);
+  renderElement(el);
+  selectElement(id);
+  saveHistory();
+  updateLayerCount();
+  renderLayers();
+}
+
+function renderElement(el){
+  const content = document.getElementById('canvas-content');
+  let dom = document.getElementById(el.id);
+  if(!dom){
+    dom = document.createElement('div');
+    dom.id = el.id;
+    dom.className = 'wf-el';
+    dom.addEventListener('mousedown', ev => {
+      if(currentTool==='select'){
+        ev.stopPropagation();
+        selectElement(el.id);
+        const rect = document.getElementById('canvas').getBoundingClientRect();
+        dragOffset.x = (ev.clientX - rect.left - 20) / (zoomLevel/100) - el.x;
+        dragOffset.y = (ev.clientY - rect.top - 20) / (zoomLevel/100) - el.y;
+        isDragging = true;
+        ev.preventDefault();
+      }
+    });
+    content.appendChild(dom);
+  }
+  dom.style.cssText = `position:absolute;left:${el.x}px;top:${el.y}px;width:${el.w}px;height:${el.h}px;background:${el.fill};border:${el.stroke==='none'?'none':'1px solid '+el.stroke};border-radius:${el.radius||0}px;opacity:${el.opacity};overflow:hidden;cursor:move`;
+  dom.innerHTML = getElementHTML(el);
+}
+
+function getElementHTML(el){
+  const sketchStyle = `font-family:'Arial',sans-serif;font-size:11px;color:#888;`;
+  switch(el.type){
+    case 'navbar': return `<div style="${sketchStyle}display:flex;align-items:center;height:100%;padding:0 12px;gap:12px"><div style="width:20px;height:14px;background:#ccc;border-radius:2px;flex-shrink:0"></div><div style="flex:1;display:flex;gap:12px">${['Link 1','Link 2','Link 3'].map(l=>`<span style="color:#666;font-size:10px">${l}</span>`).join('')}</div><div style="background:#333;color:#fff;padding:3px 8px;border-radius:3px;font-size:10px">Button</div></div>`;
+    case 'hero': return `<div style="${sketchStyle}padding:16px;display:flex;gap:10px;height:100%;align-items:center"><div style="flex:1"><div style="font-size:14px;font-weight:700;color:#333;margin-bottom:4px">Main Header</div><div style="font-size:10px;color:#888;margin-bottom:8px;line-height:1.4">Supporting subheader text goes here with a little more detail about the value proposition.</div><div style="display:flex;gap:6px"><div style="background:#222;color:#fff;padding:4px 10px;border-radius:3px;font-size:10px">Primary</div><div style="border:1px solid #ccc;padding:4px 10px;border-radius:3px;font-size:10px;color:#555">Secondary</div></div></div><div style="width:100px;flex-shrink:0;height:80px;background:#ddd;border-radius:4px;display:flex;align-items:center;justify-content:center"><i class="ti ti-photo" style="font-size:20px;color:#bbb"></i></div></div>`;
+    case 'card': return `<div style="${sketchStyle}padding:10px;height:100%"><div style="background:#e8e8e8;height:50px;border-radius:3px;margin-bottom:6px;display:flex;align-items:center;justify-content:center"><i class="ti ti-photo" style="font-size:16px;color:#bbb"></i></div><div style="height:8px;background:#e0e0e0;border-radius:2px;margin-bottom:4px"></div><div style="height:7px;background:#ebebeb;border-radius:2px;width:70%"></div></div>`;
+    case 'image': return `<div style="width:100%;height:100%;background:#e0e0e0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:4px"><i class="ti ti-photo" style="font-size:22px;color:#bbb"></i><span style="font-size:10px;color:#bbb">Image</span></div>`;
+    case 'button': return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;color:${el.fill==='#ffffff'||el.fill==='transparent'?'#333':'#fff'}">${el.label}</div>`;
+    case 'input': return `<div style="width:100%;height:100%;display:flex;align-items:center;padding:0 10px;font-size:11px;color:#aaa">${el.label}…</div>`;
+    case 'table': return `<div style="${sketchStyle}height:100%;display:flex;flex-direction:column"><div style="display:grid;grid-template-columns:1fr 1fr 1fr;background:#f0f0f0;border-bottom:1px solid #ddd">${['Col A','Col B','Col C'].map(c=>`<div style="padding:5px 8px;font-size:10px;font-weight:600;color:#555">${c}</div>`).join('')}</div>${[1,2,3,4].map(r=>`<div style="display:grid;grid-template-columns:1fr 1fr 1fr;border-bottom:1px solid #eee">${['','',''].map(()=>`<div style="padding:4px 8px"><div style="height:7px;background:#eee;border-radius:2px"></div></div>`).join('')}</div>`).join('')}</div>`;
+    case 'chart': return `<div style="${sketchStyle}padding:10px;height:100%"><div style="font-size:10px;font-weight:600;color:#555;margin-bottom:6px">Chart</div><div style="display:flex;align-items:flex-end;gap:4px;height:calc(100% - 30px)"><div style="flex:1;background:#d0d0d0;border-radius:2px 2px 0 0" height="70%"></div>${[60,85,45,90,70,55].map(h=>`<div style="flex:1;background:#d0d0d0;border-radius:2px 2px 0 0;height:${h}%"></div>`).join('')}</div></div>`;
+    case 'text-block': return `<div style="${sketchStyle}padding:4px">${[100,90,100,75,85,60].map(w=>`<div style="height:7px;background:#e0e0e0;border-radius:2px;margin-bottom:4px;width:${w}%"></div>`).join('')}</div>`;
+    case 'footer': return `<div style="${sketchStyle}display:flex;align-items:center;height:100%;padding:0 12px;gap:16px"><div style="width:20px;height:14px;background:#bbb;border-radius:2px"></div>${['Link','Link','Link'].map(l=>`<span style="font-size:10px;color:#888">${l}</span>`).join('')}<div style="margin-left:auto;display:flex;gap:6px">${['•','•','•'].map(d=>`<div style="width:18px;height:18px;border-radius:50%;background:#ccc"></div>`).join('')}</div></div>`;
+    case 'sidebar': return `<div style="${sketchStyle}padding:10px;height:100%"><div style="margin-bottom:12px">${['Menu item','Menu item','Menu item','Menu item'].map((m,i)=>`<div style="padding:6px 8px;border-radius:4px;margin-bottom:2px;background:${i===0?'#e8e8e8':'transparent'};font-size:11px;color:${i===0?'#333':'#777'}">${m}</div>`).join('')}</div></div>`;
+    case 'badge': return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#666;font-weight:500">Label</div>`;
+    case 'checkbox': return `<div style="${sketchStyle}display:flex;align-items:center;gap:6px;padding:4px"><div style="width:14px;height:14px;border:1.5px solid #ccc;border-radius:3px;flex-shrink:0"></div><div style="height:7px;background:#e0e0e0;border-radius:2px;flex:1"></div></div>`;
+    case 'toggle': return `<div style="${sketchStyle}display:flex;align-items:center;gap:8px;padding:4px;height:100%"><div style="width:36px;height:20px;border-radius:10px;background:#d0d0d0;position:relative"><div style="width:14px;height:14px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px"></div></div><div style="height:7px;background:#e8e8e8;border-radius:2px;width:40px"></div></div>`;
+    case 'dropdown': return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:space-between;padding:0 10px;font-size:11px;color:#aaa"><span>Select…</span><i class="ti ti-chevron-down" style="font-size:12px"></i></div>`;
+    case 'list': return `<div style="${sketchStyle}padding:6px">${[1,2,3,4].map(()=>`<div style="display:flex;align-items:center;gap:6px;padding:3px 0"><div style="width:6px;height:6px;border-radius:50%;background:#ccc;flex-shrink:0"></div><div style="height:7px;background:#e8e8e8;border-radius:2px;flex:1"></div></div>`).join('')}</div>`;
+    case 'rect': return ``;
+    case 'text': return `<div style="width:100%;height:100%;display:flex;align-items:center;padding:4px 8px;font-size:12px;color:#666">Text…</div>`;
+    case 'frame': return `<div style="position:absolute;inset:0;pointer-events:none"></div>`;
+    case 'line': return `<div style="width:100%;height:2px;background:#ccc;position:absolute;top:50%;transform:translateY(-50%)"></div>`;
+    default: return `<div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:10px;color:#aaa">${el.type}</div>`;
+  }
+}
+
+function selectElement(id){
+  selectedId = id;
+  document.querySelectorAll('.wf-el').forEach(e=>e.classList.remove('selected'));
+  if(id){
+    const dom = document.getElementById(id);
+    if(dom) dom.classList.add('selected');
+    const el = elements.find(x=>x.id===id);
+    if(el){
+      document.getElementById('prop-x').value = Math.round(el.x);
+      document.getElementById('prop-y').value = Math.round(el.y);
+      document.getElementById('prop-w').value = Math.round(el.w);
+      document.getElementById('prop-h').value = Math.round(el.h);
+      document.getElementById('prop-radius').value = el.radius||0;
+      document.getElementById('prop-opacity').value = Math.round((el.opacity||1)*100);
+      document.getElementById('opacity-val').textContent = Math.round((el.opacity||1)*100) + '%';
+      document.getElementById('sel-size').textContent = Math.round(el.w) + ' × ' + Math.round(el.h);
+    }
+  } else {
+    document.getElementById('sel-size').textContent = '—';
+    ['prop-x','prop-y','prop-w','prop-h','prop-radius'].forEach(id=>{ document.getElementById(id).value = ''; });
+  }
+  renderLayers();
+}
+
+function updateProp(prop, val){
+  if(!selectedId) return;
+  const el = elements.find(x=>x.id===selectedId);
+  if(!el) return;
+  const n = parseFloat(val);
+  if(isNaN(n)) return;
+  if(prop==='x') el.x = n;
+  if(prop==='y') el.y = n;
+  if(prop==='w') el.w = Math.max(10,n);
+  if(prop==='h') el.h = Math.max(10,n);
+  const dom = document.getElementById(el.id);
+  if(dom){
+    if(prop==='x'||prop==='y'){ dom.style.left=el.x+'px'; dom.style.top=el.y+'px'; }
+    if(prop==='w'||prop==='h'){ dom.style.width=el.w+'px'; dom.style.height=el.h+'px'; dom.innerHTML=getElementHTML(el); }
+  }
+  document.getElementById('sel-size').textContent = Math.round(el.w) + ' × ' + Math.round(el.h);
+}
+
+function setPropColor(prop, color, swatch){
+  if(!selectedId) return;
+  const el = elements.find(x=>x.id===selectedId);
+  if(!el) return;
+  el[prop] = color;
+  swatch.closest('.color-row').querySelectorAll('.color-swatch').forEach(s=>s.classList.remove('active'));
+  swatch.classList.add('active');
+  renderElement(el);
+  if(selectedId) document.getElementById(selectedId).classList.add('selected');
+}
+
+function updateOpacity(val){
+  document.getElementById('opacity-val').textContent = val + '%';
+  if(!selectedId) return;
+  const el = elements.find(x=>x.id===selectedId);
+  if(!el) return;
+  el.opacity = val/100;
+  const dom = document.getElementById(el.id);
+  if(dom) dom.style.opacity = el.opacity;
+}
+
+function updateRadius(val){
+  if(!selectedId) return;
+  const el = elements.find(x=>x.id===selectedId);
+  if(!el) return;
+  el.radius = parseInt(val)||0;
+  const dom = document.getElementById(el.id);
+  if(dom) dom.style.borderRadius = el.radius+'px';
+}
+
+function deleteSelected(){
+  if(!selectedId) return;
+  elements = elements.filter(x=>x.id!==selectedId);
+  const dom = document.getElementById(selectedId);
+  if(dom) dom.remove();
+  selectedId = null;
+  saveHistory();
+  updateLayerCount();
+  renderLayers();
+}
+
+function renderLayers(){
+  const list = document.getElementById('layers-list');
+  if(!list) return;
+  const icons = {navbar:'ti-layout-navbar',hero:'ti-layout-distribute-horizontal',footer:'ti-layout-bottombar',sidebar:'ti-layout-sidebar',card:'ti-id',image:'ti-photo',button:'ti-square-rounded',input:'ti-forms',table:'ti-table',chart:'ti-chart-bar',rect:'ti-rectangle',text:'ti-letter-t',frame:'ti-square',line:'ti-minus',default:'ti-square'};
+  list.innerHTML = [...elements].reverse().map(el=>`<div class="layer-item${el.id===selectedId?' selected':''}" onclick="selectElement('${el.id}')"><i class="ti ${icons[el.type]||icons.default}" aria-hidden="true"></i><span class="layer-name">${el.label||el.type}</span><i class="ti ti-eye layer-vis" aria-hidden="true"></i></div>`).join('');
+}
+
+function updateLayerCount(){
+  document.getElementById('layer-count').textContent = elements.length + ' layer' + (elements.length!==1?'s':'');
+}
+
+function saveHistory(){
+  history.push(JSON.stringify(elements));
+  if(history.length>50) history.shift();
+  future = [];
+}
+
+function undo(){
+  if(!history.length) return;
+  future.push(JSON.stringify(elements));
+  elements = JSON.parse(history.pop());
+  document.getElementById('canvas-content').innerHTML = '';
+  elements.forEach(el=>renderElement(el));
+  selectedId = null;
+  updateLayerCount();
+  renderLayers();
+}
+
+function redo(){
+  if(!future.length) return;
+  history.push(JSON.stringify(elements));
+  elements = JSON.parse(future.pop());
+  document.getElementById('canvas-content').innerHTML = '';
+  elements.forEach(el=>renderElement(el));
+  selectedId = null;
+  updateLayerCount();
+  renderLayers();
+}
+
+function clearCanvas(){
+  if(!elements.length) return;
+  saveHistory();
+  elements = [];
+  document.getElementById('canvas-content').innerHTML = '';
+  selectedId = null;
+  updateLayerCount();
+  renderLayers();
+}
+
+function loadTemplate(type){
+  clearCanvas();
+  if(type==='landing'){
+    addComponent('navbar', 260, 40);
+    addComponent('hero', 260, 140);
+    setTimeout(()=>{
+      addComponent('card', 120, 310);
+      addComponent('card', 260, 310);
+      addComponent('card', 400, 310);
+      addComponent('footer', 260, 450);
+    },50);
+  } else if(type==='dashboard'){
+    addComponent('sidebar', 100, 300);
+    addComponent('navbar', 330, 40);
+    addComponent('chart', 330, 140);
+    setTimeout(()=>{
+      addComponent('table', 330, 340);
+    },50);
+  }
+  setTool('select');
+}
+
+document.addEventListener('keydown', e=>{
+  if((e.metaKey||e.ctrlKey)&&e.key==='z'){e.preventDefault();undo();}
+  if((e.metaKey||e.ctrlKey)&&e.key==='y'){e.preventDefault();redo();}
+  if(e.key==='Escape'){selectElement(null);setTool('select');}
+  if((e.key==='Delete'||e.key==='Backspace')&&selectedId&&document.activeElement===document.body){deleteSelected();}
+  if(e.key==='v'&&!e.metaKey&&!e.ctrlKey) setTool('select');
+  if(e.key==='r'&&!e.metaKey&&!e.ctrlKey) setTool('rect');
+  if(e.key==='t'&&!e.metaKey&&!e.ctrlKey) setTool('text');
+  if(e.key==='f'&&!e.metaKey&&!e.ctrlKey) setTool('frame');
+});
+
+setTool('select');
+loadTemplate('landing');
+</script>

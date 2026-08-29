@@ -1,0 +1,481 @@
+/* ChatGPT-shaped image turn — no card chrome */
+
+.iam-image-gen {
+  position: relative;
+  width: 100%;
+  max-width: min(520px, 100%);
+}
+
+.iam-image-gen-status {
+  margin: 0 0 8px;
+  font-size: 13px;
+  line-height: 1.35;
+  color: color-mix(in srgb, var(--dashboard-text) 72%, var(--dashboard-muted));
+  animation: iam-image-gen-status-in 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes iam-image-gen-status-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.iam-image-gen-fail {
+  margin: 0;
+  font-size: 13px;
+  color: color-mix(in srgb, #ef4444 85%, var(--dashboard-text));
+}
+
+.iam-image-gen-expand-hint {
+  display: block;
+  margin: 6px 0 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  font-size: 11px;
+  color: var(--dashboard-muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.iam-image-gen-footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.iam-image-gen-rate {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.iam-image-gen-rate__btn {
+  min-width: 28px;
+  height: 28px;
+  padding: 0 6px;
+  border: 1px solid color-mix(in srgb, var(--dashboard-text) 18%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  color: color-mix(in srgb, var(--dashboard-text) 70%, transparent);
+  font-size: 11px;
+  line-height: 1;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.iam-image-gen-rate__btn:hover:not(:disabled) {
+  color: var(--dashboard-text);
+  border-color: color-mix(in srgb, var(--dashboard-text) 35%, transparent);
+}
+
+.iam-image-gen-rate__btn.is-active {
+  color: var(--dashboard-text);
+  border-color: color-mix(in srgb, var(--dashboard-text) 45%, transparent);
+  background: color-mix(in srgb, var(--dashboard-text) 10%, transparent);
+}
+
+.iam-image-gen-rate__btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.iam-image-gen--ready:hover .iam-image-gen-expand-hint,
+.iam-image-gen--ready:focus-within .iam-image-gen-expand-hint {
+  opacity: 1;
+}
+
+/* Preview plane — generating = dotted placeholder; ready = bare image */
+.iam-image-gen-preview {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  border-radius: 14px;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--dashboard-panel, #1a1d24) 88%, #0b0d14);
+}
+
+.iam-image-gen--ready .iam-image-gen-preview {
+  background: transparent;
+  cursor: zoom-in;
+  aspect-ratio: auto;
+  height: auto;
+  min-height: 0;
+}
+
+.iam-image-gen--ready .iam-image-gen-preview:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--solar-cyan, #22d3ee) 55%, transparent);
+  outline-offset: 2px;
+}
+
+.iam-image-gen--ready .iam-image-gen-preview__img {
+  position: relative;
+  inset: auto;
+  width: 100%;
+  height: auto;
+  max-height: min(68vh, 560px);
+  object-fit: contain;
+  display: block;
+  border-radius: 14px;
+  background: transparent;
+}
+
+.iam-image-gen-preview__ambient {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(
+    circle at 1px 1px,
+    color-mix(in srgb, var(--dashboard-muted) 35%, transparent) 1px,
+    transparent 0
+  );
+  background-size: 16px 16px;
+  opacity: 0.45;
+  animation: iam-image-gen-dots 4s ease-in-out infinite;
+}
+
+.iam-image-gen-preview__shimmer {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    105deg,
+    transparent 35%,
+    color-mix(in srgb, #fff 7%, transparent) 50%,
+    transparent 65%
+  );
+  transform: translateX(-120%);
+  animation: iam-image-gen-shimmer 2.6s ease-in-out infinite;
+}
+
+.iam-image-gen-preview__pulse {
+  position: absolute;
+  inset: 0;
+  background: color-mix(in srgb, var(--dashboard-muted) 6%, transparent);
+  animation: iam-image-gen-breathe 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.iam-image-gen-preview__img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition:
+    filter 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.45s ease,
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.iam-image-gen-preview__img--placeholder {
+  opacity: 0;
+}
+
+@keyframes iam-image-gen-shimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@keyframes iam-image-gen-breathe {
+  0%,
+  100% {
+    opacity: 0.4;
+  }
+  50% {
+    opacity: 0.15;
+  }
+}
+
+@keyframes iam-image-gen-dots {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.55;
+  }
+}
+
+/* Full-screen inspect — above iam-chrome-topbar (z-110) */
+.iam-image-gen-lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 240;
+  display: flex;
+  align-items: stretch;
+  justify-content: center;
+  background: color-mix(in srgb, #050608 92%, transparent);
+  backdrop-filter: blur(10px);
+  padding: 0;
+  animation: iam-image-gen-lightbox-in 0.22s ease;
+}
+
+@keyframes iam-image-gen-lightbox-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.iam-image-gen-lightbox__panel {
+  display: flex;
+  flex-direction: column;
+  width: min(1100px, 100%);
+  height: 100%;
+  max-height: 100dvh;
+}
+
+.iam-image-gen-lightbox__bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 10px;
+  flex-shrink: 0;
+}
+
+.iam-image-gen-lightbox__icon-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 0;
+  background: color-mix(in srgb, #fff 8%, transparent);
+  color: #f4f4f5;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.iam-image-gen-lightbox__meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.iam-image-gen-lightbox__path {
+  margin: 0;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #a1a1aa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iam-image-gen-lightbox__title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 560;
+  color: #fafafa;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iam-image-gen-lightbox__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.iam-image-gen-lightbox__actions button {
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, #fff 14%, transparent);
+  background: color-mix(in srgb, #fff 6%, transparent);
+  color: #e4e4e7;
+  cursor: pointer;
+}
+
+.iam-image-gen-lightbox__icon-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.iam-image-gen-lightbox__actions button:hover:not(:disabled) {
+  background: color-mix(in srgb, #fff 12%, transparent);
+}
+
+.iam-image-gen-lightbox__actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.iam-image-gen-lightbox__stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 56px 12px;
+}
+
+.iam-image-gen-lightbox__stage img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  border-radius: 8px;
+}
+
+.iam-image-gen-lightbox__nav {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 2;
+  width: 44px;
+  height: 44px;
+  border: 0;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, #050608 55%, transparent);
+  color: #fafafa;
+  cursor: pointer;
+}
+
+.iam-image-gen-lightbox__nav:hover {
+  background: color-mix(in srgb, #050608 75%, transparent);
+}
+
+.iam-image-gen-lightbox__nav--prev {
+  left: 10px;
+}
+
+.iam-image-gen-lightbox__nav--next {
+  right: 10px;
+}
+
+.iam-image-gen-lightbox__msg {
+  margin: 0;
+  padding: 0 16px 6px;
+  font-size: 12px;
+  color: #a1a1aa;
+  text-align: center;
+}
+
+.iam-image-gen-lightbox__edit {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 16px 18px;
+  padding: 8px 10px 8px 14px;
+  border-radius: 999px;
+  background: color-mix(in srgb, #18181b 92%, #fff);
+  border: 1px solid color-mix(in srgb, #fff 10%, transparent);
+  flex-shrink: 0;
+}
+
+.iam-image-gen-lightbox__edit input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  color: #f4f4f5;
+  font-size: 14px;
+  outline: none;
+}
+
+.iam-image-gen-lightbox__edit input::placeholder {
+  color: #71717a;
+}
+
+.iam-image-gen-lightbox__edit button[type='submit'] {
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 0;
+  background: #a78bfa;
+  color: #0a0a0a;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.iam-image-gen-lightbox__edit button[type='submit']:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+.iam-image-gen-variants {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.65rem;
+  width: 100%;
+}
+
+.iam-image-gen-variants__item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin: 0;
+  padding: 0.35rem;
+  border: 1px solid transparent;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #0b0d10;
+  min-height: 120px;
+}
+
+.iam-image-gen-variants__item.is-active {
+  border-color: var(--solar-cyan, #5eead4);
+}
+
+.iam-image-gen-variants__item.is-pending {
+  opacity: 0.96;
+}
+
+.iam-image-gen-variants__item.is-failed {
+  border-color: rgba(248, 113, 113, 0.45);
+}
+
+.iam-image-gen-variants__label {
+  display: block;
+  font-size: 0.68rem;
+  line-height: 1.2;
+  color: var(--dashboard-muted, #94a3b8);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding: 0 0.15rem;
+}
+
+.iam-image-gen-variants__item .iam-image-gen-preview {
+  min-height: 110px;
+  border-radius: 0.35rem;
+}
+
+.iam-image-gen-variants__item img {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+
+.iam-image-gen--multi .iam-image-gen-status {
+  margin-bottom: 0.35rem;
+}
