@@ -34,8 +34,6 @@
     "@google/genai@1.52.0": true,
     "@inneranimalmedia/agentsam-sdk@2.0.0-alpha.identity.11": true,
     "fsevents@2.3.3": true,
-    "node-pty@1.1.0": true,
-    "protobufjs@7.6.6": true,
     "esbuild@0.28.2": true,
     "esbuild@0.25.12": true,
     "esbuild@0.28.1": true,
