@@ -1,5 +1,5 @@
 {
-  "name": "agentsam-remix-flash-lite",
+  "name": "agentsamremix",
   "compatibility_date": "2024-03-20",
   "ai": {
     "binding": "AGENTSAM_WAI"
@@ -7,14 +7,14 @@
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "REPLACE_ME",
-      "database_id": "REPLACE_ME"
+      "database_name": "placeholder-not-yet-set",
+      "database_id": "placeholder-not-yet-set"
     }
   ],
   "r2_buckets": [
     {
       "binding": "WEBSITE_ASSETS",
-      "bucket_name": "REPLACE_ME"
+      "bucket_name": "placeholder-not-yet-set"
     }
   ],
   "services": [
