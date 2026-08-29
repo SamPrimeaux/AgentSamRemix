@@ -1,0 +1,96 @@
+#!/usr/bin/env bash
+# AgentSamRemix operator CLI — deliberately named `agentsam-remix`, not `agentsam`,
+# so it never collides with the main inneranimalmedia repo's bin/agentsam when both
+# checkouts are on PATH or referenced side by side.
+#
+# Usage:
+#   app/bin/agentsam-remix deploy full    typecheck + build + wrangler deploy
+#   app/bin/agentsam-remix deploy fast    build + wrangler deploy (skips typecheck)
+#   app/bin/agentsam-remix deploy worker  wrangler deploy only (no rebuild)
+#
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+cd "$ROOT"
+
+MODE="${1:-}"
+SUBMODE="${2:-full}"
+
+usage() {
+  cat >&2 <<EOF
+usage: app/bin/agentsam-remix deploy <full|fast|worker>
+
+  full    tsc --noEmit -> vite build -> wrangler deploy
+  fast    vite build -> wrangler deploy (skips typecheck)
+  worker  wrangler deploy only (uses existing app/frontend/dist)
+EOF
+  exit 2
+}
+
+banner() {
+  local label="$1"
+  echo ""
+  echo "▲ AgentSamRemix deploy — ${label}"
+  echo "  repo:   ${ROOT}"
+  echo "  branch: $(git rev-parse --abbrev-ref HEAD 2>/dev/null || echo unknown)"
+  echo "  commit: $(git rev-parse --short HEAD 2>/dev/null || echo unknown)"
+  if ! git diff --quiet 2>/dev/null || ! git diff --cached --quiet 2>/dev/null; then
+    echo "  ⚠ uncommitted changes present — deploying working tree, not HEAD"
+  fi
+  echo ""
+}
+
+require_clean_or_warn() {
+  if [ -n "$(git status --porcelain 2>/dev/null)" ]; then
+    echo "  note: working tree is not clean (see above)."
+  fi
+}
+
+do_typecheck() {
+  echo "→ typecheck (tsc --noEmit)"
+  npx tsc --noEmit
+}
+
+do_build() {
+  echo "→ build (vite build --config app/frontend/vite.config.ts)"
+  npx vite build --config app/frontend/vite.config.ts
+}
+
+do_wrangler_deploy() {
+  echo "→ deploy (wrangler deploy)"
+  npx wrangler deploy
+}
+
+if [ "$MODE" != "deploy" ]; then
+  usage
+fi
+
+case "$SUBMODE" in
+  full)
+    banner "full"
+    require_clean_or_warn
+    do_typecheck
+    do_build
+    do_wrangler_deploy
+    ;;
+  fast)
+    banner "fast (typecheck skipped)"
+    require_clean_or_warn
+    do_build
+    do_wrangler_deploy
+    ;;
+  worker)
+    banner "worker only (no rebuild)"
+    if [ ! -d "app/frontend/dist" ]; then
+      echo "✗ app/frontend/dist missing — run 'deploy fast' or 'deploy full' at least once first" >&2
+      exit 1
+    fi
+    do_wrangler_deploy
+    ;;
+  *)
+    usage
+    ;;
+esac
+
+echo ""
+echo "✓ done"
