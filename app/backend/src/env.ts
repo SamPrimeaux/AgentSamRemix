@@ -29,10 +29,13 @@ export interface Env {
   VAULT_MASTER_KEY?: string;
   VAULT_KEY?: string;
   GEMINI_API_KEY?: string;
-  GOOGLE_AI_API_KEY?: string;
   OPENAI_API_KEY?: string;
   ANTHROPIC_API_KEY?: string;
   CLOUDFLARE_API_TOKEN?: string;
   RESEND_API_KEY?: string;
   SUPABASE_URL?: string;
+
+  GOOGLE_AI_PROJECT_NUMBER?: string;
+  GOOGLE_AI_PROJECT_NAME?: string;
+  GOOGLE_AI_PROJECT_DISPLAY_NAME?: string;
 }
