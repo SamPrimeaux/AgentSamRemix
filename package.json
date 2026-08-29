@@ -4,10 +4,11 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "tsx server.ts",
-    "build": "vite build && esbuild server.ts --bundle --platform=node --format=cjs --packages=external --sourcemap --outfile=dist/server.cjs",
-    "start": "node dist/server.cjs",
-    "preview": "vite preview",
+    "dev": "wrangler dev",
+    "dev:frontend": "vite app/frontend --config app/frontend/vite.config.ts",
+    "build": "vite build app/frontend --config app/frontend/vite.config.ts",
+    "deploy": "npm run build && wrangler deploy",
+    "preview": "wrangler dev --remote",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

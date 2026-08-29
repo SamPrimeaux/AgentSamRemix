@@ -1,190 +1,150 @@
 /**
- * Single VM (GCP / platform_vm) one-shot HTTP exec helper.
- * Pipe law: PTY_SERVICE VPC if bound — no opportunistic hop to public tunnel on VPC failure.
- * If VPC is not configured, public TERMINAL_WS_URL /exec is the sole pipe.
+ * AgentSamRemix VM execution transport.
  *
- * ExecOS requires X-IAM-Exec-Identity on VPC /exec (same as interactive path). Missing identity → 403.
+ * Authority split:
+ * - Worker authenticates the machine caller.
+ * - IAM_VPC is the private Cloudflare transport to the VM service.
+ * - terminal-daemon owns command guards, cwd validation, OS identity, and process execution.
+ *
+ * This module deliberately has no dependency on the larger InnerAnimalMedia terminal
+ * routing graph. AgentSamRemix can grow those policies later without making the base
+ * VPC path depend on copied, unresolved modules.
  */
-import { resolveUserPtyToken } from '../../credentials/user-secrets.js';
-import {
-  buildExecTransportHeaders,
-  resolveTerminalExecIdentity,
-} from './privileged-targets.js';
-import { resolveConnectionAuthToken } from './connection-auth.js';
-import { maybeWrapRemoteHttpExecCommand } from './unix-identity.js';
 
-export function terminalExecHttpUrlFromEnv(env) {
-  const raw = (env?.TERMINAL_WS_URL || '').trim().split('?')[0];
-  if (!raw) return '';
-  try {
-    let u = raw;
-    if (u.startsWith('wss://')) u = 'https://' + u.slice(6);
-    else if (u.startsWith('ws://')) u = 'http://' + u.slice(7);
-    else if (!/^https?:\/\//i.test(u)) u = 'https://' + u.replace(/^\/+/, '');
-    return new URL('/exec', new URL(u).origin).href;
-  } catch (_) {
-    return '';
-  }
+function trim(value) {
+  return value == null ? '' : String(value).trim();
+}
+
+function jsonHeaders(extra = {}) {
+  return {
+    'Content-Type': 'application/json',
+    Accept: 'application/json',
+    ...extra,
+  };
+}
+
+function responseText(data) {
+  if (!data || typeof data !== 'object') return '';
+  const stdout = typeof data.stdout === 'string' ? data.stdout : '';
+  const stderr = typeof data.stderr === 'string' ? data.stderr : '';
+  return [stdout, stderr].filter(Boolean).join(stderr && stdout ? '\nSTDERR: ' : '').trim();
+}
+
+function vpcBinding(env) {
+  const binding = env?.IAM_VPC;
+  return binding && typeof binding.fetch === 'function' ? binding : null;
 }
 
 /**
- * @param {any} env
- * @param {string} cmd
- * @param {{
- *   cwd?: string,
- *   userId?: string,
- *   workspaceId?: string,
- *   connection?: Record<string, unknown>|null,
- *   execUser?: string|null,
- *   transportExecUser?: string|null,
- *   privilegedTargetId?: string|null,
- *   headers?: Record<string, string>|null,
- * }} [opts]
+ * Execute a single command on the VM terminal daemon through Cloudflare Workers VPC.
+ * The daemon requires an explicit cwd and X-IAM-Exec-Identity and validates both.
  */
-export async function runTerminalCommandViaHttpExec(env, cmd, opts = {}) {
-  const cwd = opts.cwd != null ? String(opts.cwd).trim() : '';
-  if (!cwd) {
-    return { ok: false, text: 'cwd_required', exitCode: 1, error: 'cwd_required' };
+export async function runTerminalCommandViaHttpExec(env, command, opts = {}) {
+  const binding = vpcBinding(env);
+  if (!binding) {
+    return {
+      ok: false,
+      error: 'iam_vpc_binding_missing',
+      exitCode: 1,
+      text: 'IAM_VPC binding is not configured',
+    };
   }
 
-  const tokens = [];
-  const pushTok = (t) => {
-    const s = String(t || '').trim();
-    if (s && !tokens.includes(s)) tokens.push(s);
-  };
-  const uid = opts.userId != null ? String(opts.userId).trim() : '';
-  const wid = opts.workspaceId != null ? String(opts.workspaceId).trim() : '';
-  if (opts.connection && uid) {
-    pushTok(await resolveConnectionAuthToken(env, opts.connection, uid, wid));
-  } else if (uid) {
-    pushTok(await resolveUserPtyToken(env, uid, wid));
-  }
-  pushTok(env?.PTY_AUTH_TOKEN);
-  pushTok(env?.TERMINAL_SECRET);
+  const cmd = trim(command);
+  const cwd = trim(opts.cwd);
+  const execIdentity = trim(opts.execIdentity);
 
-  let execUser = opts.execUser != null ? String(opts.execUser).trim() : '';
-  let transportExecUser =
-    opts.transportExecUser != null ? String(opts.transportExecUser).trim() : '';
-  let privilegedTargetId =
-    opts.privilegedTargetId != null ? String(opts.privilegedTargetId).trim() : '';
-  let isTunnelOwner = opts.isTunnelOwner === true;
-
-  // pty-exec historically passed identity only via headers; remote transport dropped them.
-  // Resolve from connection when missing so VPC never ships an empty identity bag.
-  if ((!execUser || !privilegedTargetId) && opts.connection && env?.DB) {
-    const identity = await resolveTerminalExecIdentity(env.DB, opts.connection, null, {
-      env,
-      userId: uid || null,
-      workspaceId: wid || null,
-    });
-    if (!execUser) execUser = identity.execUser != null ? String(identity.execUser).trim() : '';
-    if (!transportExecUser) {
-      transportExecUser =
-        identity.transportExecUser != null ? String(identity.transportExecUser).trim() : '';
-    }
-    if (!privilegedTargetId) {
-      privilegedTargetId =
-        identity.privilegedTargetId != null ? String(identity.privilegedTargetId).trim() : '';
-    }
-    if (identity.isTunnelOwner === true) isTunnelOwner = true;
+  if (!cmd) return { ok: false, error: 'command_required', exitCode: 1, text: 'command_required' };
+  if (!cwd) return { ok: false, error: 'cwd_required', exitCode: 1, text: 'cwd_required' };
+  if (!execIdentity) {
+    return {
+      ok: false,
+      error: 'exec_identity_required',
+      exitCode: 1,
+      text: 'X-IAM-Exec-Identity is required',
+    };
   }
 
-  const identityHeaders = buildExecTransportHeaders({
-    execUser: execUser || null,
-    transportExecUser: transportExecUser || null,
-    privilegedTargetId: privilegedTargetId || null,
-    userId: uid || opts.userId,
-    isTunnelOwner,
+  const headers = jsonHeaders({
+    'X-IAM-Exec-Identity': execIdentity,
+    'X-IAM-Exec-Actor': trim(opts.execActor) || 'agentsamremix-worker',
   });
-  const callerHeaders =
-    opts.headers && typeof opts.headers === 'object' && !Array.isArray(opts.headers)
-      ? opts.headers
-      : {};
-  const execHeaders = { ...callerHeaders, ...identityHeaders };
-  if (identityHeaders['X-IAM-Operator-Cwd'] === '1') {
-    execHeaders['X-IAM-Operator-Cwd'] = '1';
-  }
-  const runCmd = maybeWrapRemoteHttpExecCommand(cmd, execUser, transportExecUser);
-  const execBody = { command: runCmd, cwd };
 
-  if (env?.PTY_SERVICE) {
-    if (!execHeaders['X-IAM-Exec-Identity']) {
-      return {
-        ok: false,
-        text: 'exec_identity_unresolved',
-        exitCode: 1,
-        error: 'exec_identity_unresolved',
-      };
-    }
-    try {
-      // Prefer connection / user PTY token on VPC too — dock WS auth and agent /exec share the same gate.
-      const vpcHeaders = { ...execHeaders };
-      if (tokens[0] && !vpcHeaders.Authorization) {
-        vpcHeaders.Authorization = 'Bearer ' + tokens[0];
-      }
-      const res = await env.PTY_SERVICE.fetch(
-        new Request('http://localhost:3099/exec', {
-          method: 'POST',
-          headers: vpcHeaders,
-          body: JSON.stringify(execBody),
-        }),
-      );
-      const data = await res.json().catch(() => null);
-      if (!res.ok) {
-        const detail =
-          data && typeof data === 'object'
-            ? String(data.stderr || data.error || data.user_message || '').trim()
-            : '';
-        const code = `vpc_exec_failed_${res.status}`;
-        return {
-          ok: false,
-          text: detail ? `${code}: ${detail.slice(0, 400)}` : code,
-          exitCode: 1,
-          error: code,
-          detail: detail || null,
-        };
-      }
-      if (!data || typeof data !== 'object') {
-        return { ok: false, text: 'vpc_exec_invalid_json', exitCode: 1, error: 'vpc_exec_invalid_json' };
-      }
-      const stdout = typeof data.stdout === 'string' ? data.stdout : '';
-      const stderr = typeof data.stderr === 'string' ? data.stderr : '';
-      const text = ((stdout || '') + (stderr ? '\nSTDERR: ' + stderr : '')).trim();
-      return { ok: true, text, exitCode: data.exit_code ?? 0, transport: 'vpc' };
-    } catch (e) {
-      return {
-        ok: false,
-        text: e?.message || 'vpc_exec_failed',
-        exitCode: 1,
-        error: 'vpc_exec_failed',
-      };
-    }
-  }
-
-  if (!tokens.length) return { ok: false, error: 'no_terminal_auth_token' };
-  const execUrl = terminalExecHttpUrlFromEnv(env);
-  if (!execUrl) return { ok: false, error: 'terminal_exec_url_missing' };
+  const privilegedTarget = trim(opts.privilegedTargetId);
+  const userId = trim(opts.userId);
+  const workspaceId = trim(opts.workspaceId);
+  const tenantId = trim(opts.tenantId);
+  if (privilegedTarget) headers['X-IAM-Privileged-Target'] = privilegedTarget;
+  if (userId) headers['X-User-Id'] = userId;
+  if (workspaceId) headers['X-Workspace-Id'] = workspaceId;
+  if (tenantId) headers['X-Tenant-Id'] = tenantId;
 
   try {
-    for (let i = 0; i < tokens.length; i++) {
-      const bearer = tokens[i];
-      const res = await fetch(execUrl, {
+    // With a VPC Service binding, the registered service determines the actual host/port.
+    // The URL host is not used as a network target; it only supplies HTTP Host/SNI metadata.
+    const response = await binding.fetch(
+      new Request('http://iam-vpc/exec', {
         method: 'POST',
-        headers: { ...execHeaders, Authorization: 'Bearer ' + bearer },
-        body: JSON.stringify(execBody),
-      });
-      if (res.status === 401 && i < tokens.length - 1) continue;
-      if (!res.ok) return { ok: false, error: `public_exec_failed_${res.status}` };
+        headers,
+        body: JSON.stringify({ command: cmd, cwd }),
+      }),
+    );
 
-      const data = await res.json().catch(() => null);
-      if (!data || typeof data !== 'object') return { ok: false, error: 'public_exec_invalid_json' };
-      const stdout = typeof data.stdout === 'string' ? data.stdout : '';
-      const stderr = typeof data.stderr === 'string' ? data.stderr : '';
-      const text = ((stdout || '') + (stderr ? '\nSTDERR: ' + stderr : '')).trim();
-      return { ok: true, text, exitCode: data.exit_code ?? 0, transport: 'public_tunnel' };
+    const data = await response.json().catch(() => null);
+    const text = responseText(data);
+    const exitCode = Number.isFinite(Number(data?.exit_code)) ? Number(data.exit_code) : response.ok ? 0 : 1;
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: trim(data?.error) || `vpc_exec_failed_${response.status}`,
+        detail: trim(data?.user_message) || trim(data?.stderr) || null,
+        exitCode,
+        text: text || `vpc_exec_failed_${response.status}`,
+        status: response.status,
+        transport: 'vpc',
+      };
     }
-    return { ok: false, error: 'public_exec_unauthorized' };
-  } catch (e) {
-    return { ok: false, error: e?.message || 'public_exec_failed' };
+
+    return {
+      ok: exitCode === 0,
+      error: exitCode === 0 ? null : trim(data?.error) || 'command_failed',
+      exitCode,
+      text,
+      stdout: typeof data?.stdout === 'string' ? data.stdout : '',
+      stderr: typeof data?.stderr === 'string' ? data.stderr : '',
+      transport: 'vpc',
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: 'vpc_exec_unreachable',
+      exitCode: 1,
+      text: error instanceof Error ? error.message : 'vpc_exec_unreachable',
+      transport: 'vpc',
+    };
+  }
+}
+
+/** Basic daemon liveness probe through IAM_VPC. */
+export async function probeVmTerminalViaVpc(env) {
+  const binding = vpcBinding(env);
+  if (!binding) return { ok: false, error: 'iam_vpc_binding_missing' };
+
+  try {
+    const response = await binding.fetch(new Request('http://iam-vpc/health'));
+    const data = await response.json().catch(() => null);
+    return {
+      ok: response.ok && data?.status === 'ok',
+      status: response.status,
+      transport: 'vpc',
+      daemon: data,
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : 'vpc_health_unreachable',
+      transport: 'vpc',
+    };
   }
 }
