@@ -1,5 +1,4 @@
 import { handleIdentityWorkerRequest, getIdentitySession } from '@inneranimalmedia/agentsam-sdk/identity/server/worker-router';
-import { streamPageGeneration } from './services/aiService';
 import { verifyBridgeKey, bridgeUnauthorized } from './auth/bridge-key';
 import {
   probeVmTerminalViaVpc,
