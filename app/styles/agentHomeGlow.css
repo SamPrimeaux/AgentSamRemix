@@ -1,0 +1,69 @@
+/**
+ * Agent Home — Gemini-style tight radial glow anchored behind the chat composer.
+ * Colors: --agent-home-glow-primary / --agent-home-glow-secondary (Settings → Themes).
+ */
+
+.agent-home__composer-wrap {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  z-index: 1;
+}
+
+.iam-agent-home-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translate(-50%, 38%);
+  width: min(145%, 820px);
+  height: 240px;
+  pointer-events: none;
+  z-index: 0;
+  background:
+    radial-gradient(
+      ellipse 58% 52% at 50% 72%,
+      color-mix(in srgb, var(--agent-home-glow-primary, var(--color-primary, #7c5cbf)) 55%, transparent) 0%,
+      color-mix(in srgb, var(--agent-home-glow-primary, var(--color-primary, #7c5cbf)) 20%, transparent) 42%,
+      transparent 74%
+    ),
+    radial-gradient(
+      ellipse 34% 32% at 44% 78%,
+      color-mix(in srgb, var(--agent-home-glow-secondary, var(--solar-blue, #4f8cff)) 26%, transparent) 0%,
+      transparent 68%
+    ),
+    radial-gradient(
+      ellipse 85% 40% at 50% 88%,
+      color-mix(in srgb, var(--agent-home-glow-primary, var(--color-primary, #7c5cbf)) 10%, transparent) 0%,
+      transparent 82%
+    );
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iam-agent-home-glow {
+    display: none;
+  }
+}
+
+/* Design Studio + professional surfaces — tighter, lower-opacity frost */
+.iam-agent-home-glow--subtle {
+  width: min(120%, 640px);
+  height: 160px;
+  transform: translate(-50%, 42%);
+  background:
+    radial-gradient(
+      ellipse 52% 48% at 50% 74%,
+      color-mix(in srgb, var(--agent-home-glow-primary, var(--color-primary, #7c5cbf)) 22%, transparent) 0%,
+      transparent 72%
+    ),
+    radial-gradient(
+      ellipse 28% 24% at 50% 80%,
+      color-mix(in srgb, var(--agent-home-glow-secondary, var(--solar-blue, #4f8cff)) 12%, transparent) 0%,
+      transparent 68%
+    );
+  opacity: 0.85;
+}
+
+.agent-home__composer-wrap .agent-home__composer-host {
+  position: relative;
+  z-index: 1;
+}

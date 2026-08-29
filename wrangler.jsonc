@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "agentsamremix",
-  "main": "app/backend/src/index.ts",
+  "main": "backend/src/index.ts",
   "compatibility_date": "2026-08-29",
   "preview_urls": false,
   "keep_vars": true,
@@ -46,7 +46,7 @@
     }
   ],
   "assets": {
-    "directory": "./app/frontend/dist",
+    "directory": "./app/dist",
     "binding": "APP_ASSETS",
     "not_found_handling": "single-page-application",
     "run_worker_first": [

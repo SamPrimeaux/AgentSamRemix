@@ -1,0 +1,62 @@
+/* Mail pane colors — layout lives in collaborate-work-layout.css */
+
+.colab-work-shell .mail-work-surface .mail-sidebar {
+  background: var(--panel-raised);
+  border-right: 1px solid var(--line-soft);
+}
+
+.colab-work-shell .mail-work-surface .mail-list-pane {
+  background: #ffffff;
+  color: var(--text);
+}
+
+.colab-work-shell .mail-work-surface .mail-list-toolbar {
+  background: #ffffff;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.colab-work-shell .mail-work-surface .mail-list-row {
+  border-bottom: 1px solid var(--panel-soft);
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.colab-work-shell .mail-work-surface .mail-detail-pane,
+.colab-work-shell .mail-work-surface .mail-detail-pane * {
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.colab-work-shell .mail-work-surface .mail-list-row:hover,
+.colab-work-shell .mail-work-surface .mail-list-row.is-selected {
+  background: var(--bg-hover);
+}
+
+.colab-work-shell .mail-work-surface .mail-detail-pane {
+  background: #ffffff;
+  border-left: 1px solid var(--line-soft);
+}
+
+.colab-work-shell .mail-work-surface .mail-agentsam-pane {
+  background: #ffffff;
+}
+
+.colab-work-shell .mail-work-surface .mail-agentsam-header {
+  background: #e8f4fd;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.colab-work-shell .mail-work-surface input,
+.colab-work-shell .mail-work-surface textarea,
+.colab-work-shell .mail-work-surface select {
+  color: var(--text);
+}
+
+.colab-work-shell .mail-work-surface .mail-agentsam-nav.active {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.colab-work-shell .mail-work-surface .mail-agentsam-nav:not(.active):hover {
+  background: var(--bg-hover);
+}

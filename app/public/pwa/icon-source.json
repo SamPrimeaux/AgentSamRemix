@@ -1,0 +1,23 @@
+{
+  "image_id": "e5327954-d123-4a7a-2138-589146758b00",
+  "account_hash": "g7wf09fCONpnidkRnR_5vw",
+  "source_variant": "large",
+  "source_url": "https://imagedelivery.net/g7wf09fCONpnidkRnR_5vw/e5327954-d123-4a7a-2138-589146758b00/large",
+  "theme_bg": "#000000",
+  "fill_ratio": 1,
+  "synced_at": "2026-06-20T05:15:02.543Z",
+  "outputs": [
+    {
+      "name": "icon-512.png",
+      "size": "512x512"
+    },
+    {
+      "name": "icon-192.png",
+      "size": "192x192"
+    },
+    {
+      "name": "apple-touch-icon.png",
+      "size": "180x180"
+    }
+  ]
+}

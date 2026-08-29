@@ -1,0 +1,219 @@
+.iam-app-icon-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.iam-app-icon-wrap--sm {
+  --iam-app-icon-size: 60px;
+}
+
+.iam-app-icon-wrap--md {
+  --iam-app-icon-size: 72px;
+}
+
+.iam-app-icon-wrap--lg {
+  --iam-app-icon-size: 88px;
+}
+
+.iam-app-icon-shell {
+  position: relative;
+  width: var(--iam-app-icon-size);
+  height: var(--iam-app-icon-size);
+}
+
+.iam-app-icon-shell.is-disabled {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.iam-app-icon-shell.is-drag-over .iam-app-icon-hit {
+  outline: 2px dashed var(--iam-home-accent, #4ea7ff);
+  outline-offset: 2px;
+}
+
+/* Clean icon shell — iOS-style continuous squircle */
+.iam-app-icon-hit {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  border-radius: 22.37%;
+  background: transparent;
+  box-shadow: none;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 140ms ease, opacity 140ms ease, box-shadow 140ms ease;
+  cursor: pointer;
+}
+
+.iam-app-icon-hit:hover {
+  transform: scale(1.04);
+}
+
+/* Integration logos — uniform white squircle so brands match app tiles */
+.iam-app-icon-shell--brand .iam-app-icon-hit {
+  background: #ffffff;
+  box-shadow:
+    0 1px 2px rgba(0, 0, 0, 0.18),
+    0 6px 16px rgba(0, 0, 0, 0.12);
+}
+
+.iam-app-icon-shell--app .iam-app-icon-hit {
+  background: transparent;
+}
+
+/* Integration logos (Google Drive, Cloudflare, …) — inset on squircle */
+.iam-app-icon-brand {
+  width: 62%;
+  height: 62%;
+  object-fit: contain;
+  object-position: center;
+  display: block;
+  padding: 0;
+}
+
+/* User app icons — scale + optional background from editor */
+.iam-app-icon-art {
+  width: var(--iam-icon-art-scale, 100%);
+  height: var(--iam-icon-art-scale, 100%);
+  object-fit: contain;
+  object-position: center;
+  display: block;
+}
+
+.iam-app-icon-fallback {
+  font-size: 14px;
+  font-weight: 800;
+  color: var(--iam-home-text, #fff);
+  letter-spacing: -0.02em;
+  background: color-mix(in srgb, var(--iam-home-panel, #111) 80%, transparent);
+  width: 100%;
+  height: 100%;
+  display: grid;
+  place-items: center;
+  border-radius: inherit;
+}
+
+.iam-app-icon-status {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 0 2px var(--iam-home-panel, #111);
+}
+
+.iam-app-icon-status--warning {
+  background: #f59e0b;
+  color: #111;
+}
+
+.iam-app-icon-status--error {
+  background: #ef4444;
+  color: #fff;
+}
+
+.iam-app-icon-shell.is-edit-active .iam-app-icon-hit {
+  outline: 2px solid color-mix(in srgb, var(--iam-home-accent, #4ea7ff) 70%, transparent);
+  outline-offset: 2px;
+}
+
+.iam-home-edit-mode .iam-app-icon-wrap .iam-app-icon-shell {
+  animation: iam-app-icon-wiggle 0.28s ease-in-out infinite alternate;
+}
+
+@keyframes iam-app-icon-wiggle {
+  from {
+    transform: rotate(-1.2deg);
+  }
+  to {
+    transform: rotate(1.2deg);
+  }
+}
+
+.iam-app-icon-edit {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(8, 12, 22, 0.92);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transform: scale(0.92);
+  transition: opacity 120ms ease, transform 120ms ease;
+  cursor: pointer;
+  z-index: 2;
+}
+
+.iam-app-icon-shell:hover .iam-app-icon-edit,
+.iam-app-icon-shell.is-edit-active .iam-app-icon-edit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.iam-app-icon-label {
+  margin: 0;
+  max-width: calc(var(--iam-app-icon-size) + 16px);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--iam-home-text, #fff);
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.iam-app-icon-sub {
+  margin: -2px 0 0;
+  max-width: calc(var(--iam-app-icon-size) + 16px);
+  font-size: 10px;
+  color: var(--iam-home-muted, rgba(255, 255, 255, 0.55));
+  text-align: center;
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.iam-app-icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 14px 10px;
+  justify-items: center;
+  min-width: 0;
+}
+
+@media (min-width: 900px) {
+  .iam-app-icon-grid {
+    grid-template-columns: repeat(auto-fill, minmax(84px, 1fr));
+    gap: 16px 12px;
+  }
+}
+
+.iam-app-icon-grid--products {
+  grid-template-columns: repeat(auto-fill, minmax(76px, 1fr));
+  gap: 14px 10px;
+}
+
+@media (min-width: 900px) {
+  .iam-app-icon-grid--products {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px 12px;
+  }
+}

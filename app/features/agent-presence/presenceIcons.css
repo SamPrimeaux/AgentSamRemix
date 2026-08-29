@@ -1,0 +1,418 @@
+/**
+ * Agent Sam presence icon animations (from Loading States Lab).
+ * Requires --speed on :root or .agent-sam-logo-wrap (default 1).
+ */
+
+.agent-sam-logo-wrap,
+.logo-wrap {
+  --presence-speed: var(--speed, 1);
+  --presence-glow: var(--glow, 0.26);
+  --presence-scale: var(--scale, 1);
+}
+
+.agent-sam-logo-wrap .iam-presence-icon-slot,
+.logo-wrap {
+  --size: 22px;
+  width: calc(var(--size) * var(--presence-scale));
+  height: calc(var(--size) * var(--presence-scale));
+  color: var(--accent-hover, #7090f8);
+  filter: drop-shadow(0 0 calc(14px * var(--presence-glow)) var(--accent-glow, rgba(90, 125, 247, 0.26)));
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+}
+
+.agent-sam-logo-wrap .iam-presence-icon-slot.large,
+.logo-wrap.large {
+  --size: 54px;
+}
+
+.agent-sam-logo-wrap .iam-presence-icon-slot svg,
+.logo-wrap svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+/* Per-icon motion */
+.agent-sam-logo-wrap .stroke,
+.agent-sam-logo-wrap .fill {
+  vector-effect: non-scaling-stroke;
+}
+
+.agent-sam-logo-wrap .stroke {
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.agent-sam-logo-wrap .fill {
+  fill: currentColor;
+}
+
+/* Agent-work loading state icons (48x48 viewbox) */
+.agent-spark .ray {
+  transform-origin: 24px 24px;
+  animation: agentSpark calc(1.4s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+
+.agent-spark .ray:nth-child(2n) { animation-delay: calc(0.12s / var(--presence-speed)); }
+.agent-spark .ray:nth-child(3n) { animation-delay: calc(0.24s / var(--presence-speed)); }
+.agent-spark .core {
+  transform-origin: 24px 24px;
+  animation: coreBreathe calc(1.4s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+
+.subagent-swarm {
+  --px-a: color-mix(in srgb, currentColor 70%, white);
+  --px-b: color-mix(in srgb, currentColor 55%, #ff8a4c);
+  --px-c: color-mix(in srgb, currentColor 45%, #f2f2f2);
+}
+
+.subagent-swarm .node {
+  transform-box: fill-box;
+  transform-origin: center;
+  opacity: 0.4;
+  animation: swarmNode calc(1.6s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+  filter: drop-shadow(0 0 8px currentColor) drop-shadow(0 0 20px color-mix(in srgb, currentColor 28%, transparent));
+}
+.subagent-swarm .a { color: var(--px-a); fill: var(--px-a); }
+.subagent-swarm .b { color: var(--px-b); fill: var(--px-b); }
+.subagent-swarm .c { color: var(--px-c); fill: var(--px-c); }
+.subagent-swarm .node:nth-child(1) { animation-delay: calc(0s / var(--presence-speed)); }
+.subagent-swarm .node:nth-child(2) { animation-delay: calc(0.09s / var(--presence-speed)); }
+.subagent-swarm .node:nth-child(3) { animation-delay: calc(0.18s / var(--presence-speed)); }
+.subagent-swarm .node:nth-child(4) { animation-delay: calc(0.27s / var(--presence-speed)); }
+.subagent-swarm .node:nth-child(5) { animation-delay: calc(0.36s / var(--presence-speed)); }
+.subagent-swarm .node:nth-child(6) { animation-delay: calc(0.45s / var(--presence-speed)); }
+.subagent-swarm .node:nth-child(7) { animation-delay: calc(0.54s / var(--presence-speed)); }
+.subagent-swarm .link {
+  stroke: color-mix(in srgb, currentColor 45%, transparent);
+  stroke-dasharray: 4 8;
+  animation: swarmLink calc(1.6s / var(--presence-speed)) linear infinite;
+  opacity: 0.45;
+}
+
+.fanout-orbit .orbit {
+  transform-origin: 24px 24px;
+  animation: orbitSpin calc(2.2s / var(--presence-speed)) linear infinite;
+  opacity: 0.58;
+}
+.fanout-orbit .sat {
+  transform-origin: 24px 24px;
+  animation: satellitePop calc(1.5s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+.fanout-orbit .sat:nth-child(3) { animation-delay: calc(0.16s / var(--presence-speed)); }
+.fanout-orbit .sat:nth-child(4) { animation-delay: calc(0.32s / var(--presence-speed)); }
+.fanout-orbit .sat:nth-child(5) { animation-delay: calc(0.48s / var(--presence-speed)); }
+
+.delegate-chain .dash {
+  stroke-dasharray: 7 8;
+  animation: chainDash calc(1.1s / var(--presence-speed)) linear infinite;
+}
+.delegate-chain .box {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: delegateBox calc(1.45s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+.delegate-chain .box:nth-of-type(2) { animation-delay: calc(0.16s / var(--presence-speed)); }
+.delegate-chain .box:nth-of-type(3) { animation-delay: calc(0.32s / var(--presence-speed)); }
+
+.work-queue .bar {
+  transform-origin: 9px 24px;
+  animation: queueMove calc(1.55s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+.work-queue .bar:nth-child(2) { animation-delay: calc(0.13s / var(--presence-speed)); }
+.work-queue .bar:nth-child(3) { animation-delay: calc(0.26s / var(--presence-speed)); }
+.work-queue .bar:nth-child(4) { animation-delay: calc(0.39s / var(--presence-speed)); }
+
+.tool-router .hub {
+  animation: routerPulse calc(1.2s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+  transform-origin: center;
+}
+.tool-router .route {
+  stroke-dasharray: 4 7;
+  animation: routerDash calc(1s / var(--presence-speed)) linear infinite;
+}
+.tool-router .end {
+  animation: routerEnd calc(1.2s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+.tool-router .end:nth-of-type(2) { animation-delay: calc(0.15s / var(--presence-speed)); }
+.tool-router .end:nth-of-type(3) { animation-delay: calc(0.3s / var(--presence-speed)); }
+
+.review-gate .gate { animation: gateGlow calc(1.4s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite; }
+.review-gate .check {
+  stroke-dasharray: 18;
+  stroke-dashoffset: 18;
+  animation: checkDraw calc(1.4s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+
+.merge-weave path {
+  stroke-dasharray: 10 18;
+  animation: weaveDash calc(1.25s / var(--presence-speed)) linear infinite;
+}
+.merge-weave .dot {
+  transform-origin: center;
+  animation: weaveDot calc(1.25s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+.merge-weave .dot:nth-of-type(2) { animation-delay: calc(0.15s / var(--presence-speed)); }
+.merge-weave .dot:nth-of-type(3) { animation-delay: calc(0.3s / var(--presence-speed)); }
+
+.approval-wait .ring {
+  stroke-dasharray: 18 55;
+  transform-origin: 24px 24px;
+  animation: waitSpin calc(1.6s / var(--presence-speed)) linear infinite;
+}
+.approval-wait .pause {
+  animation: pausePulse calc(1.6s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+
+.done-bloom .burst {
+  transform-origin: 24px 24px;
+  animation: doneBurst calc(1.7s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+.done-bloom .tick {
+  stroke-dasharray: 22;
+  stroke-dashoffset: 22;
+  animation: doneTick calc(1.7s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+
+.error-signal {
+  color: var(--danger, #ff5a67);
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--danger, #ff5a67) 45%, transparent))
+    drop-shadow(0 0 28px color-mix(in srgb, var(--danger, #ff5a67) 14%, transparent));
+}
+.error-signal .shake {
+  transform-origin: 24px 24px;
+  animation: errorShake calc(1.1s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+.error-signal .pulse {
+  animation: errorPulse calc(1.1s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+
+.skeleton-plan .skel {
+  animation: skelMove calc(1.45s / var(--presence-speed)) var(--ease, cubic-bezier(.2,.8,.2,1)) infinite;
+}
+.skeleton-plan .l2 { animation-delay: calc(0.12s / var(--presence-speed)); }
+.skeleton-plan .l3 { animation-delay: calc(0.24s / var(--presence-speed)); }
+
+@keyframes agentSpark {
+  0%, 100% { opacity: 0.28; transform: scale(0.8); }
+  48% { opacity: 1; transform: scale(1.16); }
+}
+
+@keyframes coreBreathe {
+  0%, 100% { opacity: 0.55; transform: scale(0.78); }
+  50% { opacity: 1; transform: scale(1.16); }
+}
+
+@keyframes swarmNode {
+  0%, 100% { opacity: 0.34; transform: translateY(0) scale(0.72); }
+  42% { opacity: 1; transform: translateY(-2px) scale(1.1); }
+  70% { opacity: 0.7; transform: translateY(1px) scale(0.92); }
+}
+@keyframes swarmLink { to { stroke-dashoffset: -24; } }
+
+@keyframes orbitSpin { to { transform: rotate(360deg); } }
+@keyframes satellitePop {
+  0%, 100% { opacity: 0.42; transform: scale(0.82); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes chainDash { to { stroke-dashoffset: -30; } }
+@keyframes delegateBox {
+  0%, 100% { opacity: 0.44; transform: scale(0.86); }
+  48% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes queueMove {
+  0%, 100% { opacity: 0.3; transform: translateX(-3px) scaleX(0.75); }
+  50% { opacity: 1; transform: translateX(5px) scaleX(1.05); }
+}
+
+@keyframes routerPulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.1); }
+}
+@keyframes routerDash { to { stroke-dashoffset: -22; } }
+@keyframes routerEnd { 0%, 100% { opacity: 0.45; } 50% { opacity: 1; } }
+
+@keyframes gateGlow {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; filter: drop-shadow(0 0 14px currentColor); }
+}
+@keyframes checkDraw {
+  0% { stroke-dashoffset: 18; opacity: 0.3; }
+  45%, 70% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0.45; }
+}
+
+@keyframes weaveDash { to { stroke-dashoffset: -36; } }
+@keyframes weaveDot {
+  0%, 100% { opacity: 0.38; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1.12); }
+}
+
+@keyframes waitSpin { to { transform: rotate(360deg); } }
+@keyframes pausePulse {
+  0%, 100% { opacity: 0.35; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.08); }
+}
+
+@keyframes doneBurst {
+  0%, 100% { opacity: 0.22; transform: scale(0.7) rotate(0deg); }
+  50% { opacity: 0.9; transform: scale(1.15) rotate(20deg); }
+}
+@keyframes doneTick {
+  0%, 18% { stroke-dashoffset: 22; opacity: 0.3; }
+  45%, 85% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0.45; }
+}
+
+@keyframes errorShake {
+  0%, 100% { transform: translateX(0); }
+  18% { transform: translateX(-1.5px); }
+  36% { transform: translateX(1.5px); }
+  54% { transform: translateX(-1px); }
+  72% { transform: translateX(1px); }
+}
+@keyframes errorPulse {
+  0%, 100% { opacity: 0.45; }
+  50% { opacity: 1; }
+}
+
+@keyframes skelMove {
+  0% { transform: translateX(-6px); opacity: 0.54; }
+  50% { opacity: 0.94; }
+  100% { transform: translateX(6px); opacity: 0.54; }
+}
+
+.spark .ray {
+  transform-origin: 50px 50px;
+  animation: iam-ray-pulse calc(1.6s / var(--presence-speed)) infinite ease-in-out;
+  opacity: 0.3;
+}
+.spark .ray:nth-child(2) { animation-delay: calc(-1.4s / var(--presence-speed)); }
+.spark .ray:nth-child(3) { animation-delay: calc(-1.2s / var(--presence-speed)); }
+.spark .ray:nth-child(4) { animation-delay: calc(-1s / var(--presence-speed)); }
+.spark .ray:nth-child(5) { animation-delay: calc(-0.8s / var(--presence-speed)); }
+.spark .ray:nth-child(6) { animation-delay: calc(-0.6s / var(--presence-speed)); }
+.spark .ray:nth-child(7) { animation-delay: calc(-0.4s / var(--presence-speed)); }
+.spark .ray:nth-child(8) { animation-delay: calc(-0.2s / var(--presence-speed)); }
+.spark .core {
+  animation: iam-breathe calc(1.8s / var(--presence-speed)) infinite ease-in-out;
+  transform-origin: 50px 50px;
+}
+
+.scan-ring .ring {
+  stroke-dasharray: 42 160;
+  transform-origin: 50px 50px;
+  animation: iam-rotate calc(1.35s / var(--presence-speed)) linear infinite;
+}
+.scan-ring .frame { opacity: 0.18; }
+.scan-ring .crosshair { animation: iam-breathe calc(1.6s / var(--presence-speed)) infinite ease-in-out; }
+
+.terminal-icon .cursor { animation: iam-cursor-blink calc(0.9s / var(--presence-speed)) steps(2, end) infinite; }
+.terminal-icon .prompt { animation: iam-prompt-slide calc(1.8s / var(--presence-speed)) ease-in-out infinite; }
+
+.diff-icon .line { opacity: 0.32; }
+.diff-icon .sweep {
+  animation: iam-diff-sweep calc(1.5s / var(--presence-speed)) ease-in-out infinite;
+  transform-origin: 50px 50px;
+}
+
+.pixel-icon .px {
+  animation: iam-pixel-bloom calc(1.7s / var(--presence-speed)) infinite ease-in-out;
+  transform-origin: 50px 50px;
+}
+.pixel-icon .px:nth-child(2) { animation-delay: calc(-1.45s / var(--presence-speed)); }
+.pixel-icon .px:nth-child(3) { animation-delay: calc(-1.2s / var(--presence-speed)); }
+.pixel-icon .px:nth-child(4) { animation-delay: calc(-0.95s / var(--presence-speed)); }
+.pixel-icon .px:nth-child(5) { animation-delay: calc(-0.7s / var(--presence-speed)); }
+.pixel-icon .px:nth-child(6) { animation-delay: calc(-0.45s / var(--presence-speed)); }
+
+.path-icon path.draw {
+  stroke-dasharray: 170;
+  stroke-dashoffset: 170;
+  animation: iam-draw-path calc(2.2s / var(--presence-speed)) ease-in-out infinite;
+}
+.path-icon .pen { animation: iam-pen-float calc(2.2s / var(--presence-speed)) ease-in-out infinite; }
+
+.files-icon .file-a { animation: iam-file-pulse calc(1.7s / var(--presence-speed)) infinite ease-in-out; }
+.files-icon .file-b {
+  animation: iam-file-pulse calc(1.7s / var(--presence-speed)) infinite ease-in-out calc(-0.85s / var(--presence-speed));
+}
+
+.browser-icon .viewport { opacity: 0.18; }
+.browser-icon .scanline { animation: iam-browser-scan calc(1.7s / var(--presence-speed)) ease-in-out infinite; }
+.browser-icon .node { animation: iam-node-ping calc(1.7s / var(--presence-speed)) ease-in-out infinite; }
+
+/* Terminal / complete / fail on wrapper (logo thumbnail fallback + icon slot) */
+.agent-sam-logo-wrap[data-state='complete'] .agent-sam-logo,
+.agent-sam-logo-wrap[data-state='complete'] .iam-presence-icon-slot {
+  animation: presence-complete 0.4s ease-out forwards;
+}
+.agent-sam-logo-wrap[data-state='failed'] .agent-sam-logo,
+.agent-sam-logo-wrap[data-state='failed'] .iam-presence-icon-slot {
+  animation: presence-fail 0.3s ease-out forwards;
+}
+
+.agent-sam-logo-wrap[data-state='waiting_approval'] .iam-presence-icon-slot {
+  animation: agent-sam-amber-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes iam-ray-pulse {
+  0%, 100% { opacity: 0.22; transform: scaleY(0.78); }
+  42% { opacity: 1; transform: scaleY(1.1); }
+}
+@keyframes iam-breathe {
+  0%, 100% { transform: scale(0.9); opacity: 0.68; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+@keyframes iam-rotate { to { transform: rotate(360deg); } }
+@keyframes iam-cursor-blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0.18; } }
+@keyframes iam-prompt-slide {
+  0%, 100% { transform: translateX(0); opacity: 0.55; }
+  50% { transform: translateX(5px); opacity: 1; }
+}
+@keyframes iam-diff-sweep {
+  0% { transform: translateX(-42px); opacity: 0; }
+  35%, 65% { opacity: 1; }
+  100% { transform: translateX(42px); opacity: 0; }
+}
+@keyframes iam-pixel-bloom {
+  0%, 100% { transform: scale(0.66); opacity: 0.28; }
+  46% { transform: scale(1.22); opacity: 1; }
+}
+@keyframes iam-draw-path {
+  0% { stroke-dashoffset: 170; opacity: 0.45; }
+  48%, 66% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: -170; opacity: 0.45; }
+}
+@keyframes iam-pen-float {
+  0%, 100% { transform: translate(2px, -2px); opacity: 0.5; }
+  50% { transform: translate(-4px, 4px); opacity: 1; }
+}
+@keyframes iam-file-pulse {
+  0%, 100% { transform: translateY(0); opacity: 0.48; }
+  50% { transform: translateY(-5px); opacity: 1; }
+}
+@keyframes iam-browser-scan {
+  0%, 100% { transform: translateY(-18px); opacity: 0; }
+  35%, 70% { opacity: 1; }
+  50% { transform: translateY(18px); }
+}
+@keyframes iam-node-ping {
+  0%, 100% { r: 2.4; opacity: 0.35; }
+  50% { r: 4.5; opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-sam-logo-wrap .iam-presence-icon-slot svg *,
+  .agent-sam-logo-wrap[data-state='complete'] .iam-presence-icon-slot,
+  .agent-sam-logo-wrap[data-state='failed'] .iam-presence-icon-slot {
+    animation: none !important;
+  }
+}

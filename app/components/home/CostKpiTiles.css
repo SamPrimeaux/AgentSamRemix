@@ -1,0 +1,194 @@
+/* CostKpiTiles — expandable spend KPI tiles */
+
+.cost-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+}
+
+@media (max-width: 700px) {
+  .cost-kpi-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.cost-kpi-tile {
+  all: unset;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 14px 14px 12px;
+  border-radius: 14px;
+  background: var(--dashboard-card, #0f172a);
+  border: 1px solid var(--dashboard-border, rgba(148,163,184,0.12));
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  position: relative;
+  overflow: hidden;
+}
+
+.cost-kpi-tile:hover {
+  border-color: var(--kpi-accent, #3b82f6);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--kpi-accent, #3b82f6) 30%, transparent);
+}
+
+.cost-kpi-tile--expanded {
+  border-color: var(--kpi-accent, #3b82f6);
+  grid-column: span 2;
+}
+
+.cost-kpi-tile--alert::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0;
+  width: 48px; height: 48px;
+  background: radial-gradient(circle at top right, color-mix(in srgb, var(--kpi-accent) 20%, transparent), transparent);
+  pointer-events: none;
+}
+
+.cost-kpi-tile__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cost-kpi-tile__label {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--dashboard-muted, #64748b);
+}
+
+.cost-kpi-tile__chevron {
+  font-size: 14px;
+  color: var(--dashboard-muted, #64748b);
+  line-height: 1;
+  font-family: monospace;
+}
+
+.cost-kpi-tile__value {
+  font-size: 22px;
+  font-weight: 800;
+  font-family: 'DM Mono', monospace, monospace;
+  color: var(--kpi-accent, #f1f5f9);
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+.cost-kpi-tile--alert .cost-kpi-tile__value {
+  color: var(--kpi-accent);
+}
+
+.cost-kpi-tile__sub {
+  font-size: 10px;
+  color: var(--dashboard-muted, #64748b);
+  font-family: 'DM Mono', monospace, monospace;
+}
+
+.cost-kpi-tile__detail {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--dashboard-border, rgba(148,163,184,0.12));
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cost-kpi-tile__detail-head {
+  margin: 0 0 4px;
+  font-size: 10px;
+  font-family: 'DM Mono', monospace, monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--dashboard-muted, #64748b);
+}
+
+.cost-kpi-tile__detail-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  font-family: 'DM Mono', monospace, monospace;
+  color: var(--dashboard-muted, #64748b);
+}
+
+.cost-kpi-tile__detail-row strong {
+  color: var(--dashboard-text, #f1f5f9);
+  font-weight: 700;
+}
+
+/* Sparkline bar chart */
+.cost-kpi-spark {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 44px;
+  margin-bottom: 8px;
+}
+
+.cost-kpi-spark__col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex: 1;
+}
+
+.cost-kpi-spark__bar {
+  width: 100%;
+  border-radius: 2px 2px 0 0;
+  transition: opacity 0.2s;
+}
+
+.cost-kpi-spark__label {
+  font-size: 7px;
+  color: var(--dashboard-muted, #64748b);
+  font-family: monospace;
+}
+
+/* Mini horizontal bars */
+.cost-kpi-minibar {
+  display: grid;
+  grid-template-columns: 90px 1fr 48px;
+  align-items: center;
+  gap: 6px;
+}
+
+.cost-kpi-minibar__label {
+  font-size: 10px;
+  color: var(--dashboard-muted, #64748b);
+  font-family: 'DM Mono', monospace, monospace;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cost-kpi-minibar__track {
+  height: 5px;
+  background: var(--dashboard-border, rgba(148,163,184,0.12));
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.cost-kpi-minibar__fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.cost-kpi-minibar__val {
+  font-size: 10px;
+  font-family: 'DM Mono', monospace, monospace;
+  color: var(--dashboard-text, #f1f5f9);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.cost-kpi-loading {
+  font-size: 12px;
+  color: var(--dashboard-muted, #64748b);
+  padding: 8px 0;
+}

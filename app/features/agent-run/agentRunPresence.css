@@ -1,0 +1,183 @@
+/**
+ * Agent Sam — hero / floating run presence (chat thread).
+ * Compact idle chrome stays in AgentPresenceStatus; active work uses this shell.
+ */
+
+.iam-agent-run-thinking {
+  margin: 10px 12px 12px;
+  border: 1px solid color-mix(in srgb, var(--solar-cyan, #22d3ee) 22%, var(--dashboard-border, rgba(255, 255, 255, 0.1)));
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 12% 0%, color-mix(in srgb, var(--solar-cyan, #22d3ee) 8%, transparent), transparent 42%),
+    linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--dashboard-panel, #111219) 96%, transparent),
+      color-mix(in srgb, var(--scene-bg, #0d0d10) 88%, transparent)
+    );
+  box-shadow: 0 12px 40px color-mix(in srgb, #000 28%, transparent);
+  overflow: hidden;
+  max-width: 100%;
+  width: calc(100% - 4px);
+  align-self: center;
+}
+
+.iam-agent-run-thinking__header {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  width: 100%;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  color: inherit;
+}
+
+.iam-agent-run-thinking__icon {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  color: var(--solar-cyan, #22d3ee);
+  filter: drop-shadow(0 0 14px color-mix(in srgb, var(--solar-cyan, #22d3ee) 42%, transparent));
+}
+
+.iam-agent-run-thinking__icon .iam-mode-presence-slot {
+  width: 44px;
+  height: 44px;
+}
+
+.iam-agent-run-thinking--blocked .iam-agent-run-thinking__icon {
+  color: var(--solar-yellow, #fbbf24);
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--solar-yellow, #fbbf24) 35%, transparent));
+}
+
+.iam-agent-run-thinking--error .iam-agent-run-thinking__icon {
+  color: var(--solar-red, #f87171);
+  filter: drop-shadow(0 0 12px color-mix(in srgb, var(--solar-red, #f87171) 35%, transparent));
+}
+
+.iam-agent-run-thinking--done .iam-agent-run-thinking__icon {
+  color: var(--dashboard-muted, #8a8a9e);
+  filter: none;
+  opacity: 0.85;
+}
+
+.iam-agent-run-thinking__main {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+}
+
+.iam-agent-run-thinking__title {
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: -0.015em;
+  color: var(--dashboard-text, #e6e6f0);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.iam-agent-run-thinking--done .iam-agent-run-thinking__title {
+  font-weight: 500;
+  color: var(--dashboard-muted, #8a8a9e);
+}
+
+.iam-agent-run-thinking__meta {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 10px;
+  color: var(--dashboard-muted, #8a8a9e);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.iam-agent-run-thinking__pill {
+  flex-shrink: 0;
+  border: 1px solid var(--dashboard-border, rgba(255, 255, 255, 0.1));
+  background: color-mix(in srgb, var(--scene-bg, #0d0d10) 88%, transparent);
+  color: var(--dashboard-muted, #8a8a9e);
+  border-radius: 999px;
+  padding: 4px 8px;
+  font-size: 9px;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.iam-agent-run-thinking__chev {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--dashboard-border, rgba(255, 255, 255, 0.1));
+  border-radius: 10px;
+  background: color-mix(in srgb, #000 20%, transparent);
+  color: var(--dashboard-muted, #8a8a9e);
+  transition: transform 0.15s ease;
+}
+
+.iam-agent-run-thinking.is-expanded .iam-agent-run-thinking__chev {
+  transform: rotate(180deg);
+}
+
+.iam-agent-run-thinking__trace {
+  border-top: 1px solid var(--dashboard-border, rgba(255, 255, 255, 0.08));
+  padding: 8px 14px 12px;
+  display: grid;
+  gap: 6px;
+}
+
+.iam-agent-run-thinking__trace-note {
+  font-size: 11px;
+  color: var(--dashboard-muted, #8a8a9e);
+  font-style: italic;
+  line-height: 1.5;
+  padding-bottom: 4px;
+}
+
+.iam-agent-run-thinking__step {
+  display: grid;
+  grid-template-columns: 44px 1fr;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.iam-agent-run-thinking__step-icon {
+  width: 44px;
+  height: 44px;
+  margin-top: 0;
+  display: grid;
+  place-items: center;
+}
+
+.iam-agent-run-thinking__step-name {
+  font-size: 13px;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  color: var(--dashboard-text, #e6e6f0);
+  line-height: 1.4;
+  padding-top: 10px;
+}
+
+.iam-agent-run-thinking__step-preview {
+  font-size: 11px;
+  color: var(--dashboard-muted, #8a8a9e);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .iam-agent-run-thinking__chev {
+    transition: none;
+  }
+}

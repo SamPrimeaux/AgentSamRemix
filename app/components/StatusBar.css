@@ -1,0 +1,76 @@
+/* StatusBar workspace picker + branch menu — uses dashboard CSS variables only */
+
+.ws-picker-row-inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0.5rem;
+}
+
+.ws-name {
+  font-weight: 600;
+  color: inherit;
+}
+
+.ws-slug {
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.625rem;
+  color: var(--text-muted);
+}
+
+.ws-repo {
+  flex-basis: 100%;
+  font-size: 0.5625rem;
+  color: var(--text-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.ws-status {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--text-muted);
+}
+
+.ws-status.active {
+  background: var(--solar-green);
+}
+
+.ws-status.archived,
+.ws-status.suspended {
+  background: var(--solar-yellow);
+}
+
+.ws-status.inactive {
+  background: var(--text-muted);
+}
+
+.iam-branch-error-text {
+  color: var(--error);
+}
+
+.iam-branch-protected {
+  padding: 0 0.25rem;
+  border-radius: 0.25rem;
+  border: 1px solid var(--border-subtle);
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+}
+
+.iam-branch-spinner {
+  animation: iam-branch-spin 0.75s linear infinite;
+  color: var(--text-muted);
+}
+
+@keyframes iam-branch-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

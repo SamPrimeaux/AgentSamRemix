@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IAM Examples Gallery</title>
+  <style>
+    :root {
+      --paper: #f7f5ef;
+      --paper-2: #fbfaf6;
+      --ink: #1f1f1c;
+      --muted: #6d6a63;
+      --faint: #a7a297;
+      --rule: rgba(35, 32, 27, .09);
+      --card: #fbfaf6;
+      --rust: #bd573f;
+      --rust-dark: #9e422d;
+      --black: #080808;
+      --white: #f8f7f2;
+      --radius: 10px;
+      --shadow: 0 1px 0 rgba(0,0,0,.05), 0 10px 30px rgba(28,25,20,.05);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--paper);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+      text-rendering: optimizeLegibility;
+    }
+    button { font: inherit; }
+    button:focus-visible, a:focus-visible { outline: 2px solid var(--rust); outline-offset: 2px; }
+    .gallery-shell {
+      width: min(1180px, calc(100vw - 36px));
+      margin: 0 auto;
+      padding: 34px 0 70px;
+    }
+    .gallery-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 24px;
+      align-items: end;
+      margin-bottom: 30px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .kicker {
+      color: var(--rust);
+      font-size: 12px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      font-weight: 800;
+      margin-bottom: 10px;
+    }
+    h1, h2, h3 {
+      font-family: Georgia, "Times New Roman", serif;
+      font-weight: 500;
+      letter-spacing: -.035em;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(42px, 8vw, 86px);
+      line-height: .92;
+      max-width: 820px;
+    }
+    .header-copy {
+      max-width: 430px;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 15px;
+      font-style: italic;
+    }
+    #headerNav {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 18px;
+    }
+    .chip {
+      height: 30px;
+      border-radius: 999px;
+      border: 1px solid var(--rule);
+      background: rgba(255,255,255,.34);
+      color: #524e47;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 11px;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 760;
+    }
+    .chip:hover { border-color: rgba(189,87,63,.38); color: var(--rust-dark); }
+    .example-row {
+      display: grid;
+      grid-template-columns: minmax(0, 750px) minmax(260px, 330px);
+      gap: 30px;
+      align-items: start;
+      margin: 0 0 48px;
+      scroll-margin-top: 24px;
+    }
+    .preview-card {
+      position: relative;
+      min-height: 430px;
+      border-radius: var(--radius);
+      overflow: hidden;
+      background: var(--card);
+      border: 1px solid var(--rule);
+      box-shadow: var(--shadow);
+    }
+    .preview-card.tall { min-height: 500px; }
+    .preview-card.video { min-height: 430px; background: #030303; color: white; }
+    .preview-card.iframe-preview { padding: 0; background: #0c0c0a; }
+    .preview-card.iframe-preview iframe {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 500px;
+      border: 0;
+      background: #0c0c0a;
+    }
+    .preview-card.iframe-preview .hover-label { pointer-events: none; }
+    .preview-card.iframe-preview .open-lab {
+      position: absolute;
+      left: 12px;
+      bottom: 12px;
+      z-index: 8;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 10px;
+      border-radius: 999px;
+      background: rgba(8,8,8,.72);
+      color: #f8f7f2;
+      text-decoration: none;
+      font-size: 11px;
+      font-weight: 760;
+      letter-spacing: .02em;
+    }
+    .preview-card.iframe-preview .open-lab:hover { background: rgba(189,87,63,.92); }
+    .hover-label {
+      position: absolute;
+      right: 12px;
+      bottom: 12px;
+      z-index: 8;
+      height: 28px;
+      display: inline-flex;
+      align-items: center;
+      padding: 0 11px;
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(20,20,19,.64);
+      backdrop-filter: blur(10px);
+      font-size: 12px;
+      font-weight: 680;
+    }
+    .example-copy {
+      padding-top: 10px;
+      position: sticky;
+      top: 26px;
+    }
+    .example-copy h2 {
+      margin: 0 0 8px;
+      font-size: clamp(25px, 3vw, 31px);
+      line-height: 1.05;
+    }
+    .prompt {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.48;
+      font-style: italic;
+      max-width: 310px;
+    }
+    .use-prompt {
+      height: 30px;
+      border: 0;
+      border-radius: 5px;
+      background: var(--rust);
+      color: white;
+      padding: 0 11px;
+      font-weight: 800;
+      letter-spacing: .02em;
+      cursor: pointer;
+      box-shadow: inset 0 -1px 0 rgba(0,0,0,.12);
+    }
+    .use-prompt:hover { background: var(--rust-dark); }
+    .use-prompt[disabled] { opacity: .55; cursor: progress; }
+    .micro-label {
+      position: absolute;
+      left: 14px;
+      top: 12px;
+      z-index: 2;
+      color: var(--faint);
+      font-size: 9px;
+      letter-spacing: .18em;
+      text-transform: uppercase;
+      font-weight: 900;
+    }
+    /* Globe loader */
+    .globe-wrap {
+      height: 100%;
+      min-height: 430px;
+      display: grid;
+      place-items: center;
+      background: #f4f2ed;
+    }
+    .globe {
+      width: 205px;
+      height: 205px;
+      position: relative;
+      filter: contrast(.9) grayscale(1);
+    }
+    .globe svg { width: 100%; height: 100%; overflow: visible; }
+    .globe .spin-a { transform-origin: 100px 100px; animation: spin 4.8s linear infinite; }
+    .globe .spin-b { transform-origin: 100px 100px; animation: spinReverse 6.2s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes spinReverse { to { transform: rotate(-360deg); } }
+    /* Iridescent card */
+    .iridescent-scene {
+      height: 100%;
+      min-height: 500px;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(122,79,255,.12), transparent 30%),
+        radial-gradient(circle at 78% 72%, rgba(220,108,255,.14), transparent 28%),
+        #09090c;
+      display: grid;
+      grid-template-columns: 1fr 235px;
+      gap: 0;
+      padding: 24px;
+      color: white;
+    }
+    .playing-card {
+      width: 285px;
+      height: 420px;
+      align-self: center;
+      justify-self: center;
+      border-radius: 14px;
+      background: linear-gradient(135deg, rgba(255,255,255,.92), rgba(243,241,226,.82) 45%, rgba(255,255,255,.9));
+      color: #10100f;
+      border: 7px solid rgba(255,255,255,.72);
+      box-shadow: 0 26px 80px rgba(0,0,0,.6), inset 0 0 0 4px #111;
+      position: relative;
+      filter: hue-rotate(var(--card-hue-rotate, 0deg));
+      transform: perspective(800px) rotateX(var(--tilt-x, 4deg)) rotateY(var(--tilt-y, -4deg));
+      transition: transform .35s ease, filter .35s ease, box-shadow .35s ease;
+      overflow: hidden;
+    }
+    .white-overlay, .iridescent-overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .white-overlay {
+      background: radial-gradient(circle at 20% 18%, rgba(255,255,255,1), transparent 55%);
+      opacity: .7;
+    }
+    .iridescent-overlay {
+      background: conic-gradient(from 190deg, rgba(151,113,255,.28), rgba(255,255,255,0), rgba(226,174,255,.2), rgba(255,255,255,0));
+    }
+    .center-glyph {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      z-index: 2;
+      transform: translate(-50%, -50%);
+      font-size: 92px;
+      line-height: 1;
+      color: #070707;
+      display: none;
+    }
+    .preview-card:hover .playing-card {
+      transform: perspective(800px) rotateX(calc(var(--tilt-x, 4deg) - 2deg)) rotateY(calc(var(--tilt-y, -4deg) + 3deg)) translateY(-4px);
+      filter: brightness(1.08) hue-rotate(var(--card-hue-rotate, 0deg));
+    }
+    .playing-card::after {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.5), transparent 58%);
+      transform: translateX(-45%) rotate(8deg);
+      animation: sheen 3.8s ease-in-out infinite;
+    }
+    @keyframes sheen { 50% { transform: translateX(35%) rotate(8deg); } }
+    .card-rank { position: absolute; left: 22px; top: 18px; z-index: 2; font: 34px Georgia, serif; }
+    .card-rank.bottom { left: auto; top: auto; right: 22px; bottom: 18px; transform: rotate(180deg); }
+    .spade {
+      position: absolute;
+      left: 50%; top: 50%; z-index: 2;
+      width: 92px; height: 92px;
+      transform: translate(-50%, -44%);
+      background: #070707;
+      clip-path: path("M46 0 C10 35 0 48 0 68 C0 84 13 92 28 92 C38 92 44 86 46 80 C48 86 54 92 64 92 C79 92 92 84 92 68 C92 48 82 35 46 0 Z");
+    }
+    .spade::after { content: ""; position: absolute; left: 36px; top: 72px; width: 20px; height: 36px; background: #070707; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+    .control-panel {
+      border-left: 1px solid rgba(255,255,255,.08);
+      padding-left: 18px;
+      align-self: stretch;
+      display: flex;
+      flex-direction: column;
+      gap: 13px;
+      min-width: 0;
+    }
+    .control-title { font: 18px Georgia, serif; margin: 0; }
+    .control-sub { color: #8f8c95; font-size: 10px; letter-spacing: .18em; text-transform: uppercase; }
+    .control-group label { display: flex; justify-content: space-between; color: #b5b1be; font-size: 10px; letter-spacing: .12em; text-transform: uppercase; margin-bottom: 7px; }
+    .segments { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .seg { height: 24px; border-radius: 4px; background: #1c1c24; display: grid; place-items: center; color: #a8a4b1; font-size: 10px; border: 0; padding: 0; cursor: pointer; }
+    .seg.active { background: #f2efe5; color: #111; }
+    .slider { height: 4px; border-radius: 99px; background: linear-gradient(90deg, #9b6bff var(--p), #f4f1e7 var(--p)); position: relative; }
+    .slider::after { content: ""; position: absolute; left: var(--p); top: 50%; width: 11px; height: 11px; border-radius: 50%; background: #9b6bff; transform: translate(-50%, -50%); }
+    input.slider-input {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 4px;
+      border-radius: 99px;
+      background: linear-gradient(90deg, #9b6bff var(--p, 50%), #f4f1e7 var(--p, 50%));
+      outline: none;
+      cursor: pointer;
+      margin: 0;
+    }
+    input.slider-input::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #9b6bff;
+      box-shadow: 0 0 0 4px rgba(155,107,255,.18);
+      cursor: pointer;
+    }
+    input.slider-input::-moz-range-thumb {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: #9b6bff;
+      border: none;
+      cursor: pointer;
+    }
+    input.slider-input::-moz-range-track {
+      height: 4px;
+      border-radius: 99px;
+      background: transparent;
+    }
+    /* Text streaming */
+    .stream-grid {
+      height: 500px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      border: 1px solid var(--rule);
+      background: #f8f7f2;
+    }
+    .stream-cell { position: relative; padding: 34px 16px; border-right: 1px solid var(--rule); border-bottom: 1px solid var(--rule); overflow: hidden; }
+    .stream-cell:nth-child(3n) { border-right: 0; }
+    .stream-cell:nth-child(n+4) { border-bottom: 0; }
+    .stream-cell::before { content: attr(data-label); position: absolute; top: 9px; left: 10px; font-size: 8px; letter-spacing: .18em; color: var(--faint); font-weight: 900; }
+    .stream-cell::after { content: attr(data-num); position: absolute; top: 9px; right: 10px; font-size: 9px; color: var(--faint); }
+    .question { width: 172px; min-height: 48px; margin: 0 auto 20px; border-radius: 8px; background: #090909; color: white; padding: 11px 13px; font-size: 13px; line-height: 1.25; }
+    .answer { width: 190px; border-radius: 8px; background: #ecebe7; color: #252523; padding: 10px 11px; font-size: 14px; line-height: 1.25; margin: 0 auto; }
+    .caret { display: inline-block; width: 6px; height: 16px; background: #111; vertical-align: -3px; animation: blink 1s steps(2) infinite; }
+    @keyframes blink { 50% { opacity: 0; } }
+    .fade-word { color: #bbb7ae; animation: fadein 2.4s ease-in-out infinite; }
+    @keyframes fadein { 0%, 100% { opacity: .15; } 50% { opacity: 1; } }
+    .slide-word { display: inline-block; animation: slidein 2.4s ease-in-out infinite; }
+    @keyframes slidein { 0% { opacity: 0; transform: translateX(6px); } 30%, 70% { opacity: 1; transform: translateX(0); } 100% { opacity: 0; transform: translateX(6px); } }
+    .scramble-word { animation: flicker 1.6s steps(6) infinite; }
+    @keyframes flicker { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
+    /* Organic loaders */
+    .organic-grid {
+      height: 500px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(2, 1fr);
+      gap: 28px;
+      padding: 26px;
+      background: #f8f7f2;
+    }
+    .organic-box { border: 1px solid var(--rule); background: var(--paper-2); display: grid; place-items: center; overflow: hidden; }
+    .blob { width: 120px; height: 110px; background: #050505; animation: morph 4.8s ease-in-out infinite; filter: blur(.2px); }
+    .blob.circle { border-radius: 50%; width: 80px; height: 80px; animation: pulse 2.4s ease-in-out infinite; }
+    .blob.tri { width: 110px; height: 110px; clip-path: polygon(50% 0, 100% 75%, 0 75%); border-radius: 36%; animation: triWobble 4s ease-in-out infinite; }
+    @keyframes morph { 0%,100% { border-radius: 42% 58% 50% 50% / 54% 42% 58% 46%; transform: rotate(0deg); } 50% { border-radius: 58% 42% 62% 38% / 38% 60% 40% 62%; transform: rotate(14deg); } }
+    @keyframes pulse { 50% { transform: scale(1.18); filter: blur(2px); } }
+    @keyframes triWobble { 50% { transform: rotate(35deg) scale(.95); border-radius: 50%; } }
+    /* Cosmic */
+    .cosmos {
+      height: 430px;
+      background: #000;
+      position: relative;
+      overflow: hidden;
+      color: white;
+    }
+    .stars { position: absolute; inset: 0; background-image: radial-gradient(#fff 1px, transparent 1px); background-size: 29px 31px; opacity: .18; animation: starDrift 18s linear infinite; }
+    @keyframes starDrift { to { transform: translateY(31px); } }
+    .sun { position: absolute; left: 132px; top: 204px; width: 3px; height: 3px; background: white; border-radius: 50%; box-shadow: 0 0 18px #fff; }
+    .sun-label { position: absolute; left: 104px; top: 246px; font-size: 11px; letter-spacing: .35em; font-weight: 900; }
+    .giant { position: absolute; right: 92px; top: 116px; width: 290px; height: 290px; border-radius: 50%; background: #f0f0ed; box-shadow: inset -20px -16px 50px rgba(0,0,0,.06); }
+    .cosmos-title { position: absolute; left: 170px; top: 54px; font-size: 68px; letter-spacing: -.06em; font-weight: 900; }
+    .cosmos-sub { position: absolute; left: 330px; top: 154px; font-size: 16px; color: #c9c8c2; }
+    .video-bar { position: absolute; left: 0; right: 0; bottom: 0; height: 30px; background: rgba(255,255,255,.08); display: flex; align-items: center; gap: 10px; padding: 0 10px; color: white; font-size: 12px; }
+    .play { width: 0; height: 0; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 11px solid white; }
+    .progress { flex: 1; height: 2px; background: rgba(255,255,255,.35); position: relative; }
+    .progress::after { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 28%; background: white; }
+    /* App onboarding */
+    .onboard {
+      height: 430px;
+      background: radial-gradient(#e0e4ee 1px, transparent 1px), #f5f6fb;
+      background-size: 16px 16px;
+      padding: 48px 28px 26px;
+      overflow: hidden auto;
+    }
+    .phone-strip { display: flex; gap: 18px; min-width: 830px; }
+    .phone {
+      width: 154px;
+      height: 290px;
+      border-radius: 18px;
+      background: white;
+      border: 1px solid rgba(0,0,0,.08);
+      box-shadow: 0 14px 35px rgba(24,39,75,.08);
+      padding: 12px;
+      position: relative;
+      overflow: hidden;
+      flex: 0 0 auto;
+    }
+    .phone.blue { background: linear-gradient(180deg, #315cf5, #1946df); color: white; }
+    .orange-blob { position: absolute; width: 88px; height: 88px; border-radius: 50%; right: -22px; top: 42px; background: #ff7d3d; }
+    .phone-time { text-align: center; font-size: 10px; font-weight: 800; margin-bottom: 18px; }
+    .phone h4 { margin: 0 0 8px; font-size: 15px; line-height: 1.1; letter-spacing: -.03em; }
+    .phone p { margin: 0 0 12px; color: #7a7d85; font-size: 9px; line-height: 1.4; }
+    .phone.blue p { color: rgba(255,255,255,.72); }
+    .mini-input { height: 34px; border-radius: 8px; border: 1px solid #dfe3ee; margin: 8px 0; padding: 0 8px; color: #111; background: white; font-size: 11px; display: flex; align-items: center; }
+    .mini-button { height: 30px; border-radius: 7px; background: #315cf5; color: white; display: grid; place-items: center; font-size: 10px; font-weight: 800; margin-top: 12px; }
+    .plan-card { border: 1px solid #e6e8ee; border-radius: 9px; padding: 8px; margin: 8px 0; font-size: 10px; }
+    .keyboard { position: absolute; left: 0; right: 0; bottom: 0; height: 76px; background: #e9ebf0; display: grid; grid-template-columns: repeat(10,1fr); gap: 3px; padding: 7px; }
+    .key { border-radius: 3px; background: white; }
+    /* Shader */
+    .shader {
+      height: 430px;
+      background:
+        radial-gradient(circle at var(--x, 30%) var(--y, 35%), rgba(65,130,190,.9), transparent 24%),
+        radial-gradient(circle at 35% 62%, rgba(39,83,127,.9), transparent 28%),
+        radial-gradient(circle at 78% 20%, #0d0c21, transparent 38%),
+        linear-gradient(135deg, #0e0d18, #10203a 52%, #060615);
+      filter: saturate(1.1) contrast(1.1);
+      transition: background .1s linear;
+    }
+    .shader::after { content: ""; position: absolute; inset: 0; backdrop-filter: blur(18px); background: rgba(10,10,20,.12); }
+    /* Text particles */
+    .particles {
+      height: 430px;
+      background: #050505;
+      color: white;
+      padding: 54px 46px;
+      overflow: hidden;
+      position: relative;
+    }
+    .particle-copy { font: 48px/1.2 Georgia, serif; max-width: 680px; letter-spacing: -.025em; position: relative; z-index: 2; }
+    .particle-copy span { position: relative; display: inline-block; }
+    .fire { color: #ffb46b; text-shadow: 0 0 22px #ff5a1c; }
+    .smoke { color: #c5c5c5; text-shadow: 0 0 18px #999; }
+    .metal { color: #333; text-shadow: 0 1px 0 #aaa, 0 0 18px #fff; }
+    .wind { color: #fff; text-decoration: line-through; text-decoration-thickness: 2px; }
+    .electric { color: #dceeff; text-shadow: 0 0 18px #78b8ff; }
+    .gold { color: #d6b15f; text-shadow: 0 0 20px #c99428; }
+    .snow { color: #dcefff; text-shadow: 0 0 20px #bce7ff; }
+    .particles .p { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: white; opacity: .5; animation: floatUp 4s linear infinite; }
+    @keyframes floatUp { from { transform: translateY(40px); opacity: 0; } 30% { opacity: .8; } to { transform: translateY(-160px); opacity: 0; } }
+    /* Calculator */
+    .calculator-kit {
+      height: 430px;
+      background: radial-gradient(#e0ddd5 1px, transparent 1px), #f8f6ef;
+      background-size: 16px 16px;
+      display: grid;
+      grid-template-columns: 1fr 250px;
+      gap: 28px;
+      padding: 44px;
+    }
+    .calc-device { align-self: center; justify-self: center; width: 270px; padding: 18px; border-radius: 18px; background: rgba(255,255,255,.72); box-shadow: 0 24px 50px rgba(57,47,34,.13); }
+    .calc-display { height: 74px; border-radius: 12px; background: #f3f0ea; display: flex; align-items: center; justify-content: flex-end; padding: 0 18px; font: 32px Georgia, serif; }
+    .calc-keys { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
+    .calc-key { height: 38px; border-radius: 9px; background: white; border: 1px solid #e7e1d8; display: grid; place-items: center; color: #5b554c; font-size: 13px; }
+    .kit-panel h3 { margin: 0; font-size: 24px; }
+    .kit-panel small { display: block; margin: 4px 0 18px; letter-spacing: .16em; font-size: 9px; color: #8d877e; font-weight: 900; }
+    .kit-row { border-top: 1px solid #ded8ce; padding: 13px 0; }
+    .kit-row label { display: block; font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: #7b756b; margin-bottom: 9px; }
+    .option-row { display: flex; gap: 6px; flex-wrap: wrap; }
+    .option { height: 22px; padding: 0 9px; border-radius: 999px; background: #ede9df; display: inline-flex; align-items: center; font-size: 10px; font-weight: 800; color: #4c463e; }
+    .option.active { background: #111; color: white; }
+    .copied {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 50;
+      background: #111;
+      color: white;
+      border-radius: 10px;
+      padding: 12px 14px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.18);
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(10px);
+      transition: opacity .18s ease, transform .18s ease;
+      font-size: 13px;
+      font-weight: 780;
+    }
+    .copied.show { opacity: 1; transform: translateY(0); }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition-duration: .001ms !important; }
+    }
+    @media (max-width: 980px) {
+      .gallery-header, .example-row { grid-template-columns: 1fr; }
+      .example-copy { position: static; padding-top: 0; }
+      .prompt { max-width: 680px; }
+      .iridescent-scene, .calculator-kit { grid-template-columns: 1fr; }
+      .control-panel { display: none; }
+      .playing-card { width: 235px; height: 350px; }
+      .stream-grid, .organic-grid { grid-template-columns: 1fr; height: auto; min-height: 680px; }
+      .stream-cell { min-height: 190px; border-right: 0; }
+      .cosmos-title { left: 36px; font-size: 48px; }
+      .giant { right: -40px; }
+      .particle-copy { font-size: 34px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="gallery-shell">
+    <header class="gallery-header">
+      <div>
+        <div class="kicker">IAM prompt examples</div>
+        <h1>Interactive examples with prompt-ready creative surfaces.</h1>
+      </div>
+      <div>
+        <p class="header-copy">A gallery of high-quality visual prompts with hoverable previews and one-tap "Use this prompt" handoff into a clean workspace.</p>
+        <nav id="headerNav"></nav>
+      </div>
+    </header>
+
+    <section class="example-row" id="scroll-fx">
+      <div class="preview-card tall iframe-preview">
+        <iframe
+          title="IAM Scroll FX Library demo"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://assets.inneranimalmedia.com/cms/motion/iam-scroll-fx-v1/index.html"
+        ></iframe>
+        <a
+          class="open-lab"
+          href="https://assets.inneranimalmedia.com/cms/motion/iam-scroll-fx-v1/index.html"
+          target="_blank"
+          rel="noopener noreferrer"
+        >Open full lab</a>
+        <span class="hover-label">Scroll inside to preview</span>
+      </div>
+      <aside class="example-copy">
+        <h2 data-field="title"></h2>
+        <p class="prompt" data-field="prompt"></p>
+        <button class="use-prompt" type="button" data-field="button"></button>
+      </aside>
+    </section>
+    <section class="example-row" id="globe">
+      <div class="preview-card">
+        <div class="micro-label">Loader 01</div>
+        <div class="globe-wrap">
+          <div class="globe" aria-hidden="true">
+            <svg viewBox="0 0 200 200" fill="none" stroke="#444" stroke-width="1.2">
+              <circle cx="100" cy="100" r="64" opacity=".85" />
+              <ellipse cx="100" cy="100" rx="64" ry="22" opacity=".28" />
+              <ellipse cx="100" cy="100" rx="64" ry="44" opacity=".22" />
+              <ellipse cx="100" cy="100" rx="24" ry="64" opacity=".32" />
+              <ellipse cx="100" cy="100" rx="44" ry="64" opacity=".2" />
+              <path d="M45 90 C62 81, 72 82, 82 91 C88 97, 88 106, 99 105 C112 103, 112 91, 128 91 C143 92, 153 103, 157 118" opacity=".55" />
+              <path d="M70 55 C84 63, 87 70, 82 79 C77 89, 69 97, 76 113 C81 125, 95 132, 93 145" opacity=".45" />
+              <path d="M122 51 C121 65, 133 71, 143 75 C153 80, 153 91, 142 97" opacity=".42" />
+              <g class="spin-a"><path d="M20 100a80 80 0 0 1 18-50" /><path d="M180 100a80 80 0 0 1-18 50" /></g>
+              <g class="spin-b"><path d="M31 128a78 78 0 0 1-1-55" /><path d="M169 72a78 78 0 0 1 1 55" /></g>
+            </svg>
+          </div>
+        </div>
+        <span class="hover-label">Hover to preview</span>
+      </div>
+      <aside class="example-copy">
+        <h2 data-field="title"></h2>
+        <p class="prompt" data-field="prompt"></p>
+        <button class="use-prompt" type="button" data-field="button"></button>
+      </aside>
+    </section>
+
+    <section class="example-row" id="card">
+      <div class="preview-card tall">
+        <div class="iridescent-scene">
+          <div class="playing-card" id="tweakCard">
+            <div class="white-overlay"></div>
+            <div class="iridescent-overlay"></div>
+            <div class="card-rank"><span class="card-rank-value">A</span><br><span class="card-suit-value" style="font-size:22px">&spades;</span></div>
+            <div class="spade"></div>
+            <div class="center-glyph" aria-hidden="true"></div>
+            <div class="card-rank bottom"><span class="card-rank-value">A</span><br><span class="card-suit-value" style="font-size:22px">&spades;</span></div>
+          </div>
+          <div class="control-panel">
+            <div>
+              <h3 class="control-title">Iridescent Card</h3>
+              <div class="control-sub">Monochrome controls</div>
+            </div>
+            <div class="control-group">
+              <label>Rank</label>
+              <div class="segments" data-control="rank">
+                <button type="button" class="seg active" data-value="A">A</button>
+                <button type="button" class="seg" data-value="K">K</button>
+                <button type="button" class="seg" data-value="Q">Q</button>
+                <button type="button" class="seg" data-value="J">J</button>
+                <button type="button" class="seg" data-value="10">10</button>
+              </div>
+            </div>
+            <div class="control-group">
+              <label>Suit</label>
+              <div class="segments" data-control="suit">
+                <button type="button" class="seg active" data-value="spade">&spades;</button>
+                <button type="button" class="seg" data-value="heart">&hearts;</button>
+                <button type="button" class="seg" data-value="diamond">&diams;</button>
+                <button type="button" class="seg" data-value="club">&clubs;</button>
+              </div>
+            </div>
+            <div class="control-group"><label>Hue <span data-readout="hue">260</span></label><input type="range" class="slider-input" data-control="hue" min="0" max="360" step="1" value="260"></div>
+            <div class="control-group"><label>Iridescence <span data-readout="iridescence">55</span></label><input type="range" class="slider-input" data-control="iridescence" min="0" max="100" step="1" value="55"></div>
+            <div class="control-group"><label>White overlay <span data-readout="white">70</span></label><input type="range" class="slider-input" data-control="white" min="0" max="100" step="1" value="70"></div>
+            <div class="control-group"><label>Glow <span data-readout="glow">55</span></label><input type="range" class="slider-input" data-control="glow" min="0" max="100" step="1" value="55"></div>
+            <div class="control-group"><label>Tilt <span data-readout="tilt">18</span></label><input type="range" class="slider-input" data-control="tilt" min="0" max="30" step="1" value="18"></div>
+          </div>
+        </div>
+        <span class="hover-label">Hover to preview</span>
+      </div>
+      <aside class="example-copy">
+        <h2 data-field="title"></h2>
+        <p class="prompt" data-field="prompt"></p>
+        <button class="use-prompt" type="button" data-field="button"></button>
+      </aside>
+    </section>
+
+    <section class="example-row" id="stream">
+      <div class="preview-card tall">
+        <div class="stream-grid">
+          <div class="stream-cell" data-label="Typewriter" data-num="01"><div class="question">What's the capital of France?</div><div class="answer">The capital of France is Paris, lo<span class="caret"></span></div></div>
+          <div class="stream-cell" data-label="Word fade" data-num="02"><div class="question">What's the capital of France?</div><div class="answer">The capital of France is Paris, <span class="fade-word">located</span></div></div>
+          <div class="stream-cell" data-label="Word slide" data-num="03"><div class="question">What's the capital of France?</div><div class="answer">The capital of France is Paris, <span class="slide-word">located</span></div></div>
+          <div class="stream-cell" data-label="Char blur" data-num="04"><div class="question">What's the capital of France?</div><div class="answer">The capital of France is Paris,</div></div>
+          <div class="stream-cell" data-label="Dots to text" data-num="05"><div class="question">What's the capital of France?</div><div class="answer">The capital of France</div></div>
+          <div class="stream-cell" data-label="Scramble" data-num="06"><div class="question">What's the capital of France?</div><div class="answer">The capital of France is Paris,<br><span class="scramble-word">@#$%^&amp;</span></div></div>
+        </div>
+        <span class="hover-label">Hover to preview</span>
+      </div>
+      <aside class="example-copy">
+        <h2 data-field="title"></h2>
+        <p class="prompt" data-field="prompt"></p>
+        <button class="use-prompt" type="button" data-field="button"></button>
+      </aside>
+    </section>
+
+    <section class="example-row" id="organic">
+      <div class="preview-card tall">
+        <div class="organic-grid">
+          <div class="organic-box"><div class="blob"></div></div>
+          <div class="organic-box"><div class="blob circle"></div></div>
+          <div class="organic-box"><div class="blob tri"></div></div>
+          <div class="organic-box"><div class="blob circle" style="animation-delay:.5s"></div></div>
+          <div class="organic-box"><div class="blob" style="animation-delay:1s"></div></div>
+          <div class="organic-box"></div>
+        </div>
+        <span class="hover-label">Hover to preview</span>
+      </div>
+      <aside class="example-copy">
+        <h2 data-field="title"></h2>
+        <p class="prompt" data-field="prompt"></p>
+        <button class="use-prompt" type="button" data-field="button"></button>
+      </aside>
+    </section>
+
+    <section class="example-row" id="cosmic">
+      <div class="preview-card video">
+        <div class="cosmos">
+          <div class="stars"></div>
+          <div class="cosmos-title">700&times; wider</div>
+          <div class="cosmos-sub">Betelgeuse &mdash; a red supergiant</div>
+          <div class="sun"></div>
+          <div class="sun-label">OUR SUN</div>
+          <div class="giant"></div>
+          <div class="video-bar"><div class="play"></div><span>0:05 / 1:14</span><div class="progress"></div><span>0:41</span></div>
+        </div>
+        <span class="hover-label">Hover to preview</span>
+      </div>
+      <aside class="example-copy">
+        <h2 data-field="title"></h2>
+        <p class="prompt" data-field="prompt"></p>
+        <button class="use-prompt" type="button" data-field="button"></button>
+      </aside>
+    </section>
+
+    <section class="example-row" id="app">
+      <div class="preview-card">
+        <div class="onboard">
+          <div class="phone-strip">
+            <div class="phone blue"><div class="orange-blob"></div><div class="phone-time">9:41</div><h4 style="margin-top:132px">bike flow</h4><p>onboarding for a city bikeshare app</p><div class="mini-button" style="background:white;color:#315cf5">Get started</div></div>
+            <div class="phone"><div class="phone-time">9:41</div><h4>What's your number?</h4><p>We'll text you a code to verify.</p><div class="mini-input">(415) 555 0198</div><div class="mini-button">Send code</div><div class="keyboard"></div></div>
+            <div class="phone"><div class="phone-time">9:41</div><h4>Enter the code</h4><p>Sent to +1 415 555 0198</p><div class="mini-input">4 8 2 1</div><div class="mini-button">Verify</div><div class="keyboard"></div></div>
+            <div class="phone"><div class="phone-time">9:41</div><h4>About you</h4><p>So we can save your first ride.</p><div class="mini-input">Maya</div><div class="mini-input">m@site.co</div><div class="mini-button">Next</div><div class="keyboard"></div></div>
+            <div class="phone"><div class="phone-time">9:41</div><h4>Pick a plan</h4><p>Change or cancel anytime.</p><div class="plan-card"><strong>Day pass</strong><br>$4</div><div class="plan-card"><strong>Monthly</strong><br>$18</div><div class="plan-card"><strong>Annual</strong><br>$165</div><div class="mini-button">Start riding</div></div>
+          </div>
+        </div>
+        <span class="hover-label">Hover to preview</span>
+      </div>
+      <aside class="example-copy">
+        <h2 data-field="title"></h2>
+        <p class="prompt" data-field="prompt"></p>
+        <button class="use-prompt" type="button" data-field="button"></button>
+      </aside>
+    </section>
+
+    <section class="example-row" id="shader">
+      <div class="preview-card">
+        <div class="shader" id="shaderPanel"></div>
+        <span class="hover-label">Hover to preview</span>
+      </div>
+      <aside class="example-copy">
+        <h2 data-field="title"></h2>
+        <p class="prompt" data-field="prompt"></p>
+        <button class="use-prompt" type="button" data-field="button"></button>
+      </aside>
+    </section>
+
+    <section class="example-row" id="particles">
+      <div class="preview-card video">
+        <div class="particles" id="particlesPanel">
+          <div class="particle-copy">The dragon breathed <span class="fire">Fire</span> into the cold night, and <span class="smoke">Smoke</span> curled around his <span class="metal">Metal</span> scales. A bitter <span class="wind">Wind</span> carried sparks across the <span class="snow">Snow</span> plains, where an <span class="electric">Electric</span> storm lit up a forgotten <span class="gold">Gold</span> crown beneath the falling snow.</div>
+        </div>
+        <span class="hover-label">Hover to preview</span>
+      </div>
+      <aside class="example-copy">
+        <h2 data-field="title"></h2>
+        <p class="prompt" data-field="prompt"></p>
+        <button class="use-prompt" type="button" data-field="button"></button>
+      </aside>
+    </section>
+
+    <section class="example-row" id="calculator">
+      <div class="preview-card">
+        <div class="calculator-kit">
+          <div class="calc-device">
+            <div class="calc-display">0</div>
+            <div class="calc-keys">
+              <span class="calc-key">7</span><span class="calc-key">8</span><span class="calc-key">9</span><span class="calc-key">&divide;</span>
+              <span class="calc-key">4</span><span class="calc-key">5</span><span class="calc-key">6</span><span class="calc-key">&times;</span>
+              <span class="calc-key">1</span><span class="calc-key">2</span><span class="calc-key">3</span><span class="calc-key">&minus;</span>
+              <span class="calc-key">0</span><span class="calc-key">.</span><span class="calc-key">=</span><span class="calc-key">+</span>
+            </div>
+          </div>
+          <div class="kit-panel">
+            <h3>Calculator Kit</h3>
+            <small>Construction &middot; shell, keys, display</small>
+            <div class="kit-row"><label>Shell style</label><div class="option-row"><span class="option active">Default</span><span class="option">Flat</span><span class="option">Brutal</span><span class="option">Glass</span></div></div>
+            <div class="kit-row"><label>Key shape</label><div class="option-row"><span class="option">Square</span><span class="option active">Soft</span><span class="option">Pill</span></div></div>
+            <div class="kit-row"><label>Display</label><div class="slider" style="--p:68%"></div></div>
+          </div>
+        </div>
+        <span class="hover-label">Hover to preview</span>
+      </div>
+      <aside class="example-copy">
+        <h2 data-field="title"></h2>
+        <p class="prompt" data-field="prompt"></p>
+        <button class="use-prompt" type="button" data-field="button"></button>
+      </aside>
+    </section>
+
+  </main>
+
+  <div class="copied" id="copiedToast">Prompt copied</div>
+
+  <script>
+    /* ----------------------------------------------------------------
+     * DATA LAYER
+     * This array is the integration seam with the backend. Today it's
+     * a static fallback so the gallery renders standalone. The real
+     * version replaces this assignment with:
+     *
+     *   const EXAMPLES = await fetch('/api/cookbook?category=examples')
+     *     .then(r => r.json());
+     *
+     * ...sourced from agentsam_cookbook (recipe_id, name, prompt_text,
+     * description). Each row's recipe_id should match one of the
+     * section ids below (#globe, #card, #stream, etc.) via a
+     * preview_component_key column so the hand-built preview markup
+     * stays matched to the right data row without being regenerated
+     * from it.
+     * ---------------------------------------------------------------- */
+    const EXAMPLES = [
+      {
+        slug: 'scroll-fx',
+        recipe_id: 'rp_scroll_fx_v1',
+        nav_label: 'Scroll FX',
+        title: 'Scroll FX library',
+        prompt: 'Add IAM Scroll FX to this page using the reusable pack at https://assets.inneranimalmedia.com/cms/motion/iam-scroll-fx-v1/ (drop-in files under /components/). Drive every effect from a single --progress custom property written by scroll-engine.js on sticky [data-chapter] tracks — no GSAP, no Lenis, no WebGL unless I ask. Include mask-wipe (and optional iris), letter-stagger via split-text.js, progress-bar/clip-reveal, and parallax-lite. Bake in prefers-reduced-motion fallbacks from the start. Retheme only via tokens.css.'
+      },
+      {
+        slug: 'globe',
+        recipe_id: 'rp_globe_loader_v1',
+        nav_label: 'Globe',
+        title: 'Globe loader',
+        prompt: 'Prototype a loading indicator that shows the globe spinning with real country outlines, full monochrome, no text, 200\u00d7200 centered on an off-white background. Add a whirl effect around it.'
+      },
+      {
+        slug: 'card',
+        recipe_id: 'rp_iridescent_card_v1',
+        nav_label: 'Card',
+        title: 'Iridescent card',
+        prompt: 'Create a monochromatic playing card. Display it on the page with a rich perspective hover effect and glow. The bright areas should be iridescent; there should be a subtle noise texture and specular glow that reacts to the mouse position. Add tweaks for as many aspects of this effect as you can.'
+      },
+      {
+        slug: 'stream',
+        recipe_id: 'rp_text_streaming_v1',
+        nav_label: 'Streaming',
+        title: 'Text streaming',
+        prompt: 'On a responsive grid, animate several different text-streaming animations for a chat app; sample each one in a labeled cell; show a user question and stream a response below. Loop it. Monochrome.'
+      },
+      {
+        slug: 'organic',
+        recipe_id: 'rp_organic_loaders_v1',
+        nav_label: 'Loaders',
+        title: 'Organic loaders',
+        prompt: 'Prototype a set of simple, tasteful indeterminate loading indicators on a wrapping grid. All black and white, no text. All should have an organic, blobby feeling.'
+      },
+      {
+        slug: 'cosmic',
+        recipe_id: 'rp_cosmic_scale_v1',
+        nav_label: 'Cosmic',
+        title: 'Cosmic scale animation',
+        prompt: 'Create a sprite-based animation that gives fun facts about the distance and sizes of celestial bodies. Mix abstract animations using circles of various sizes as celestial bodies with text-based animation. Use a monochrome, Helvetica palette.'
+      },
+      {
+        slug: 'app',
+        recipe_id: 'rp_app_onboarding_v1',
+        nav_label: 'App flow',
+        title: 'App onboarding',
+        prompt: 'Create a simple iOS signup flow for a bikesharing app. Show screens on a canvas. Use a pure orange modern color scheme.'
+      },
+      {
+        slug: 'shader',
+        recipe_id: 'rp_shader_wallpapers_v1',
+        nav_label: 'Shader',
+        title: 'Shader wallpapers',
+        prompt: 'Imagine you\u2019re creating a wallpaper for a futuristic operating system. We want it to feel interactive and fun to fidget with. Create an interactive shader wallpaper that reacts to mouse position, and maybe clicks.'
+      },
+      {
+        slug: 'particles',
+        recipe_id: 'rp_text_particles_v1',
+        nav_label: 'Particles',
+        title: 'Text particle effects',
+        prompt: 'Create a very large editable text box, pre-filled with sample text. For certain words like \u2018Fire\u2019, \u2018Smoke\u2019, \u2018metal\u2019, \u2018wind\u2019, render visual and particle effects that match the word.'
+      },
+      {
+        slug: 'calculator',
+        recipe_id: 'rp_calculator_kit_v1',
+        nav_label: 'Calculator',
+        title: 'Calculator construction kit',
+        prompt: 'Create a calculator construction kit \u2014 a simple calculator UI with a lot of tweak controls. I want a design system-style prototype with shell, key shape, spacing, material, and display controls.'
+      }
+    ];
+
+    function renderNavAndCopy() {
+      const nav = document.getElementById('headerNav');
+      EXAMPLES.forEach((ex) => {
+        const chip = document.createElement('a');
+        chip.className = 'chip';
+        chip.href = `#${ex.slug}`;
+        chip.textContent = ex.nav_label;
+        nav.appendChild(chip);
+
+        const row = document.getElementById(ex.slug);
+        if (!row) return;
+        row.querySelector('[data-field="title"]').textContent = ex.title;
+        row.querySelector('[data-field="prompt"]').textContent = `\u201c${ex.prompt}\u201d`;
+        const btn = row.querySelector('[data-field="button"]');
+        btn.textContent = 'Use this prompt';
+        btn.dataset.prompt = ex.prompt;
+        btn.dataset.slug = ex.slug;
+        btn.dataset.recipeId = ex.recipe_id;
+      });
+    }
+
+    function fixOnboardingKeyboards() {
+      // The original markup tried to inline a JS template literal directly
+      // in HTML, which browsers render as literal text instead of evaluating.
+      // Build the 30-key grid for real, here, after the DOM exists.
+      document.querySelectorAll('.keyboard').forEach((kb) => {
+        for (let i = 0; i < 30; i += 1) {
+          const key = document.createElement('span');
+          key.className = 'key';
+          kb.appendChild(key);
+        }
+      });
+    }
+
+    function wireUsePromptButtons() {
+      const toast = document.getElementById('copiedToast');
+      document.querySelectorAll('.use-prompt').forEach((button) => {
+        button.addEventListener('click', async () => {
+          const prompt = button.dataset.prompt || '';
+          const recipeId = button.dataset.recipeId;
+
+          // Fire-and-forget usage tracking. Deliberately non-blocking and
+          // wrapped so a missing or not-yet-built endpoint never breaks the click.
+          // This is the lesson from the agentsam_skill invocation_count
+          // drift: track usage from a real write path from day one, not
+          // a counter nobody verifies.
+          fetch(`/api/cookbook/${encodeURIComponent(recipeId)}/use`, {
+            method: 'POST',
+            credentials: 'include'
+          }).catch(() => {});
+
+          // Real integration point: the app shell injects this function to
+          // open a clean Design-Studio-style workspace pre-loaded with the
+          // prompt (Start with context: Design system / Screenshot /
+          // Codebase / Figma), matching the existing claude.ai/design flow.
+          const bridge = window.parent !== window ? window.parent : window;
+          if (typeof bridge.iamStartWorkspaceWithPrompt === 'function') {
+            bridge.iamStartWorkspaceWithPrompt({ prompt, recipeId, source: 'examples_gallery' });
+            return;
+          }
+
+          // Standalone preview fallback: no app shell present, so just
+          // copy the prompt and confirm, rather than failing silently.
+          try {
+            await navigator.clipboard.writeText(prompt);
+          } catch {
+            window.prompt('Copy prompt', prompt);
+          }
+          toast.classList.add('show');
+          setTimeout(() => toast.classList.remove('show'), 1300);
+        });
+      });
+    }
+
+    function wireShader() {
+      const shader = document.getElementById('shaderPanel');
+      shader?.addEventListener('pointermove', (event) => {
+        const rect = shader.getBoundingClientRect();
+        shader.style.setProperty('--x', `${((event.clientX - rect.left) / rect.width) * 100}%`);
+        shader.style.setProperty('--y', `${((event.clientY - rect.top) / rect.height) * 100}%`);
+      });
+    }
+
+    function wireParticles() {
+      const particles = document.getElementById('particlesPanel');
+      if (!particles) return;
+      for (let i = 0; i < 72; i += 1) {
+        const p = document.createElement('span');
+        p.className = 'p';
+        p.style.left = `${Math.random() * 100}%`;
+        p.style.top = `${35 + Math.random() * 68}%`;
+        p.style.animationDelay = `${Math.random() * 4}s`;
+        p.style.animationDuration = `${3 + Math.random() * 4}s`;
+        p.style.opacity = `${.18 + Math.random() * .6}`;
+        particles.appendChild(p);
+      }
+    }
+
+    function wireCardTweaks() {
+      const card = document.getElementById('tweakCard');
+      if (!card) return;
+      const whiteOverlay = card.querySelector('.white-overlay');
+      const iridescentOverlay = card.querySelector('.iridescent-overlay');
+      const spadeShape = card.querySelector('.spade');
+      const centerGlyph = card.querySelector('.center-glyph');
+      const rankEls = card.querySelectorAll('.card-rank-value');
+      const suitEls = card.querySelectorAll('.card-suit-value');
+      const panel = card.closest('.iridescent-scene').querySelector('.control-panel');
+
+      const suitGlyph = { spade: '\u2660', heart: '\u2665', diamond: '\u2666', club: '\u2663' };
+      // 260 / 55 / 70 / 55 / 18 reproduce the original static mockup exactly;
+      // every control is relative to that baseline so defaults look identical
+      // to before, and only diverge once someone actually moves a slider.
+      const state = { rank: 'A', suit: 'spade', hue: 260, iridescence: 55, white: 70, glow: 55, tilt: 18 };
+
+      function render() {
+        rankEls.forEach((el) => { el.textContent = state.rank; });
+        suitEls.forEach((el) => { el.textContent = suitGlyph[state.suit]; });
+
+        const isSpade = state.suit === 'spade';
+        spadeShape.style.display = isSpade ? '' : 'none';
+        centerGlyph.style.display = isSpade ? 'none' : '';
+        if (!isSpade) centerGlyph.textContent = suitGlyph[state.suit];
+
+        const a1 = (state.iridescence / 100) * 0.5;
+        const a2 = (state.iridescence / 100) * 0.35;
+        iridescentOverlay.style.background = `conic-gradient(from 190deg, rgba(151,113,255,${a1}), rgba(255,255,255,0), rgba(226,174,255,${a2}), rgba(255,255,255,0))`;
+
+        whiteOverlay.style.opacity = state.white / 100;
+
+        const hueRotate = state.hue - 260; // baseline 260 == no rotation
+        card.style.setProperty('--card-hue-rotate', `${hueRotate}deg`);
+        card.style.filter = `hue-rotate(${hueRotate}deg)`;
+
+        const blur = 40 + state.glow * 0.6;
+        const spread = state.glow * 0.1;
+        const alpha = (0.35 + (state.glow / 100) * 0.35).toFixed(2);
+        card.style.boxShadow = `0 ${20 + spread}px ${blur}px rgba(0,0,0,${alpha}), inset 0 0 0 4px #111`;
+
+        const tiltX = (state.tilt / 18) * 4;
+        const tiltY = -(state.tilt / 18) * 4;
+        card.style.setProperty('--tilt-x', `${tiltX}deg`);
+        card.style.setProperty('--tilt-y', `${tiltY}deg`);
+      }
+
+      panel.querySelectorAll('.segments').forEach((group) => {
+        const key = group.dataset.control;
+        group.querySelectorAll('.seg').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            group.querySelectorAll('.seg').forEach((b) => b.classList.remove('active'));
+            btn.classList.add('active');
+            state[key] = btn.dataset.value;
+            render();
+          });
+        });
+      });
+
+      panel.querySelectorAll('input.slider-input').forEach((input) => {
+        const key = input.dataset.control;
+        const readout = panel.querySelector(`[data-readout="${key}"]`);
+        const sync = () => {
+          const val = Number(input.value);
+          state[key] = val;
+          const pct = ((val - Number(input.min)) / (Number(input.max) - Number(input.min))) * 100;
+          input.style.setProperty('--p', `${pct}%`);
+          if (readout) readout.textContent = val;
+          render();
+        };
+        input.addEventListener('input', sync);
+        sync();
+      });
+
+      render();
+    }
+
+    renderNavAndCopy();
+    fixOnboardingKeyboards();
+    wireUsePromptButtons();
+    wireShader();
+    wireParticles();
+    wireCardTweaks();
+  </script>
+</body>
+</html>

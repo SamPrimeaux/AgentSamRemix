@@ -1,0 +1,327 @@
+/* Sketch Studio — architectural + layout shell (/dashboard/sketch) */
+
+.sketch-studio {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #0b1220;
+  color: #e2e8f0;
+  overflow: hidden;
+}
+
+.sketch-studio--blueprint {
+  background: #071018;
+}
+
+.sketch-studio__float-toolbar {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  backdrop-filter: blur(12px);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+  max-width: calc(100% - 24px);
+}
+
+.sketch-studio__doc-name {
+  font-size: 12px;
+  font-weight: 500;
+  color: #94a3b8;
+  max-width: 140px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sketch-studio__tool-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding-left: 6px;
+  border-left: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.sketch-studio__tool-group--right {
+  margin-left: auto;
+  border-left: none;
+  padding-left: 0;
+}
+
+.sketch-studio__icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #cbd5e1;
+  cursor: pointer;
+}
+
+.sketch-studio__icon-btn:hover {
+  background: rgba(56, 189, 248, 0.12);
+  color: #38bdf8;
+}
+
+.sketch-studio__icon-btn.is-active {
+  background: rgba(56, 189, 248, 0.18);
+  color: #7dd3fc;
+}
+
+.sketch-studio__canvas {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+}
+
+.sketch-studio .wf-studio--embed {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.sketch-studio .wf-studio--embed .wf-studio__canvas-wrap {
+  flex: 1;
+  min-height: 0;
+  background: transparent;
+}
+
+.sketch-studio--blueprint .wf-studio__canvas-wrap--blueprint {
+  background: radial-gradient(circle at 50% 0%, #0f2744 0%, #071018 55%);
+}
+
+.sketch-studio--blueprint .wf-studio__grid {
+  background-image:
+    linear-gradient(rgba(56, 189, 248, 0.08) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(56, 189, 248, 0.08) 1px, transparent 1px);
+  background-size: 24px 24px;
+  opacity: 1;
+}
+
+.wf-studio__rulers {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+}
+
+.wf-studio__dim-label {
+  position: absolute;
+  top: 4px;
+  left: 6px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #7dd3fc;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+}
+
+.sketch-studio__modebar {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  backdrop-filter: blur(12px);
+}
+
+.sketch-studio__mode {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.sketch-studio__mode.is-active {
+  background: rgba(56, 189, 248, 0.18);
+  color: #38bdf8;
+}
+
+.sketch-studio__mode--export {
+  margin-left: 4px;
+  border-left: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+}
+
+.sketch-studio__palette {
+  position: absolute;
+  top: 64px;
+  left: 12px;
+  z-index: 15;
+  width: 160px;
+  padding: 10px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.94);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  backdrop-filter: blur(10px);
+}
+
+.sketch-studio__palette-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #64748b;
+  margin-bottom: 8px;
+}
+
+.sketch-studio__palette-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.sketch-studio__palette-item {
+  padding: 8px 6px;
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  background: rgba(30, 41, 59, 0.8);
+  color: #cbd5e1;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.sketch-studio__palette-item:hover {
+  border-color: #38bdf8;
+  color: #38bdf8;
+}
+
+.sketch-studio__templates {
+  position: absolute;
+  top: 64px;
+  right: 12px;
+  z-index: 25;
+  width: min(320px, calc(100% - 24px));
+  max-height: min(420px, 60vh);
+  overflow: auto;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.sketch-studio__templates-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.sketch-studio__templates-hint {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.sketch-studio__templates-empty {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.sketch-studio__templates-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sketch-studio__templates-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+
+.sketch-studio__templates-load {
+  flex: 1;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: rgba(30, 41, 59, 0.6);
+  cursor: pointer;
+  color: inherit;
+}
+
+.sketch-studio__templates-load:hover {
+  border-color: rgba(56, 189, 248, 0.35);
+  background: rgba(56, 189, 248, 0.08);
+}
+
+.sketch-studio__templates-name {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.sketch-studio__templates-meta {
+  display: block;
+  font-size: 10px;
+  color: #64748b;
+  margin-top: 2px;
+}
+
+.sketch-studio__zoom {
+  position: absolute;
+  bottom: 16px;
+  left: 12px;
+  z-index: 15;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+.sketch-studio-loading {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--dashboard-muted);
+}
+
+.wf-studio--embed {
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr;
+  border: none;
+  border-radius: 0;
+}
+
+.wf-studio--embed .wf-studio__status {
+  background: rgba(15, 23, 42, 0.85);
+  color: #64748b;
+}

@@ -1,0 +1,15 @@
+/* Phone top bar — logo + search icon + more only (belt-and-suspenders with max-phone: utilities).
+ * Safe-area inset for the status bar is owned by .iam-chrome-topbar (inneranimalmedia.css). */
+@media (max-width: 430px) {
+  .iam-topbar-desktop-only {
+    display: none !important;
+  }
+
+  .iam-topbar-mobile-only {
+    display: flex !important;
+  }
+
+  .iam-topbar-mobile-block {
+    display: block !important;
+  }
+}

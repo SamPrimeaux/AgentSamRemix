@@ -1,0 +1,139 @@
+.iam-connect-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.iam-connect-sheet {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  z-index: 401;
+  transform: translate(-50%, -50%);
+  width: min(720px, calc(100vw - 32px));
+  max-height: min(80vh, 640px);
+  overflow: auto;
+  border-radius: 16px;
+  border: 1px solid var(--dashboard-border);
+  background: var(--bg-elevated, #1a1f2e);
+  padding: 20px 22px 24px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+}
+
+.iam-connect-sheet-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.iam-connect-sheet-head h2 {
+  margin: 0 0 4px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.iam-connect-sheet-head p {
+  margin: 0;
+  font-size: 13px;
+  color: var(--color-muted, #94a3b8);
+}
+
+.iam-connect-sheet-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(108px, 1fr));
+  gap: 12px 10px;
+}
+
+.iam-connect-sheet-empty {
+  grid-column: 1 / -1;
+  font-size: 13px;
+  color: var(--color-muted, #94a3b8);
+  padding: 12px 0;
+}
+
+.iam-connect-sheet-error {
+  margin: 0 0 12px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(248, 113, 113, 0.12);
+  color: #fca5a5;
+  font-size: 13px;
+}
+
+.iam-connect-key-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+
+.iam-connect-key-modal {
+  width: min(420px, 100%);
+  border-radius: 12px;
+  border: 1px solid var(--dashboard-border);
+  background: var(--bg-elevated, #1a1f2e);
+  padding: 20px;
+}
+
+.iam-connect-key-modal h3 {
+  margin: 0 0 8px;
+  font-size: 17px;
+}
+
+.iam-connect-key-modal p {
+  margin: 0 0 12px;
+  font-size: 13px;
+  color: var(--color-muted, #94a3b8);
+}
+
+.iam-connect-key-input {
+  width: 100%;
+  box-sizing: border-box;
+  border-radius: 8px;
+  border: 1px solid var(--dashboard-border);
+  background: var(--bg-app);
+  color: inherit;
+  font-size: 14px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.iam-connect-key-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.iam-connect-key-submit {
+  border-radius: 8px;
+  border: none;
+  background: var(--solar-cyan, #22d3ee);
+  color: #0f172a;
+  font-weight: 600;
+  font-size: 13px;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.iam-connect-key-submit:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.iam-app-icon-wrap--add .iam-app-icon-shell {
+  border: 1px dashed var(--dashboard-border);
+  background: transparent;
+}
+
+.iam-app-icon-wrap--add .iam-app-icon-fallback {
+  color: var(--solar-cyan, #22d3ee);
+  font-size: 28px;
+  font-weight: 300;
+  line-height: 1;
+}

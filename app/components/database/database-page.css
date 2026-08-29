@@ -1,0 +1,314 @@
+/**
+ * Database Studio semantic tokens — resolve to CMS/dashboard variables only.
+ */
+
+:root {
+  --database-bg: var(--dashboard-canvas, var(--bg-app));
+  --database-panel: var(--dashboard-panel, var(--bg-panel));
+  --database-surface: var(--dashboard-surface, var(--bg-surface, var(--bg-panel)));
+  --database-border: var(--dashboard-border, var(--border-subtle));
+  --database-text: var(--text-main, var(--text-primary));
+  --database-text-muted: var(--text-muted, var(--text-secondary));
+  --database-accent: var(--color-accent, var(--solar-cyan));
+  --database-monaco-bg: var(--monaco-bg, var(--scene-bg, var(--database-bg)));
+  --database-search-highlight-bg: color-mix(in srgb, var(--database-accent) 28%, transparent);
+  --database-search-highlight-text: var(--database-text);
+  --database-row-hover-bg: var(--bg-hover, color-mix(in srgb, var(--database-accent) 8%, transparent));
+  --database-row-selected-bg: color-mix(in srgb, var(--database-accent) 14%, transparent);
+  --database-cell-selected-bg: color-mix(in srgb, var(--database-accent) 18%, transparent);
+  --database-cell-selected-border: color-mix(in srgb, var(--database-accent) 55%, transparent);
+  --database-error-bg: color-mix(in srgb, var(--color-danger, var(--solar-red)) 12%, transparent);
+  --database-error-text: var(--color-danger, var(--solar-red));
+  --database-success-text: var(--color-success, var(--solar-green));
+}
+
+.database-page {
+  background: var(--database-bg);
+  color: var(--database-text);
+}
+
+.database-search-mark {
+  color: var(--database-search-highlight-text);
+  background: var(--database-search-highlight-bg);
+  border-radius: 3px;
+  padding: 0 1px;
+}
+
+.database-splitter {
+  flex-shrink: 0;
+  height: 5px;
+  cursor: row-resize;
+  touch-action: none;
+  background: var(--database-border);
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.database-splitter:hover,
+.database-splitter[data-dragging='true'] {
+  background: var(--database-accent);
+  box-shadow: 0 0 0 1px var(--database-accent);
+}
+
+.database-splitter-col {
+  flex-shrink: 0;
+  width: 5px;
+  cursor: col-resize;
+  touch-action: none;
+  background: var(--database-border);
+  transition: background 0.12s ease, box-shadow 0.12s ease;
+}
+
+.database-splitter-col:hover,
+.database-splitter-col[data-dragging='true'] {
+  background: var(--database-accent);
+  box-shadow: 0 0 0 1px var(--database-accent);
+}
+
+.database-sql-error-panel {
+  margin: 0.75rem;
+  padding: 0.75rem;
+  border-radius: 0.5rem;
+  border: 1px solid color-mix(in srgb, var(--database-error-text) 35%, transparent);
+  background: var(--database-error-bg);
+  color: var(--database-error-text);
+  font-family: var(--font-mono);
+  font-size: 12px;
+}
+
+body.is-resizing-row {
+  cursor: row-resize !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: none;
+}
+
+body.is-resizing-row * {
+  cursor: row-resize !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+body.is-resizing-col {
+  cursor: col-resize !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  touch-action: none;
+}
+
+body.is-resizing-col * {
+  cursor: col-resize !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+
+.database-null-chip {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--database-text-muted);
+  background: color-mix(in srgb, var(--database-text-muted) 14%, transparent);
+  opacity: 0.85;
+}
+
+.database-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: color-mix(in srgb, var(--database-bg) 35%, #000 65%);
+  backdrop-filter: blur(4px);
+}
+
+.database-modal-panel {
+  width: min(520px, 100%);
+  max-height: min(90vh, 640px);
+  overflow: auto;
+  border-radius: 0.75rem;
+  border: 1px solid var(--database-border);
+  background: var(--database-panel);
+  box-shadow: 0 16px 48px color-mix(in srgb, #000 45%, transparent);
+}
+
+.database-table-menu {
+  position: fixed;
+  z-index: 60;
+  min-width: 168px;
+  padding: 0.25rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--database-border);
+  background: var(--database-panel);
+  box-shadow: 0 8px 24px color-mix(in srgb, #000 22%, transparent);
+}
+
+.database-table-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.45rem 0.65rem;
+  border: none;
+  border-radius: 0.35rem;
+  background: transparent;
+  color: var(--database-text);
+  /* Action labels use UI sans — mono made this menu look foreign vs sidebar/chrome */
+  font-family: var(--font-ui, var(--font-sans, system-ui, -apple-system, sans-serif));
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1.3;
+  text-align: left;
+  cursor: pointer;
+}
+
+.database-table-menu button:hover:not(:disabled) {
+  background: var(--database-row-hover-bg);
+  color: var(--database-accent);
+}
+
+.database-table-menu button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.database-table-menu-sep {
+  height: 1px;
+  margin: 0.25rem 0.35rem;
+  background: var(--database-border);
+}
+
+.database-table-menu-danger {
+  color: var(--database-error-text) !important;
+}
+
+.database-table-menu-danger:hover:not(:disabled) {
+  background: var(--database-error-bg) !important;
+  color: var(--database-error-text) !important;
+}
+
+.database-meta-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  background: color-mix(in srgb, var(--database-bg) 30%, #000 70%);
+  backdrop-filter: blur(3px);
+}
+
+.database-meta-panel {
+  display: flex;
+  flex-direction: column;
+  width: min(520px, 100%);
+  height: 100%;
+  border-left: 1px solid var(--database-border);
+  background: var(--database-panel);
+  box-shadow: -12px 0 32px color-mix(in srgb, #000 18%, transparent);
+}
+
+.database-cell-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  width: min(360px, 100%);
+  height: 100%;
+  border-left: 1px solid var(--database-border);
+  background: var(--database-panel);
+  box-shadow: -8px 0 24px color-mix(in srgb, #000 12%, transparent);
+}
+
+.database-results-grid .database-results-row:hover {
+  background: var(--database-row-hover-bg);
+}
+
+.database-results-grid .database-results-row--selected {
+  background: var(--database-row-selected-bg);
+}
+
+.database-grid-cell {
+  cursor: pointer;
+  transition: background 0.08s ease, outline-color 0.08s ease, box-shadow 0.08s ease;
+}
+
+.database-grid-cell:hover {
+  background: color-mix(in srgb, var(--database-cell-selected-bg) 45%, transparent);
+}
+
+.database-grid-cell:focus-visible {
+  outline: 2px solid var(--database-cell-selected-border);
+  outline-offset: -2px;
+  z-index: 1;
+}
+
+.database-grid-cell--selected {
+  background: var(--database-cell-selected-bg) !important;
+  box-shadow: inset 0 0 0 1px var(--database-cell-selected-border);
+}
+
+.database-grid-cell--editable {
+  cursor: pointer;
+}
+
+.database-grid-cell--readonly {
+  cursor: pointer;
+}
+
+.database-results-grid .group:hover .database-grid-cell-copy,
+.database-grid-cell--selected .database-grid-cell-copy {
+  opacity: 1;
+}
+
+.database-data-cell--selected {
+  background: var(--database-cell-selected-bg);
+  box-shadow: inset 0 0 0 1px var(--database-cell-selected-border);
+}
+
+.database-tables-rail-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .database-page {
+    /* The mobile overlay rail below is position:fixed and shouldn't be able
+       to force the page wider than the viewport. */
+    overflow-x: hidden;
+  }
+
+  .database-splitter,
+  .database-splitter-col {
+    display: none;
+    pointer-events: none;
+  }
+
+  .database-results-pane--mobile {
+    height: min(40vh, 280px) !important;
+    min-height: 160px;
+  }
+
+  /* Expanded table rail becomes a slide-over drawer instead of pushing the
+     SQL editor/results into a sliver. Collapsed (icon) rail stays in-flow. */
+  .database-tables-rail[data-collapsed='false'] {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 40;
+    width: min(86vw, 320px) !important;
+    box-shadow: 12px 0 40px color-mix(in srgb, #000 45%, transparent);
+  }
+
+  .database-tables-rail-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 39;
+    background: color-mix(in srgb, #000 55%, transparent);
+    backdrop-filter: blur(2px);
+  }
+}

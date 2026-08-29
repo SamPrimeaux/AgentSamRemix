@@ -1,0 +1,21 @@
+{
+  "name": "@inneranimalmedia/client-3d-runtime",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./board": "./src/chessBoard.ts",
+    "./materials": "./src/chessMaterials.ts",
+    "./squares": "./src/chessSquares.ts",
+    "./assets": "./src/glbAssets.ts",
+    "./gltf-loader": "./src/gltfLoader.ts"
+  },
+  "dependencies": {
+    "three": "^0.182.0"
+  },
+  "devDependencies": {
+    "@types/three": "^0.182.0",
+    "typescript": "^5.9.3"
+  }
+}

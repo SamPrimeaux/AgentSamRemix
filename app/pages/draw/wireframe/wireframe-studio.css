@@ -1,0 +1,479 @@
+/* Wireframe studio — Figma-like lo-fi canvas (companion to Excalidraw on /dashboard/draw) */
+
+.wf-studio {
+  --wf-surface-0: var(--dashboard-canvas, #0f1115);
+  --wf-surface-1: var(--dashboard-panel, #161a22);
+  --wf-surface-2: var(--dashboard-elevated, #1c2230);
+  --wf-border: var(--dashboard-border, #2a3142);
+  --wf-border-strong: color-mix(in srgb, var(--wf-border) 80%, #fff 20%);
+  --wf-text: var(--dashboard-text, #e8eaed);
+  --wf-muted: var(--dashboard-muted, #8b93a7);
+  --wf-accent: var(--color-primary, #22d3ee);
+  --wf-radius: 8px;
+  display: grid;
+  grid-template-columns: 220px 1fr 240px;
+  grid-template-rows: 44px 1fr;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  height: 100%;
+  overflow: hidden;
+  background: var(--wf-surface-0);
+  color: var(--wf-text);
+  font-size: 13px;
+}
+
+.wf-studio__topbar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 12px;
+  border-bottom: 1px solid var(--wf-border);
+  background: var(--wf-surface-2);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wf-studio__logo {
+  font-weight: 600;
+  font-size: 13px;
+  padding-right: 12px;
+  border-right: 1px solid var(--wf-border);
+  margin-right: 4px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.wf-studio__tb-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  padding: 5px 8px;
+  border-radius: var(--wf-radius);
+  border: none;
+  background: transparent;
+  color: var(--wf-muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  min-width: 28px;
+  min-height: 28px;
+}
+
+.wf-studio__tb-btn:hover,
+.wf-studio__tb-btn.is-active {
+  background: color-mix(in srgb, var(--wf-accent) 16%, transparent);
+  color: var(--wf-accent);
+}
+
+.wf-studio__sep {
+  width: 1px;
+  height: 20px;
+  background: var(--wf-border);
+  margin: 0 4px;
+  flex-shrink: 0;
+}
+
+.wf-studio__right {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.wf-studio__zoom {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: var(--wf-muted);
+  background: var(--wf-surface-1);
+  border-radius: var(--wf-radius);
+  padding: 4px 8px;
+  border: 1px solid var(--wf-border);
+  white-space: nowrap;
+}
+
+.wf-studio__sidebar {
+  background: var(--wf-surface-1);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-height: 0;
+}
+
+.wf-studio__sidebar--l {
+  border-right: 1px solid var(--wf-border);
+}
+
+.wf-studio__sidebar--r {
+  border-left: 1px solid var(--wf-border);
+}
+
+.wf-studio__tabs {
+  display: flex;
+  border-bottom: 1px solid var(--wf-border);
+  flex-shrink: 0;
+}
+
+.wf-studio__tab {
+  flex: 1;
+  padding: 8px 0;
+  font-size: 12px;
+  text-align: center;
+  cursor: pointer;
+  color: var(--wf-muted);
+  border: none;
+  background: none;
+  white-space: nowrap;
+}
+
+.wf-studio__tab.is-active {
+  color: var(--wf-text);
+  font-weight: 500;
+  border-bottom: 1.5px solid var(--wf-text);
+}
+
+.wf-studio__panel {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 8px;
+  min-height: 0;
+}
+
+.wf-studio__section {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--wf-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin: 10px 0 6px;
+}
+
+.wf-studio__fidelity {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 12px;
+  background: var(--wf-surface-2);
+  border-radius: var(--wf-radius);
+  padding: 3px;
+  border: 1px solid var(--wf-border);
+}
+
+.wf-studio__fidelity button {
+  flex: 1;
+  padding: 4px 0;
+  font-size: 11px;
+  border: none;
+  background: none;
+  color: var(--wf-muted);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.wf-studio__fidelity button.is-active {
+  background: var(--wf-surface-0);
+  color: var(--wf-text);
+  font-weight: 500;
+}
+
+.wf-studio__comp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.wf-studio__comp {
+  background: var(--wf-surface-2);
+  border: 1px solid var(--wf-border);
+  border-radius: 8px;
+  padding: 8px 6px;
+  cursor: grab;
+  text-align: center;
+  color: var(--wf-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.wf-studio__comp:hover {
+  border-color: var(--wf-accent);
+  color: var(--wf-accent);
+}
+
+.wf-studio__canvas-wrap {
+  position: relative;
+  overflow: hidden;
+  background: var(--wf-surface-0);
+  cursor: crosshair;
+  min-width: 0;
+  min-height: 0;
+}
+
+.wf-studio__grid {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(circle, var(--wf-border) 1px, transparent 1px);
+  background-size: 20px 20px;
+  opacity: 0.45;
+}
+
+.wf-studio__canvas-content {
+  position: absolute;
+  inset: 20px 0 22px 20px;
+  overflow: hidden;
+  transform-origin: top left;
+}
+
+.wf-studio__status {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 22px;
+  background: var(--wf-surface-1);
+  border-top: 1px solid var(--wf-border);
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  gap: 16px;
+  z-index: 3;
+  font-size: 11px;
+  color: var(--wf-muted);
+  overflow: hidden;
+}
+
+.wf-studio__el {
+  position: absolute;
+  cursor: move;
+  overflow: hidden;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  touch-action: none;
+}
+
+.wf-studio__el.is-selected {
+  outline: 2px solid var(--wf-accent);
+  outline-offset: 1px;
+}
+
+.wf-studio__layer {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 6px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 2px;
+  color: var(--wf-muted);
+  font-size: 12px;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+}
+
+.wf-studio__layer:hover,
+.wf-studio__layer.is-selected {
+  background: color-mix(in srgb, var(--wf-accent) 12%, transparent);
+  color: var(--wf-accent);
+}
+
+.wf-studio__prop-label {
+  font-size: 11px;
+  color: var(--wf-muted);
+  margin-bottom: 4px;
+}
+
+.wf-studio__prop-row {
+  margin-bottom: 10px;
+}
+
+.wf-studio__prop-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.wf-studio__input {
+  width: 100%;
+  background: var(--wf-surface-2);
+  border: 1px solid var(--wf-border);
+  border-radius: var(--wf-radius);
+  padding: 5px 8px;
+  font-size: 12px;
+  color: var(--wf-text);
+}
+
+.wf-studio__swatches {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.wf-studio__swatch {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: 1px solid var(--wf-border);
+  padding: 0;
+}
+
+.wf-studio__swatch.is-active {
+  border: 2px solid var(--wf-text);
+}
+
+.wf-studio__ghost-btn {
+  width: 100%;
+  justify-content: center;
+  font-size: 12px;
+  margin-bottom: 6px;
+}
+
+/* ─── Tablet: compress sidebars ─── */
+@media (max-width: 900px) and (min-width: 431px) {
+  .wf-studio {
+    grid-template-columns: 180px 1fr 200px;
+  }
+}
+
+/* ─── Phone: stack vertically — topbar / left panel / canvas / right panel ─── */
+@media (max-width: 430px) {
+  .wf-studio {
+    grid-template-columns: 1fr;
+    grid-template-rows: 44px auto 1fr auto;
+    font-size: 12px;
+  }
+
+  /* Left sidebar goes below topbar as a horizontal scroll strip */
+  .wf-studio__sidebar--l {
+    grid-row: 2;
+    border-right: none;
+    border-bottom: 1px solid var(--wf-border);
+    max-height: 190px;
+    min-height: 0;
+  }
+
+  /* Right sidebar goes below canvas as a compact format panel */
+  .wf-studio__sidebar--r {
+    grid-row: 4;
+    border-left: none;
+    border-top: 1px solid var(--wf-border);
+    max-height: 160px;
+    min-height: 0;
+  }
+
+  /* Canvas fills row 3 */
+  .wf-studio__canvas-wrap {
+    grid-row: 3;
+    min-height: 0;
+  }
+
+  /* Topbar: shrink logo, hide zoom label text, keep buttons tappable */
+  .wf-studio__logo {
+    font-size: 11px;
+    padding-right: 8px;
+  }
+
+  .wf-studio__zoom span {
+    display: none;
+  }
+
+  .wf-studio__zoom {
+    padding: 4px 6px;
+    gap: 2px;
+  }
+
+  /* Component grid: 4 columns on phone for compact palette */
+  .wf-studio__comp-grid {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 4px;
+  }
+
+  .wf-studio__comp {
+    padding: 6px 4px;
+    font-size: 9px;
+    gap: 3px;
+    border-radius: 6px;
+  }
+
+  /* Panel: horizontal scroll for component strips */
+  .wf-studio__panel {
+    padding: 6px;
+    overflow-x: auto;
+    overflow-y: auto;
+  }
+
+  /* Fidelity toggle: smaller */
+  .wf-studio__fidelity button {
+    font-size: 10px;
+    padding: 3px 0;
+  }
+
+  /* Section labels: hide on phone to save space */
+  .wf-studio__section {
+    margin: 6px 0 4px;
+    font-size: 9px;
+  }
+
+  /* Right panel compact prop rows */
+  .wf-studio__prop-row {
+    margin-bottom: 6px;
+  }
+
+  .wf-studio__prop-label {
+    font-size: 10px;
+  }
+
+  .wf-studio__input {
+    padding: 4px 6px;
+    font-size: 11px;
+  }
+
+  .wf-studio__swatch {
+    width: 18px;
+    height: 18px;
+  }
+
+  /* Ghost buttons smaller */
+  .wf-studio__ghost-btn {
+    font-size: 11px;
+    padding: 4px 6px;
+    margin-bottom: 4px;
+  }
+
+  /* Status bar: hide cursor coords, just show layer count */
+  .wf-studio__status {
+    gap: 8px;
+    padding: 0 8px;
+    font-size: 10px;
+  }
+
+  /* Tab buttons: bigger tap targets */
+  .wf-studio__tab {
+    padding: 10px 0;
+    font-size: 11px;
+  }
+
+  /* Toolbar buttons: bigger tap targets on phone */
+  .wf-studio__tb-btn {
+    min-width: 32px;
+    min-height: 32px;
+    padding: 6px;
+  }
+
+  .wf-studio__sep {
+    margin: 0 2px;
+  }
+}

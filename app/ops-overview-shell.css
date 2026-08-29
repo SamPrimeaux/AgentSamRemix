@@ -1,0 +1,624 @@
+/**
+ * Shared "Ops overview" shell styles (Overview, Health, and any page using .ov-*).
+ * Previously scoped inside OverviewPage only — that hid Health when Overview unmounted.
+ */
+
+.ov-wrap {
+  position: relative;
+  font-family: var(--font-sans);
+  color: var(--color-text-primary);
+  font-weight: 400;
+}
+.ov-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.ov-title {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.ov-titleTop {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+}
+.ov-h1 {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.2;
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.ov-sub {
+  margin: 0;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.ov-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+}
+.ov-btn {
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+  color: var(--color-text-primary);
+  border-radius: 10px;
+  padding: 8px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}
+.ov-btn:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.ov-small {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.ov-kpiGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+.ov-kpi {
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 112px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ov-kpiTop {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ov-kpiLeft {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.ov-iconSq {
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--color-background-primary);
+  flex: 0 0 auto;
+}
+.ov-kpiLabel {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ov-kpiValueRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.ov-kpiValue {
+  font-size: 20px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1.05;
+}
+.ov-pulseDot {
+  width: 6px;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--color-success);
+  animation: ovPulse 1.2s infinite;
+}
+@keyframes ovPulse {
+  50% {
+    opacity: 0.35;
+    transform: scale(0.8);
+  }
+}
+.ov-kpiSubRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ov-kpiSub {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+.ov-delta {
+  font-size: 10px;
+  font-weight: 500;
+}
+.ov-deltaUp {
+  color: var(--color-success);
+}
+.ov-deltaDown {
+  color: var(--color-danger);
+}
+.ov-deltaFlat {
+  color: var(--color-text-secondary);
+}
+.ov-spark {
+  height: 34px;
+}
+
+.ov-mainGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.ov-bottomGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px;
+}
+@media (max-width: 640px) {
+  .ov-mainGrid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (max-width: 480px) {
+  .ov-kpiGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ov-kpi {
+    padding: 10px;
+  }
+  .ov-kpiValue {
+    font-size: 16px;
+  }
+  .ov-bottomGrid {
+    grid-template-columns: 1fr;
+  }
+}
+@media (min-width: 480px) and (max-width: 768px) {
+  .ov-mainGrid {
+    grid-template-columns: 1fr;
+  }
+  .ov-bottomGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.ov-card {
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-primary);
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.ov-cardHead {
+  padding: 12px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ov-cardTitle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  font-size: 12px;
+}
+.ov-cardBody {
+  padding: 12px;
+  min-width: 0;
+}
+.ov-inlineNotice {
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  padding: 10px;
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 10px;
+  background: var(--color-background-primary);
+}
+.ov-link {
+  background: transparent;
+  border: 0;
+  color: var(--color-primary, var(--color-text-primary));
+  font-size: 11px;
+  font-weight: 500;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.ov-link:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.ov-toggle {
+  display: inline-flex;
+  gap: 6px;
+  background: var(--color-background-secondary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 20px;
+  padding: 3px;
+}
+.ov-toggle button {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 6px 10px;
+  border-radius: 20px;
+  cursor: pointer;
+}
+.ov-toggle button.active {
+  background: var(--color-primary, var(--solar-blue));
+  color: var(--color-background-primary);
+}
+
+.ov-tooltip {
+  background: var(--color-background-primary);
+  border: 0.5px solid var(--color-border-tertiary);
+  border-radius: 10px;
+  padding: 10px;
+  min-width: 200px;
+}
+.ov-tooltipTitle {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-bottom: 6px;
+}
+.ov-tooltipRows {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ov-tooltipRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 11px;
+  color: var(--color-text-secondary);
+}
+.ov-tooltipKey {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.ov-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  display: inline-block;
+}
+.ov-tooltipVal {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.ov-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+}
+.ov-table th {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-align: left;
+  padding: 8px 0;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.ov-table td {
+  padding: 9px 0;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  color: var(--color-text-primary);
+  vertical-align: middle;
+}
+
+.ov-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 10px;
+  font-weight: 500;
+}
+.ov-pillDot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+}
+.ov-pillHealthy {
+  background: var(--color-success-soft);
+  color: var(--color-success-strong);
+}
+.ov-pillDegraded {
+  background: var(--color-warning-soft);
+  color: var(--color-warning-strong);
+}
+.ov-pillCritical {
+  background: var(--color-danger-soft);
+  color: var(--color-danger-strong);
+}
+.ov-pillActive {
+  background: var(--color-info-soft);
+  color: var(--color-info-strong);
+}
+
+.ov-batchRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.ov-batchLegend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.ov-legendItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+.ov-legendItem strong {
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+.ov-centerPct {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.ov-centerPct strong {
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  line-height: 1;
+}
+.ov-centerPct span {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+
+.ov-topServices {
+  display: flex;
+  flex-direction: column;
+}
+.ov-topRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+}
+.ov-topRow:last-child {
+  border-bottom: 0;
+}
+.ov-topLeft {
+  min-width: 0;
+}
+.ov-topName {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ov-topSub {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+  margin-top: 2px;
+}
+.ov-topAmt {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.ov-shortcuts {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 5px;
+}
+.ov-shortcut {
+  border: 0.5px solid var(--color-border-tertiary);
+  background: var(--color-background-secondary);
+  border-radius: 7px;
+  padding: 7px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.ov-shortcut:hover {
+  border-color: var(--color-border-focus);
+  background: var(--color-background-secondary);
+}
+.ov-shortIcon {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
+  display: grid;
+  place-items: center;
+  color: var(--color-background-primary);
+}
+.ov-shortLabel {
+  font-size: 9px;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  text-align: center;
+}
+
+.ov-agentWidget {
+  margin-top: 10px;
+  border: 0.5px solid var(--color-border-focus);
+  background: var(--color-background-info);
+  border-radius: 8px;
+  padding: 9px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ov-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  background: var(--color-primary, var(--solar-blue));
+  color: var(--color-background-primary);
+  display: grid;
+  place-items: center;
+  font-size: 10px;
+  font-weight: 500;
+  flex: 0 0 auto;
+}
+.ov-agentMid {
+  flex: 1;
+  min-width: 0;
+}
+.ov-agentName {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--color-text-info);
+}
+.ov-agentSpend {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  margin-top: 2px;
+}
+.ov-bar {
+  height: 3px;
+  border-radius: 2px;
+  background: var(--color-border-focus);
+  overflow: hidden;
+  margin-top: 6px;
+}
+.ov-barFill {
+  height: 100%;
+  background: var(--color-primary, var(--solar-blue));
+}
+.ov-agentBtn {
+  border: 0;
+  background: var(--color-primary, var(--solar-blue));
+  color: var(--color-background-primary);
+  border-radius: 5px;
+  padding: 4px 9px;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  flex: 0 0 auto;
+}
+
+.ov-drawerScrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.12);
+  z-index: 9;
+}
+.ov-drawer {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+  max-width: 100%;
+  background: var(--color-background-primary);
+  border-left: 0.5px solid var(--color-border-tertiary);
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+}
+.ov-drawerHead {
+  padding: 12px;
+  border-bottom: 0.5px solid var(--color-border-tertiary);
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+.ov-drawerTitle {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+.ov-drawerTitle strong {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ov-drawerTitle span {
+  font-size: 10px;
+  color: var(--color-text-secondary);
+}
+.ov-drawerClose {
+  border: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  padding: 6px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.ov-drawerBody {
+  padding: 12px;
+  overflow: auto;
+}
+@media (max-width: 480px) {
+  .ov-drawer {
+    left: 0;
+    right: 0;
+    top: auto;
+    height: 75%;
+    width: auto;
+    border-left: 0;
+    border-top: 0.5px solid var(--color-border-tertiary);
+  }
+}

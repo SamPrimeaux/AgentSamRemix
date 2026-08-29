@@ -1,0 +1,325 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <script>
+      (function () {
+        var LAST_WS = 'inneranimalmedia_theme_last_ws';
+        var lastWs = localStorage.getItem(LAST_WS);
+        var K_CSS =
+          lastWs && lastWs.trim()
+            ? 'inneranimalmedia_theme_css:' + lastWs.trim()
+            : 'inneranimalmedia_theme_css';
+        var K_DARK =
+          lastWs && lastWs.trim()
+            ? 'inneranimalmedia_theme_is_dark:' + lastWs.trim()
+            : 'inneranimalmedia_theme_is_dark';
+        var K_SLUG =
+          lastWs && lastWs.trim()
+            ? 'inneranimalmedia_theme_slug:' + lastWs.trim()
+            : 'inneranimalmedia_theme_slug';
+        var K_MONACO =
+          lastWs && lastWs.trim()
+            ? 'inneranimalmedia_theme_monaco:' + lastWs.trim()
+            : 'inneranimalmedia_theme_monaco';
+        var K_MONACO_DATA =
+          lastWs && lastWs.trim()
+            ? 'inneranimalmedia_theme_monaco_data:' + lastWs.trim()
+            : 'inneranimalmedia_theme_monaco_data';
+        var K_MONACO_BG =
+          lastWs && lastWs.trim()
+            ? 'inneranimalmedia_theme_monaco_bg:' + lastWs.trim()
+            : 'inneranimalmedia_theme_monaco_bg';
+        var L_CSS = 'mcad_theme_css';
+        var L_DARK = 'mcad_theme_is_dark';
+        try {
+          if (!localStorage.getItem(K_CSS) && localStorage.getItem(L_CSS)) {
+            localStorage.setItem(K_CSS, localStorage.getItem(L_CSS));
+            localStorage.removeItem(L_CSS);
+          }
+          var d = localStorage.getItem(K_DARK);
+          if (d !== '1' && d !== '0') {
+            var ld = localStorage.getItem(L_DARK);
+            if (ld === '1' || ld === '0') {
+              localStorage.setItem(K_DARK, ld);
+              localStorage.removeItem(L_DARK);
+              d = ld;
+            }
+          }
+          if (d === '1' || d === '0') {
+            document.documentElement.setAttribute('data-theme', d === '1' ? 'dark' : 'light');
+          }
+          var raw = localStorage.getItem(K_CSS);
+          if (!raw) return;
+          var vars = JSON.parse(raw);
+          if (!vars || typeof vars !== 'object') return;
+          var root = document.documentElement;
+          Object.keys(vars).forEach(function (k) {
+            if (vars[k] != null) root.style.setProperty(k, String(vars[k]));
+          });
+          root.setAttribute('data-dashboard-theme-ready', 'true');
+          var slug = localStorage.getItem(K_SLUG);
+          if (slug) root.setAttribute('data-cms-theme', slug);
+          var mt = localStorage.getItem(K_MONACO);
+          var md = localStorage.getItem(K_MONACO_DATA);
+          var mb = localStorage.getItem(K_MONACO_BG);
+          if (mt && md && mb) {
+            root.setAttribute('data-monaco-theme', mt);
+            root.setAttribute('data-monaco-theme-data', md);
+            root.setAttribute('data-monaco-bg', mb);
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="IAM" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Inner Animal Media — Agent Dashboard</title>
+    <link rel="preconnect" href="https://inneranimalmedia.com" crossorigin />
+    <link rel="dns-prefetch" href="https://inneranimalmedia.com" />
+    <!-- Inner Animal Media dashboard shell (layout vars; safe alongside app CSS) -->
+    <link rel="stylesheet" href="/static/dashboard/shell.css" />
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/webrtc-adapter/8.1.2/adapter.min.js" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        font-family: system-ui, -apple-system, sans-serif;
+        background-color: var(--dashboard-canvas, var(--bg-app));
+        color: var(--dashboard-text, var(--text-main));
+      }
+    </style>
+    <!-- No importmap: bare-specifier maps to CDN caused a second React copy at runtime (minified error #525) alongside the Vite bundle. -->
+<link rel="stylesheet" href="/index.css?v=1.2.0-1775750920551">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+  <body>
+    <div id="root"></div>
+    <div
+      id="iam-boot-recovery"
+      hidden
+      style="
+        position: fixed;
+        inset: 0;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: rgba(0, 8, 12, 0.92);
+        font-family: system-ui, -apple-system, sans-serif;
+        color: #e2e8f0;
+      "
+    >
+      <div
+        style="
+          max-width: 400px;
+          width: 100%;
+          padding: 24px 20px;
+          border-radius: 14px;
+          border: 1px solid rgba(255,255,255,0.12);
+          background: #0f1720;
+          text-align: center;
+        "
+      >
+        <h1 style="margin: 0 0 10px; font-size: 18px">App didn&apos;t load</h1>
+        <p style="margin: 0 0 16px; font-size: 14px; line-height: 1.5; color: #94a3b8">
+          After an update you can sign in again — no need to delete the home-screen app.
+        </p>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <a
+            id="iam-boot-sign-in"
+            href="/auth/login"
+            style="
+              display: block;
+              padding: 12px 16px;
+              border-radius: 10px;
+              background: #e2e8f0;
+              color: #0d1117;
+              font-weight: 700;
+              text-decoration: none;
+            "
+            >Sign in</a
+          >
+          <a
+            href="/pwa-recovery.html"
+            style="
+              display: block;
+              padding: 10px 16px;
+              border-radius: 10px;
+              border: 1px solid rgba(255,255,255,0.14);
+              color: inherit;
+              text-decoration: none;
+              font-size: 13px;
+            "
+            >Recovery help</a
+          >
+          <button
+            type="button"
+            onclick="location.reload()"
+            style="
+              padding: 10px 16px;
+              border-radius: 10px;
+              border: 1px solid rgba(255,255,255,0.14);
+              background: transparent;
+              color: inherit;
+              font: inherit;
+              cursor: pointer;
+            "
+          >
+            Reload
+          </button>
+        </div>
+      </div>
+    </div>
+    <script>
+      (function () {
+        var next = location.pathname + location.search + location.hash;
+        var signIn = document.getElementById('iam-boot-sign-in');
+        if (signIn && next && next.indexOf('/dashboard') === 0) {
+          signIn.href = '/auth/login?next=' + encodeURIComponent(next);
+        }
+        var mounted = false;
+        var recoveryShown = false;
+        function rootEmpty() {
+          var root = document.getElementById('root');
+          return !root || root.childElementCount === 0;
+        }
+        function hideRecovery() {
+          var panel = document.getElementById('iam-boot-recovery');
+          if (panel) panel.hidden = true;
+          recoveryShown = false;
+        }
+        function showRecovery(force) {
+          if (mounted && !force) return;
+          if (!force && !rootEmpty()) return;
+          var panel = document.getElementById('iam-boot-recovery');
+          if (!panel || recoveryShown) return;
+          panel.hidden = false;
+          recoveryShown = true;
+        }
+        window.__IAM_MARK_DASHBOARD_MOUNTED__ = function () {
+          mounted = true;
+          hideRecovery();
+        };
+        function isChunkDriftMessage(msg) {
+          var s = String(msg || '');
+          return (
+            /does not provide an export named/i.test(s) ||
+            /Failed to fetch dynamically imported module/i.test(s) ||
+            /Importing a module script failed/i.test(s) ||
+            /error loading dynamically imported module/i.test(s)
+          );
+        }
+        function recoverFromChunkDrift() {
+          var bustMeta = document.querySelector('meta[name="iam-cache-bust"]');
+          var bust = (bustMeta && bustMeta.getAttribute('content')) || 'unknown';
+          var key = 'iam_chunk_drift_reload_' + bust;
+          try {
+            if (sessionStorage.getItem(key)) {
+              if ('serviceWorker' in navigator) {
+                navigator.serviceWorker.getRegistration('/').then(function (reg) {
+                  if (reg) return reg.unregister();
+                });
+              }
+              showRecovery(true);
+              return;
+            }
+            sessionStorage.setItem(key, '1');
+          } catch (e) {}
+          function hardReload() {
+            try {
+              var reloadBust = Date.now();
+              var u = new URL(location.href);
+              u.searchParams.set('_iam_chunk_reload', String(reloadBust));
+              location.replace(u.toString());
+            } catch (e2) {
+              location.reload();
+            }
+          }
+          function afterPurge() {
+            if ('serviceWorker' in navigator) {
+              navigator.serviceWorker.getRegistration('/').then(function (reg) {
+                if (reg && reg.waiting) reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+                if (reg) reg.update();
+                hardReload();
+              });
+              return;
+            }
+            hardReload();
+          }
+          if ('caches' in window) {
+            caches
+              .keys()
+              .then(function (ns) {
+                return Promise.all(
+                  ns.map(function (name) {
+                    if (
+                      /^iam-dashboard-js-v/.test(name) ||
+                      /^workbox-precache-/.test(name) ||
+                      /^workbox-precache-v/.test(name)
+                    ) {
+                      return caches.delete(name);
+                    }
+                  }),
+                );
+              })
+              .finally(afterPurge);
+            return;
+          }
+          afterPurge();
+        }
+        // Only recover on real module/chunk failures — never on random Monaco/extension errors.
+        // Capture phase is required: script/link resource-load failures (e.g. a 404'd
+        // chunk after a deploy rotates hashed filenames) do NOT bubble to window, so a
+        // bubble-phase listener never sees them and this recovery path silently never fires.
+        window.addEventListener(
+          'error',
+          function (ev) {
+            var msg = (ev && ev.message) || '';
+            var src = (ev && ev.filename) || '';
+            var target = ev && ev.target;
+            var isResourceLoadFailure =
+              target &&
+              target !== window &&
+              (target.tagName === 'SCRIPT' || target.tagName === 'LINK') &&
+              /\/static\/dashboard\/app\//.test(String(target.src || target.href || ''));
+            if (
+              isChunkDriftMessage(msg) ||
+              (/\/static\/dashboard\/app\//.test(src) && /Failed to load|SyntaxError/i.test(msg)) ||
+              isResourceLoadFailure
+            ) {
+              recoverFromChunkDrift();
+            }
+          },
+          true,
+        );
+        window.addEventListener('unhandledrejection', function (ev) {
+          var reason = ev && ev.reason;
+          var msg = reason && reason.message ? reason.message : reason;
+          if (isChunkDriftMessage(msg)) recoverFromChunkDrift();
+        });
+        // Slow-boot safety net only — do not steal a live session.
+        window.setTimeout(function () {
+          if (!mounted && rootEmpty()) showRecovery(false);
+        }, 25000);
+        var rootEl = document.getElementById('root');
+        if (rootEl && typeof MutationObserver !== 'undefined') {
+          new MutationObserver(function () {
+            if (!rootEmpty()) {
+              mounted = true;
+              hideRecovery();
+            }
+          }).observe(rootEl, { childList: true });
+        }
+      })();
+    </script>
+  <script type="module" src="/index.tsx?v=1.2.0-1775750920551"></script>
+</body>
+</html>

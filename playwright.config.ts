@@ -12,10 +12,10 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'npx vite --config app/frontend/vite.config.ts --host 127.0.0.1',
+    command: 'npx vite --config app/vite.config.ts --host 127.0.0.1',
     url: 'http://127.0.0.1:3000/dashboard/agent',
     reuseExistingServer: true,
-    timeout: 30_000,
+    timeout: 120_000,
   },
   projects: [
     { name: 'desktop-1440', use: { viewport: { width: 1440, height: 900 } } },

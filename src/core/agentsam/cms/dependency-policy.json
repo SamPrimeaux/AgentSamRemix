@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "cms_root": "src/core/agentsam/cms",
+  "allowed_platform_dependencies": [
+    {
+      "path": "src/core/auth.js",
+      "reason": "Generic authenticated tenant/user identity primitive used by theme context resolution."
+    },
+    {
+      "path": "src/core/bootstrap.js",
+      "reason": "Generic Agent Sam workspace/bootstrap identity primitive; CMS context consumes it but does not own it."
+    },
+    {
+      "path": "src/core/bootstrap-scoped-context.js",
+      "reason": "Generic persisted user/workspace bootstrap state primitive used to retain CMS site selection."
+    },
+    {
+      "path": "src/core/workspace-access.js",
+      "reason": "Generic workspace authorization primitive shared across platform domains."
+    }
+  ],
+  "allowed_package_dependencies": [],
+  "temporary_legacy_dependencies": [
+    "src/core/cms-edit-safety.js",
+    "src/core/cms-draft-artifact-host.js",
+    "src/core/cms-agent-page-html.js",
+    "src/core/cms-agent-publish.ts",
+    "src/core/cms-preview-route.js",
+    "src/core/cms-public-domain.js",
+    "src/core/cms-site-package-api.js",
+    "src/core/resolve-cms-database.js"
+  ]
+}

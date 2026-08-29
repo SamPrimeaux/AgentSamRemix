@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IAM Design Preview</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #f5f4f0;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    color: #1a1a1a;
+    min-height: 100vh;
+  }
+
+  nav {
+    background: #fff;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    height: 56px;
+    gap: 32px;
+  }
+  .nav-brand { display: flex; flex-direction: column; line-height: 1.2; text-decoration: none; color: inherit; flex-shrink: 0; }
+  .nav-brand-name { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: #111; }
+  .nav-brand-sub { font-size: 11px; color: #999; }
+  .nav-links { display: flex; align-items: center; gap: 2px; flex: 1; }
+  .nav-link {
+    position: relative; padding: 8px 12px; font-size: 14px; color: #666;
+    text-decoration: none; cursor: pointer; border-radius: 6px;
+    transition: color 0.15s; white-space: nowrap;
+  }
+  .nav-link:hover { color: #111; }
+  .nav-link.active { color: #111; font-weight: 500; }
+  .nav-link.active::after {
+    content: ''; position: absolute; bottom: -9px; left: 12px; right: 12px;
+    height: 2px; background: #111; border-radius: 1px 1px 0 0;
+  }
+  .nav-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+  .search-box {
+    display: flex; align-items: center; gap: 8px; background: #f5f4f0;
+    border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 6px 12px;
+    font-size: 13px; color: #999; cursor: text; width: 180px;
+  }
+  .avatar {
+    width: 30px; height: 30px; border-radius: 50%; background: #d4e8d4;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 600; color: #2d6a2d; cursor: pointer; flex-shrink: 0;
+  }
+
+  .page { padding: 40px 32px; }
+
+  .section-header { display: flex; align-items: center; gap: 10px; margin-bottom: 16px; }
+  .section-title { font-size: 15px; font-weight: 500; color: #111; }
+  .section-badge {
+    font-size: 12px; color: #666; border: 1px solid rgba(0,0,0,0.12);
+    border-radius: 5px; padding: 2px 8px; cursor: pointer;
+    display: flex; align-items: center; gap: 4px;
+  }
+
+  /* ── CARD STRIP ── */
+  .cards-outer {
+    position: relative;
+    margin-bottom: 40px;
+  }
+
+  .cards-scroll {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    padding-bottom: 4px;
+  }
+  .cards-scroll::-webkit-scrollbar { display: none; }
+
+  /* edge fade zones */
+  .cards-outer::before,
+  .cards-outer::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 4px;
+    width: 64px;
+    z-index: 2;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .cards-outer::before {
+    left: 0;
+    background: linear-gradient(to right, #f5f4f0, transparent);
+    opacity: 0;
+  }
+  .cards-outer::after {
+    right: 0;
+    background: linear-gradient(to left, #f5f4f0, transparent);
+    opacity: 1;
+  }
+  .cards-outer.at-start::before { opacity: 0; }
+  .cards-outer.at-end::after   { opacity: 0; }
+  .cards-outer:not(.at-start)::before { opacity: 1; }
+
+  /* hover scroll zones — invisible overlay divs */
+  .scroll-zone {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 80px;
+    z-index: 3;
+    cursor: default;
+  }
+  .scroll-zone-left  { left: 0; }
+  .scroll-zone-right { right: 0; }
+
+  .card {
+    flex: 0 0 160px;
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 10px;
+    padding: 0;
+    cursor: pointer;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .card:hover {
+    border-color: rgba(0,0,0,0.18);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  /* "Start anywhere" — first card slightly dimmed/outlined */
+  .card.start-card {
+    background: #fafaf8;
+    border: 1.5px dashed rgba(0,0,0,0.14);
+    opacity: 0.82;
+  }
+  .card.start-card:hover { opacity: 1; border-style: solid; border-color: rgba(0,0,0,0.18); }
+
+  .card-thumb {
+    width: 100%;
+    aspect-ratio: 4/3;
+    background: #f5f4f0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+  }
+  .card.start-card .card-thumb { background: #f0eeea; }
+  .card-thumb svg { opacity: 0.3; }
+
+  .card-info { padding: 10px 12px 12px; }
+  .card-label { font-size: 13px; font-weight: 500; color: #111; }
+  .card-sub { font-size: 11.5px; color: #999; margin-top: 2px; }
+
+  /* ── DESIGNS TABLE ── */
+  .designs-title { font-size: 15px; font-weight: 500; color: #111; margin-bottom: 12px; }
+  .designs-table {
+    width: 100%; border: 1px solid rgba(0,0,0,0.08);
+    border-radius: 10px; overflow: hidden; background: #fff;
+  }
+  .table-head {
+    display: grid; grid-template-columns: 1fr 160px 120px;
+    padding: 10px 16px; border-bottom: 1px solid rgba(0,0,0,0.07);
+    font-size: 12px; color: #999;
+  }
+  .table-row {
+    display: grid; grid-template-columns: 1fr 160px 120px;
+    padding: 12px 16px; border-bottom: 1px solid rgba(0,0,0,0.05);
+    align-items: center; cursor: pointer; transition: background 0.1s;
+  }
+  .table-row:last-child { border-bottom: none; }
+  .table-row:hover { background: rgba(0,0,0,0.02); }
+  .row-name { display: flex; align-items: center; gap: 10px; font-size: 13.5px; color: #111; }
+  .row-icon {
+    width: 28px; height: 28px; border-radius: 5px; background: #f0eee8;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .row-meta { font-size: 13px; color: #888; }
+  .row-owner { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #888; }
+  .owner-dot {
+    width: 20px; height: 20px; border-radius: 50%; background: #d4e8d4;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600; color: #2d6a2d;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  
+  <div class="nav-links">
+    <a class="nav-link">Workspaces</a><a class="nav-link active">Recent</a>
+    <a class="nav-link">Your designs</a>
+    <a class="nav-link">Design systems</a>
+    <a class="nav-link">Examples</a>
+  </div>
+  <div class="nav-right">
+    <div class="search-box">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <circle cx="6.5" cy="6.5" r="4.5"/><line x1="10.5" y1="10.5" x2="14" y2="14"/>
+      </svg>
+      Search designs
+    </div>
+    <div class="avatar">S</div>
+  </div>
+</nav>
+
+<div class="page">
+  <div class="section-header">
+    <span class="section-title">Make something new</span>
+    <span class="section-badge">
+      Design System
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2.5 4L5 6.5L7.5 4"/></svg>
+    </span>
+  </div>
+
+  <div class="cards-outer at-start" id="cardsOuter">
+    <div class="scroll-zone scroll-zone-left"  id="zoneLeft"></div>
+    <div class="scroll-zone scroll-zone-right" id="zoneRight"></div>
+
+    <div class="cards-scroll" id="cardsScroll">
+
+      <div class="card start-card">
+        <div class="card-thumb">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        </div>
+        <div class="card-info"><div class="card-label">Start anywhere</div><div class="card-sub">Add a file and design</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-thumb">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><rect x="3" y="4" width="18" height="16" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="7" y1="4" x2="7" y2="9"/></svg>
+        </div>
+        <div class="card-info"><div class="card-label">Slides</div><div class="card-sub">Decks & reviews</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-thumb">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><rect x="2" y="3" width="20" height="18" rx="2"/><path d="M8 10l4 4 4-4"/></svg>
+        </div>
+        <div class="card-info"><div class="card-label">Prototype</div><div class="card-sub">Clickable & interactive</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-thumb">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/></svg>
+        </div>
+        <div class="card-info"><div class="card-label">Product wireframe</div><div class="card-sub">Lo-fi screens & flows</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-thumb">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14,2 14,8 20,8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+        </div>
+        <div class="card-info"><div class="card-label">Doc</div><div class="card-sub">Resumes, PDFs, etc.</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-thumb">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><polygon points="5,3 19,12 5,21"/></svg>
+        </div>
+        <div class="card-info"><div class="card-label">Animation</div><div class="card-sub">Motion & video</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-thumb">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg>
+        </div>
+        <div class="card-info"><div class="card-label">Blank canvas</div><div class="card-sub">Start from scratch</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-thumb">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <div class="card-info"><div class="card-label">Flowchart</div><div class="card-sub">Diagrams & maps</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-thumb">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#444" stroke-width="1.5"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div class="card-info"><div class="card-label">Component set</div><div class="card-sub">Reusable UI pieces</div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="designs-title">Designs</div>
+  <div class="designs-table">
+    <div class="table-head">
+      <span>Name</span><span>Last viewed</span><span>Owner</span>
+    </div>
+    <div class="table-row">
+      <div class="row-name">
+        <div class="row-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>
+        IAM Dashboard v3
+      </div>
+      <div class="row-meta">2 days ago</div>
+      <div class="row-owner"><div class="owner-dot">S</div> You</div>
+    </div>
+    <div class="table-row">
+      <div class="row-name">
+        <div class="row-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>
+        MeauxCAD component set
+      </div>
+      <div class="row-meta">30 Apr</div>
+      <div class="row-owner"><div class="owner-dot">S</div> You</div>
+    </div>
+    <div class="table-row">
+      <div class="row-name">
+        <div class="row-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>
+        CPAS onboarding flow
+      </div>
+      <div class="row-meta">29 Apr</div>
+      <div class="row-owner"><div class="owner-dot">S</div> You</div>
+    </div>
+    <div class="table-row">
+      <div class="row-name">
+        <div class="row-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#888" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/></svg></div>
+        Design System
+      </div>
+      <div class="row-meta">29 Apr</div>
+      <div class="row-owner"><div class="owner-dot">S</div> You</div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const scroll = document.getElementById('cardsScroll');
+  const outer  = document.getElementById('cardsOuter');
+  const zL     = document.getElementById('zoneLeft');
+  const zR     = document.getElementById('zoneRight');
+
+  let rafId = null;
+  let scrollDir = 0;
+  const SPEED = 4;
+
+  function tick() {
+    if (scrollDir !== 0) {
+      scroll.scrollLeft += scrollDir * SPEED;
+      rafId = requestAnimationFrame(tick);
+    }
+  }
+
+  function startScroll(dir) {
+    scrollDir = dir;
+    cancelAnimationFrame(rafId);
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function stopScroll() {
+    scrollDir = 0;
+    cancelAnimationFrame(rafId);
+  }
+
+  zL.addEventListener('mouseenter', () => startScroll(-1));
+  zL.addEventListener('mouseleave', stopScroll);
+  zR.addEventListener('mouseenter', () => startScroll(1));
+  zR.addEventListener('mouseleave', stopScroll);
+
+  function updateEdge() {
+    const atStart = scroll.scrollLeft <= 2;
+    const atEnd   = scroll.scrollLeft >= scroll.scrollWidth - scroll.clientWidth - 2;
+    outer.classList.toggle('at-start', atStart);
+    outer.classList.toggle('at-end',   atEnd);
+  }
+
+  scroll.addEventListener('scroll', updateEdge);
+  updateEdge();
+</script>
+</body>
+</html>

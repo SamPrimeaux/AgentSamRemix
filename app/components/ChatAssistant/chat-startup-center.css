@@ -1,0 +1,103 @@
+/* Desktop empty-thread startup — ChatGPT-style vertically centered composer column */
+.iam-chat-startup-center {
+  justify-content: center !important;
+  align-items: center;
+  min-height: 0;
+  padding-inline: 12px;
+}
+
+.iam-chat-startup-stack {
+  width: min(680px, calc(100vw - 48px));
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16px;
+  flex: 0 1 auto;
+}
+
+.iam-chat-startup-greeting {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding-bottom: 4px;
+}
+
+.iam-chat-startup-greeting img {
+  object-fit: contain;
+  opacity: 0.92;
+}
+
+.iam-chat-startup-chips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.iam-chat-startup-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--dashboard-border);
+  background: color-mix(in srgb, var(--dashboard-panel) 80%, transparent);
+  color: var(--dashboard-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.iam-chat-startup-chip:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: color-mix(in srgb, var(--dashboard-text) 18%, var(--dashboard-border));
+  box-shadow: 0 1px 3px color-mix(in srgb, var(--dashboard-text) 8%, transparent);
+}
+
+.iam-chat-startup-chip:active:not(:disabled) {
+  transform: scale(0.98);
+  box-shadow: none;
+}
+
+.iam-chat-startup-chip:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.iam-chat-startup-chip svg {
+  flex-shrink: 0;
+  color: var(--dashboard-muted);
+  opacity: 0.8;
+}
+
+.iam-chat-startup-center .iam-chat-composer-shell {
+  padding-bottom: 0 !important;
+}
+
+@media (max-width: 430px) {
+  .iam-chat-startup-stack {
+    width: 100%;
+  }
+}
+
+@media (max-width: 640px) {
+  .studio-entry.iam-chat-startup-center {
+    padding: max(8px, env(safe-area-inset-top, 0px)) 12px max(12px, env(safe-area-inset-bottom, 0px));
+  }
+
+  .studio-entry .iam-chat-startup-stack {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .studio-entry__composer-wrap {
+    flex-shrink: 0;
+  }
+}

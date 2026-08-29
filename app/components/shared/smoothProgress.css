@@ -1,0 +1,56 @@
+.smooth-progress-css {
+  --iam-progress-track: color-mix(in srgb, var(--dashboard-border, rgba(255, 255, 255, 0.12)) 85%, transparent);
+  --iam-progress-fill: var(--solar-cyan, #22d3ee);
+}
+
+.iam-smooth-progress {
+  min-width: 0;
+  width: 100%;
+}
+
+.iam-smooth-progress__head {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 4px;
+}
+
+.iam-smooth-progress__pct {
+  font-size: 10px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: var(--dashboard-muted, #8a8a9e);
+  font-family: var(--font-mono, ui-monospace, monospace);
+}
+
+.iam-smooth-progress__track {
+  width: 100%;
+  border-radius: 999px;
+  background: var(--iam-progress-track, rgba(255, 255, 255, 0.08));
+  overflow: hidden;
+}
+
+.iam-smooth-progress__fill {
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--iam-progress-fill, #22d3ee) 70%, transparent),
+    var(--iam-progress-fill, #22d3ee)
+  );
+  transition: width 40ms linear;
+  will-change: width;
+}
+
+.iam-smooth-progress__fill--indeterminate {
+  width: 38% !important;
+  animation: iam-progress-indeterminate 1.4s ease-in-out infinite;
+}
+
+@keyframes iam-progress-indeterminate {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}

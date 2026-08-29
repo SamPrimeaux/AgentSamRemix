@@ -1,0 +1,179 @@
+.database-resource-picker {
+  --picker-bg: var(--db-panel, var(--bg-panel, var(--bg-app)));
+  --picker-surface: var(--db-surface, var(--bg-app));
+  --picker-border: var(--db-border, var(--border-subtle));
+  --picker-text: var(--db-text, var(--text-main, inherit));
+  --picker-muted: var(--db-text-muted, var(--text-muted, inherit));
+  --picker-accent: var(--db-accent, var(--color-accent, var(--solar-cyan)));
+  position: relative;
+  min-width: 180px;
+  max-width: 360px;
+  font-family: inherit;
+}
+
+.database-resource-picker-trigger {
+  display: flex;
+  width: 100%;
+  min-height: 36px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid var(--picker-border);
+  border-radius: 8px;
+  background: var(--picker-bg);
+  padding: 6px 10px;
+  color: var(--picker-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.database-resource-picker-trigger:hover,
+.database-resource-picker-trigger[aria-expanded='true'] {
+  border-color: color-mix(in srgb, var(--picker-accent) 55%, var(--picker-border));
+}
+
+.database-resource-picker-trigger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.database-resource-picker-trigger-text {
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.database-resource-picker-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.database-resource-picker-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--picker-muted);
+}
+
+.database-resource-picker-caret {
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+
+.database-resource-picker-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  left: 0;
+  z-index: 40;
+  overflow: hidden;
+  border: 1px solid var(--picker-border);
+  border-radius: 10px;
+  background: var(--picker-bg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+
+.database-resource-picker-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--picker-border);
+  padding: 8px 10px;
+  color: var(--picker-muted);
+}
+
+.database-resource-picker-search input {
+  min-width: 0;
+  flex: 1;
+  border: 0;
+  background: transparent;
+  color: var(--picker-text);
+  font-family: inherit;
+  font-size: 12px;
+  outline: none;
+}
+
+.database-resource-picker-list {
+  display: flex;
+  flex-direction: column;
+  max-height: 280px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.database-resource-picker-option {
+  display: flex;
+  width: 100%;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 0;
+  border-bottom: 1px solid color-mix(in srgb, var(--picker-border) 70%, transparent);
+  background: transparent;
+  padding: 8px 10px;
+  color: var(--picker-text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.database-resource-picker-option.is-active {
+  background: var(--picker-surface);
+}
+
+.database-resource-picker-option.is-selected {
+  background: color-mix(in srgb, var(--picker-accent) 12%, transparent);
+}
+
+.database-resource-picker-option-copy {
+  /* Was min-width:0 with no flex-grow -- sized to content instead of the
+     available row width, so long names overflowed the list's clipped
+     container instead of the label's own ellipsis ever kicking in. */
+  min-width: 0;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.database-resource-picker-subtitle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: inherit;
+  font-size: 10px;
+  color: var(--picker-muted);
+}
+
+.database-resource-picker-check {
+  flex-shrink: 0;
+  color: var(--picker-accent);
+}
+
+.database-resource-picker-empty {
+  padding: 12px 10px;
+  color: var(--picker-muted);
+  font-size: 12px;
+}
+
+@media (max-width: 768px) {
+  .database-resource-picker {
+    min-width: 0;
+    max-width: none;
+    width: 100%;
+  }
+
+  .database-resource-picker-menu {
+    max-width: calc(100vw - 24px);
+  }
+}

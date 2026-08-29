@@ -1,0 +1,329 @@
+.iam-home-edit-mode .iam-home-section--quick {
+  outline: 1px dashed color-mix(in srgb, var(--iam-home-accent, #4ea7ff) 45%, transparent);
+  outline-offset: 8px;
+  border-radius: 18px;
+}
+
+.iam-home-section--editing {
+  outline: 1px dashed color-mix(in srgb, var(--iam-home-accent, #4ea7ff) 28%, transparent);
+  outline-offset: 6px;
+  border-radius: 16px;
+  padding-bottom: 4px;
+}
+
+.iam-home-tile-editor-note {
+  margin: -4px 0 0;
+  font-size: 11px;
+  line-height: 1.45;
+  color: var(--iam-home-muted);
+}
+
+.iam-home-edit-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  border-radius: 14px;
+  border: 1px solid var(--iam-home-border);
+  background: color-mix(in srgb, var(--iam-home-panel) 92%, transparent);
+  font-size: 12px;
+  color: var(--iam-home-muted);
+}
+
+.iam-home-edit-banner strong {
+  color: var(--iam-home-text);
+}
+
+.iam-home-edit-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.iam-home-edit-actions button {
+  border: 1px solid var(--iam-home-border);
+  border-radius: 999px;
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 700;
+  background: transparent;
+  color: var(--iam-home-text);
+  cursor: pointer;
+}
+
+.iam-home-edit-actions button.primary {
+  background: var(--iam-home-accent, #4ea7ff);
+  border-color: transparent;
+  color: #041018;
+}
+
+.iam-home-tile-inspector-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.iam-home-tile-inspector {
+  width: min(380px, 100vw);
+  height: 100%;
+  background: #0b1018;
+  border-left: 1px solid var(--iam-home-border);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  gap: 14px;
+  overflow-y: auto;
+}
+
+.iam-home-tile-inspector-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.iam-home-tile-inspector-head h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--iam-home-text);
+}
+
+.iam-home-tile-dropzone {
+  border: 1.5px dashed color-mix(in srgb, var(--iam-home-accent) 55%, var(--iam-home-border));
+  border-radius: 16px;
+  padding: 20px 16px;
+  text-align: center;
+  color: var(--iam-home-muted);
+  font-size: 12px;
+  cursor: pointer;
+  transition: border-color 120ms ease, background 120ms ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.iam-home-tile-dropzone strong {
+  color: var(--iam-home-text);
+  font-size: 13px;
+}
+
+.iam-home-tile-dropzone span {
+  font-size: 11px;
+}
+
+.iam-home-tile-dropzone.is-over,
+.iam-home-tile-dropzone.is-busy {
+  border-color: var(--iam-home-accent);
+  background: color-mix(in srgb, var(--iam-home-accent) 8%, transparent);
+}
+
+.iam-home-tile-upload-ok {
+  margin: -6px 0 0;
+  font-size: 11px;
+  color: color-mix(in srgb, var(--iam-home-accent) 85%, #fff);
+}
+
+.iam-home-tile-control-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.iam-home-tile-control-row--stack {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.iam-home-tile-control-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--iam-home-muted);
+}
+
+.iam-home-tile-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--iam-home-border);
+  border-radius: 12px;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.iam-home-tile-stepper button {
+  width: 32px;
+  height: 32px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--iam-home-text);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.iam-home-tile-stepper button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.iam-home-tile-stepper button:not(:disabled):hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.iam-home-tile-stepper-value {
+  min-width: 48px;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 800;
+  color: var(--iam-home-text);
+}
+
+.iam-home-tile-bg-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.iam-home-tile-bg-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid var(--iam-home-border);
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  background: transparent;
+  color: var(--iam-home-muted);
+  cursor: pointer;
+}
+
+.iam-home-tile-bg-chip.active {
+  border-color: color-mix(in srgb, var(--iam-home-accent) 60%, transparent);
+  color: var(--iam-home-text);
+  background: color-mix(in srgb, var(--iam-home-accent) 10%, transparent);
+}
+
+.iam-home-tile-bg-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.iam-home-tile-bg-swatch--none {
+  background: repeating-conic-gradient(#555 0% 25%, #333 0% 50%) 50% / 8px 8px;
+}
+
+.iam-home-tile-field--inline {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.iam-home-tile-field--inline input[type='color'] {
+  width: 44px;
+  height: 32px;
+  padding: 2px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.iam-home-tile-dropzone input {
+  display: none;
+}
+
+.iam-home-tile-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 0 4px;
+}
+
+.iam-home-tile-preview-label {
+  margin: 0 0 10px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--iam-home-muted);
+}
+
+.iam-home-tile-preview--screenshot {
+  padding: 8px 0;
+}
+
+.iam-home-tile-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--iam-home-muted);
+}
+
+.iam-home-tile-field input,
+.iam-home-tile-field select {
+  border: 1px solid var(--iam-home-border);
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--iam-home-text);
+}
+
+.iam-home-tile-advanced summary {
+  cursor: pointer;
+  font-size: 11px;
+  color: var(--iam-home-muted);
+  margin-top: 4px;
+}
+
+.iam-home-tile-inspector-foot {
+  margin-top: auto;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.iam-home-tile-inspector-foot button {
+  flex: 1;
+  min-width: 100px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  font-weight: 700;
+  border: 1px solid var(--iam-home-border);
+  background: transparent;
+  color: var(--iam-home-text);
+  cursor: pointer;
+}
+
+.iam-home-tile-inspector-foot button.primary {
+  background: var(--iam-home-accent);
+  border-color: transparent;
+  color: #041018;
+}
+
+@media (max-width: 720px) {
+  .iam-home-tile-inspector-scrim {
+    align-items: flex-end;
+  }
+
+  .iam-home-tile-inspector {
+    width: 100%;
+    height: auto;
+    max-height: 88vh;
+    border-left: 0;
+    border-top: 1px solid var(--iam-home-border);
+    border-radius: 18px 18px 0 0;
+  }
+}

@@ -1,0 +1,32 @@
+/* Diff gutter +/- and line highlights (Monaco hc-black + iam-hc-black theme). */
+.monaco-editor .gutter-insert,
+.monaco-diff-editor .gutter-insert {
+  background-color: #587c0c66;
+  border-left: 3px solid #33ff2e;
+}
+
+.monaco-editor .gutter-delete,
+.monaco-diff-editor .gutter-delete {
+  background-color: #9f101066;
+  border-left: 3px solid #ff008f;
+}
+
+.monaco-editor .line-insert,
+.monaco-diff-editor .line-insert {
+  background-color: #587c0c33;
+}
+
+.monaco-editor .line-delete,
+.monaco-diff-editor .line-delete {
+  background-color: #9f101033;
+}
+
+.monaco-editor .char-insert,
+.monaco-diff-editor .char-insert {
+  background-color: #9ccc2c44;
+}
+
+.monaco-editor .char-delete,
+.monaco-diff-editor .char-delete {
+  background-color: #ff000044;
+}

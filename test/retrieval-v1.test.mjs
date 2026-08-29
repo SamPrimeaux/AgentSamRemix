@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { reciprocalRankFusion } from '../app/backend/knowledge/retrieval/fusion.js';
-import { selectDiverseCandidates } from '../app/backend/knowledge/retrieval/diversity.js';
-import { packEvidence } from '../app/backend/knowledge/retrieval/budget.js';
-import { rankingEntropy, scoreMargin } from '../app/backend/knowledge/retrieval/math.js';
-import { analyzeRetrievalQuery } from '../app/backend/knowledge/retrieval/policy.js';
-import { searchDenseAnn } from '../app/backend/knowledge/retrieval/dense.js';
-import { createDenseSearchService } from '../app/backend/knowledge/retrieval/dense-service.js';
-import { recallAtK, precisionAtK, meanReciprocalRank, ndcgAtK } from '../app/backend/knowledge/retrieval/evaluate.js';
+import { reciprocalRankFusion } from '../backend/knowledge/retrieval/fusion.js';
+import { selectDiverseCandidates } from '../backend/knowledge/retrieval/diversity.js';
+import { packEvidence } from '../backend/knowledge/retrieval/budget.js';
+import { rankingEntropy, scoreMargin } from '../backend/knowledge/retrieval/math.js';
+import { analyzeRetrievalQuery } from '../backend/knowledge/retrieval/policy.js';
+import { searchDenseAnn } from '../backend/knowledge/retrieval/dense.js';
+import { createDenseSearchService } from '../backend/knowledge/retrieval/dense-service.js';
+import { recallAtK, precisionAtK, meanReciprocalRank, ndcgAtK } from '../backend/knowledge/retrieval/evaluate.js';
 
 test('RRF rewards evidence returned by multiple retrievers', () => {
   const fused = reciprocalRankFusion([

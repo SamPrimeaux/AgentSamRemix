@@ -1,0 +1,497 @@
+/* GCP-style unified work shell — Calendar / Tasks / Mail */
+.colab-work-shell {
+  --colab-shell-bg: #eef2f7;
+  --colab-shell-bar: #f8fafc;
+  --colab-shell-border: #b8bec8;
+  --colab-shell-text: #1a1c1e;
+  --colab-shell-muted: #5f6368;
+  --colab-shell-blue: #1558b8;
+  --colab-shell-blue-soft: #d8e6fb;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 0;
+  align-self: stretch;
+  background: var(--colab-shell-bg);
+  color: var(--colab-shell-text);
+}
+
+.colab-work-shell-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-height: 52px;
+  padding: 0 16px;
+  background: var(--colab-shell-bar);
+  border-bottom: 1px solid var(--colab-shell-border);
+  flex-shrink: 0;
+  overflow: visible;
+  position: relative;
+  z-index: 30;
+}
+
+.colab-work-shell-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 140px;
+  font-size: 14px;
+}
+
+.colab-work-shell-logo {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+  display: block;
+}
+
+.colab-cal-desktop-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.colab-cal-mobile-toolbar {
+  display: none;
+}
+
+.colab-cal-view-seg {
+  display: inline-flex;
+  align-items: center;
+  margin-left: auto;
+  border: 1px solid var(--colab-shell-border);
+  border-radius: 999px;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.colab-cal-view-seg button {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: var(--colab-shell-muted);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+
+.colab-cal-view-seg button.active {
+  background: var(--colab-shell-blue-soft);
+  color: var(--colab-shell-blue);
+}
+
+.colab-month-sheet-backdrop,
+.colab-month-sheet,
+.colab-left-drawer-overlay {
+  display: none;
+}
+
+.colab-work-shell-product {
+  font-weight: 600;
+  color: var(--colab-shell-muted);
+  letter-spacing: 0.01em;
+}
+
+.colab-work-shell-sep {
+  color: var(--colab-shell-muted);
+  opacity: 0.6;
+}
+
+.colab-work-shell-title {
+  font-weight: 600;
+}
+
+.colab-work-shell-tabs {
+  display: none; /* desktop: surfaces live in left rail; mobile uses bottom tabs */
+}
+
+.colab-work-shell-tabs-spacer {
+  flex: 1;
+  min-width: 0;
+}
+
+.colab-work-shell-tabs button {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--colab-shell-muted);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.colab-work-shell-tabs button:hover {
+  background: var(--colab-shell-blue-soft);
+  color: var(--colab-shell-blue);
+}
+
+.colab-work-shell-tabs button.active {
+  background: var(--colab-shell-blue-soft);
+  color: var(--colab-shell-blue);
+  border-color: #9bbef0;
+  font-weight: 600;
+}
+
+.colab-work-shell-trailing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+  overflow: visible;
+  position: relative;
+  z-index: 31;
+}
+
+.colab-work-shell-topbar .colab-cal-hamb {
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  color: var(--colab-shell-muted);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.colab-work-shell-topbar .colab-cal-hamb:hover {
+  background: var(--colab-shell-blue-soft);
+  color: var(--colab-shell-blue);
+}
+
+.colab-work-shell-date {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--colab-shell-text);
+  white-space: nowrap;
+}
+
+.colab-month-picker {
+  position: relative;
+  z-index: 32;
+}
+
+.colab-work-shell-date-btn {
+  appearance: none;
+  border: 1px solid transparent;
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--colab-shell-text);
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.colab-work-shell-date-btn:hover,
+.colab-work-shell-date-btn.open {
+  background: var(--colab-shell-blue-soft);
+  color: var(--colab-shell-blue);
+  border-color: #9bbef0;
+}
+
+.colab-month-picker-pop {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  left: auto;
+  z-index: 80;
+  width: 304px;
+  padding: 12px;
+  border-radius: 12px;
+  background: #fff;
+  border: 1px solid var(--colab-shell-border);
+  box-shadow: 0 8px 24px rgba(26, 28, 30, 0.14);
+  overflow: visible;
+}
+
+.colab-mini-month-grid {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-auto-rows: 34px;
+  gap: 2px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+}
+
+.colab-mini-month-dow {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--colab-shell-muted);
+  user-select: none;
+}
+
+.colab-mini-month-day {
+  box-sizing: border-box;
+  display: grid !important;
+  place-items: center;
+  width: 100%;
+  height: 34px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--colab-shell-text);
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
+  cursor: pointer;
+  position: relative;
+}
+
+.colab-mini-month-day:hover {
+  background: var(--colab-shell-blue-soft);
+}
+
+.colab-mini-month-day.is-outside {
+  color: #9aa0a6;
+}
+
+.colab-mini-month-day.is-active {
+  background: var(--colab-shell-blue);
+  color: #fff;
+  font-weight: 700;
+}
+
+.colab-mini-month-day.has-event:not(.is-active)::after {
+  content: '';
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--colab-shell-blue);
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Legacy mini-grid selectors kept for any leftover callers */
+.colab-month-picker-pop .colab-cal-mini-grid {
+  display: grid !important;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 2px;
+}
+
+.colab-mini-month-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.colab-mini-month-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--colab-shell-text);
+}
+
+.colab-cal-topbar--sub {
+  min-height: 44px;
+  border-bottom: 1px solid var(--colab-shell-border);
+}
+
+.colab-cal-topbar--sub .colab-cal-top-center {
+  flex: 1;
+}
+
+.colab-work-shell .colab-cal {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  min-width: 0;
+}
+
+.colab-work-shell-body {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.mail-time-insights-rail {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* ── Mobile calendar header overrides ──────────────────────────────────────── */
+@media (max-width: 768px) {
+  .colab-work-shell-topbar {
+    min-height: 48px;
+    padding: 0 10px;
+    gap: 10px;
+  }
+
+  .colab-work-shell-product,
+  .colab-work-shell-sep {
+    display: none;
+  }
+
+  .colab-work-shell-logo {
+    width: 40px;
+    height: 40px;
+  }
+
+  .colab-work-shell-brand {
+    min-width: unset;
+    font-size: 13px;
+    gap: 10px;
+  }
+
+  .colab-work-shell-title {
+    font-size: 16px;
+    font-weight: 650;
+  }
+
+  .colab-cal-desktop-controls {
+    display: none !important;
+  }
+
+  .colab-cal-mobile-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    min-height: 44px;
+    padding: 6px 10px;
+    background: var(--colab-shell-bar);
+    border-bottom: 1px solid var(--colab-shell-border);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .colab-cal-mobile-toolbar .colab-work-shell-date-btn {
+    flex: 1 1 auto;
+    min-width: 0;
+    justify-content: center;
+    white-space: nowrap;
+    font-size: 13px;
+    padding: 6px 8px;
+  }
+
+  .colab-cal-mobile-toolbar .colab-cal-pill-btn {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .colab-cal-mobile-toolbar .colab-cal-circle-btn {
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+  }
+
+  .colab-month-sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 420;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: rgba(26, 28, 30, 0.45);
+    cursor: pointer;
+  }
+
+  .colab-month-sheet {
+    display: block;
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 430;
+    width: min(304px, calc(100vw - 24px));
+    max-height: min(420px, calc(100vh - 96px));
+    overflow: auto;
+    padding: 12px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid var(--colab-shell-border);
+    box-shadow: 0 16px 40px rgba(26, 28, 30, 0.22);
+  }
+
+  .colab-left-drawer-overlay {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 270;
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background: rgba(26, 28, 30, 0.4);
+    cursor: pointer;
+  }
+
+  .colab-cal-day-focus-bar {
+    min-height: 36px;
+    padding: 0 10px;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .colab-cal-day-focus-label {
+    display: none;
+  }
+
+  .colab-cal-day-focus-bar .colab-cal-pill-btn,
+  .colab-cal-day-focus-bar button {
+    height: 30px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .colab-cal-topbar {
+    min-height: 40px;
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .colab-cal-month-title {
+    font-size: 14px;
+    margin: 0 4px;
+  }
+
+  .colab-cal-pill-btn {
+    height: 32px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .colab-cal-icon-btn,
+  .colab-cal-circle-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .colab-cal-view-select {
+    display: none;
+  }
+
+  .colab-cal-brand {
+    display: none;
+  }
+}
