@@ -197,39 +197,128 @@ const starterFiles: Record<string, string> = {
   'wrangler.jsonc': `{\n  "name": "agentsamremix",\n  "main": "app/backend/src/index.ts"\n}`,
 };
 
+type WorkTab = 'overview' | 'scratch' | 'browser';
+
+type RuntimeHealth = {
+  status?: string;
+  agent?: string;
+  codeMode?: boolean;
+  browserRun?: boolean;
+  execos?: boolean;
+  sandbox?: boolean;
+  sessionCache?: boolean;
+};
+
+type ExecStatus = {
+  ok?: boolean;
+  preferredLane?: string;
+  lanes?: Record<string, { ok?: boolean; state?: string; connection?: { name?: string; platform?: string; defaultCwd?: string } | null }>;
+};
+
 const EditorWorkspace: React.FC = () => {
   const [file, setFile] = useState('README.md');
   const [contents, setContents] = useState(starterFiles);
-  const [tab, setTab] = useState<'code' | 'browser'>('code');
+  const [tab, setTab] = useState<WorkTab>('overview');
   return (
     <section className="as-workspace">
       <div className="as-workspace-toolbar">
         <div className="as-toolbar-tabs">
-          <button className={tab === 'code' ? 'active' : ''} onClick={() => setTab('code')}>Code</button>
+          <button className={tab === 'overview' ? 'active' : ''} onClick={() => setTab('overview')}>Workspace</button>
+          <button className={tab === 'scratch' ? 'active' : ''} onClick={() => setTab('scratch')}>Scratch</button>
           <button className={tab === 'browser' ? 'active' : ''} onClick={() => setTab('browser')}>Browser</button>
         </div>
-        <span className="as-workspace-status"><i /> Cloudflare runtime</span>
+        <span className="as-workspace-status"><i /> Live runtime</span>
       </div>
-      {tab === 'code' ? (
+      {tab === 'overview' ? (
+        <WorkOverview onOpenScratch={() => setTab('scratch')} onOpenBrowser={() => setTab('browser')} />
+      ) : tab === 'scratch' ? (
         <div className="as-code-layout">
           <aside className="as-files">
-            <div className="as-files-head">FILES</div>
+            <div className="as-files-head">SCRATCH</div>
             {Object.keys(contents).map((name) => <button key={name} className={file === name ? 'active' : ''} onClick={() => setFile(name)}>{name}</button>)}
-            <div className="as-files-note">Scratch files only. Agent Sam and Terminal operate on real registered execution targets.</div>
+            <div className="as-files-note">Local scratch only — deliberately not presented as repository state. Real repo files are the next Work-surface integration.</div>
           </aside>
           <div className="as-monaco-wrap">
-            <div className="as-editor-tab">{file}<span>×</span></div>
+            <div className="as-editor-tab">{file}<span>scratch</span></div>
             <Editor
               theme="vs-dark"
               language={file.endsWith('.md') ? 'markdown' : file.endsWith('.jsonc') ? 'json' : 'typescript'}
               value={contents[file]}
               onChange={(value) => setContents((prev) => ({ ...prev, [file]: value || '' }))}
-              options={{ minimap: { enabled: true }, fontSize: 13, wordWrap: 'on', padding: { top: 14 }, automaticLayout: true }}
+              options={{ minimap: { enabled: true }, fontSize: 14, wordWrap: 'on', padding: { top: 16 }, automaticLayout: true }}
             />
           </div>
         </div>
       ) : <LiveBrowserPane />}
     </section>
+  );
+};
+
+const WorkOverview: React.FC<{ onOpenScratch: () => void; onOpenBrowser: () => void }> = ({ onOpenScratch, onOpenBrowser }) => {
+  const [health, setHealth] = useState<RuntimeHealth | null>(null);
+  const [exec, setExec] = useState<ExecStatus | null>(null);
+
+  React.useEffect(() => {
+    let active = true;
+    Promise.all([
+      fetch('/api/health', { credentials: 'same-origin' }).then((response) => response.json()).catch(() => null),
+      fetch('/api/exec/status', { credentials: 'same-origin' }).then((response) => response.json()).catch(() => null),
+    ]).then(([healthData, execData]) => {
+      if (!active) return;
+      setHealth(healthData as RuntimeHealth | null);
+      setExec(execData as ExecStatus | null);
+    });
+    return () => { active = false; };
+  }, []);
+
+  const lanes = Object.entries(exec?.lanes || {});
+  const readyCount = lanes.filter(([, value]) => value?.ok).length;
+
+  return (
+    <div className="as-work-overview">
+      <div className="as-work-hero">
+        <div>
+          <span className="as-eyebrow">WORKSPACE</span>
+          <h2>Build with Agent Sam</h2>
+          <p>Chat stays conversational. Work holds the live execution context: repository, terminal, browser, files, diffs and approvals.</p>
+        </div>
+        <div className="as-work-hero-status"><i className={health?.status === 'ok' ? 'ready' : ''} />{health?.status === 'ok' ? 'Runtime ready' : 'Checking runtime'}</div>
+      </div>
+
+      <div className="as-work-card-grid">
+        <button className="as-work-card" type="button" onClick={onOpenScratch}>
+          <span className="as-work-card-icon">‹/›</span>
+          <strong>Code workspace</strong>
+          <p>Monaco is available as scratch today. The real repository filesystem will replace the scratch adapter rather than pretending demo files are live.</p>
+          <small>Open scratch</small>
+        </button>
+        <button className="as-work-card" type="button" onClick={onOpenBrowser}>
+          <span className="as-work-card-icon">◎</span>
+          <strong>Browser Run</strong>
+          <p>{health?.browserRun ? 'Cloudflare Browser Run is bound and ready for the Think agent.' : 'Checking Browser Run capability…'}</p>
+          <small>Open browser</small>
+        </button>
+        <div className="as-work-card">
+          <span className="as-work-card-icon">›_</span>
+          <strong>Execution lanes</strong>
+          <p>{lanes.length ? `${readyCount} of ${lanes.length} registered lanes currently report ready.` : 'Loading Local, VM, Sandbox and Environment status…'}</p>
+          <div className="as-work-lanes">
+            {lanes.map(([name, value]) => <span key={name} className={value?.ok ? 'ready' : ''}><i />{name === 'remote' ? 'VM' : name}</span>)}
+          </div>
+        </div>
+        <div className="as-work-card">
+          <span className="as-work-card-icon">AS</span>
+          <strong>Agent runtime</strong>
+          <p>{health?.agent || 'Think'} · {health?.codeMode ? 'Code Mode active' : 'Code Mode checking'} · {health?.execos ? 'ExecOS connected' : 'ExecOS checking'}</p>
+          <small>Server-authoritative tool activity renders in the Agent pane</small>
+        </div>
+      </div>
+
+      <div className="as-work-next">
+        <strong>Next product slice</strong>
+        <span>Replace scratch with the selected repository's real tree/file/diff APIs, then keep this exact shell.</span>
+      </div>
+    </div>
   );
 };
 
