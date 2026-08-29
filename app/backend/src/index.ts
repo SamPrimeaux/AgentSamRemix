@@ -1,3 +1,10 @@
+import { identityContextFromSdkSession } from '../identity/request-context.js';
+import {
+  LOGIN_IDP_PROVIDERS,
+  OAUTH_TOKEN_PROVIDERS,
+  JWT_FORBIDDEN_AUTHZ_CLAIMS,
+  IDENTITY_TABLE_ROLES,
+} from '../identity/index.js';
 import {
   handleIdentityWorkerRequest,
   createCloudflareD1Adapter,
@@ -11,12 +18,44 @@ export interface Env {
   WEBSITE_ASSETS: R2Bucket;
   APP_ASSETS: Fetcher; // Vite/static frontend assets
   IAM_VPC: Fetcher; // Service binding for VPC
-  AGENTSAM_BRIDGE_KEY?: string; // machine-to-machine only — see auth/bridge-key.ts
+  AGENTSAM_BRIDGE_KEY?: string;
+
+  // Human OAuth login applications.
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+
+  GITHUB_CLIENT_ID?: string;
+  GITHUB_CLIENT_SECRET?: string;
+
+  IAM_CLIENT_ID?: string;
+  IAM_CLIENT_SECRET?: string;
+  IAM_OAUTH_ISSUER?: string; // machine-to-machine only — see auth/bridge-key.ts
 }
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
+
+    // Portable identity-kernel readiness.
+    // Login/session transport remains single-owned by the SDK below.
+    if (
+      url.pathname === '/api/identity/health' &&
+      request.method === 'GET'
+    ) {
+      return new Response(JSON.stringify({
+        ok: true,
+        owner: 'app/backend/identity',
+        loginProviders: LOGIN_IDP_PROVIDERS,
+        tokenProviders: OAUTH_TOKEN_PROVIDERS,
+        tableRoles: IDENTITY_TABLE_ROLES,
+        forbiddenJwtAuthzClaims: JWT_FORBIDDEN_AUTHZ_CLAIMS,
+      }), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store',
+        },
+      });
+    }
 
     // Legacy route: keep old links working while /agent/workbench is canonical.
     if (url.pathname === '/workbench') {
@@ -100,6 +139,35 @@ export default {
       console.warn("No valid session found:", e);
     }
     const isAuthenticated = !!session?.user;
+    const requestIdentity = identityContextFromSdkSession(session);
+
+    if (
+      url.pathname === '/api/identity/me' &&
+      request.method === 'GET'
+    ) {
+      if (!requestIdentity.authenticated) {
+        return new Response(JSON.stringify({
+          ok: false,
+          error: 'session_required',
+        }), {
+          status: 401,
+          headers: {
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-store',
+          },
+        });
+      }
+
+      return new Response(JSON.stringify({
+        ok: true,
+        identity: requestIdentity,
+      }), {
+        headers: {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'private, no-store',
+        },
+      });
+    }
 
     // 3. API Routes
     if (url.pathname === '/api/vision/analyze' && request.method === 'POST') {
