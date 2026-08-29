@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "concurrently -k -n vite,worker -c blue,green \"vite --config app/vite.config.ts\" \"wrangler dev\"",
-    "build": "vite build --config app/vite.config.ts",
+    "build": "NODE_OPTIONS=--max-old-space-size=4096 vite build --config app/vite.config.ts",
     "typecheck": "tsc --noEmit",
     "test:ui": "playwright test",
     "test:browser": "node --test test/browser-live-view.test.mjs",
