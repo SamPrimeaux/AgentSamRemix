@@ -1,4 +1,5 @@
 import { retrieveKnowledge } from '../../knowledge/retrieval/index.js';
+import { createRetrievalRuntimeServices } from '../../knowledge/retrieval/runtime-services.js';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -14,7 +15,7 @@ function trim(value) {
   return value == null ? '' : String(value).trim();
 }
 
-export async function handleRetrievalHttpRequest(request, env, scope, services = {}) {
+export async function handleRetrievalHttpRequest(request, env, scope, services = null) {
   const url = new URL(request.url);
   if (url.pathname !== '/api/agent/retrieval/query') return null;
   if (request.method !== 'POST') return json({ ok: false, error: 'method_not_allowed' }, 405);
@@ -24,6 +25,7 @@ export async function handleRetrievalHttpRequest(request, env, scope, services =
   if (!body || typeof body !== 'object') return json({ ok: false, error: 'invalid_json' }, 400);
   const query = trim(body.query);
   if (!query) return json({ ok: false, error: 'retrieval_query_required' }, 400);
+  const runtimeServices = services || createRetrievalRuntimeServices(env, scope);
 
   const result = await retrieveKnowledge(env, {
     query,
@@ -40,7 +42,7 @@ export async function handleRetrievalHttpRequest(request, env, scope, services =
     nodeTypes: Array.isArray(body.nodeTypes || body.node_types) ? (body.nodeTypes || body.node_types) : [],
     edgeTypes: Array.isArray(body.edgeTypes || body.edge_types) ? (body.edgeTypes || body.edge_types) : [],
     forceRerank: body.forceRerank === true || body.force_rerank === true,
-  }, services);
+  }, runtimeServices);
 
   return json(result, result.ok ? 200 : Number(result.status) || 500);
 }

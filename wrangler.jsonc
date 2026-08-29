@@ -20,6 +20,12 @@
       "database_id": "cf87b717-d4e2-4cf8-bab0-a81268e32d49"
     }
   ],
+  "hyperdrive": [
+    {
+      "binding": "HYPERDRIVE",
+      "id": "08183bb9d2914e87ac8395d7e4ecff60"
+    }
+  ],
   "r2_buckets": [
     {
       "binding": "ASSETS",
