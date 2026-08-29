@@ -1,5 +1,5 @@
 /** OpenAI apply_patch filesystem execution. Provider capability injection remains provider-owned. */
-import { applyDiff } from '@openai/agents';
+import { applyDiff } from '@openai/agents-core';
 import { executeFsReadFile } from './read.js';
 import { executeFsWriteFile } from './write.js';
 import { escapeShellSingleQuoted } from './rg.js';
