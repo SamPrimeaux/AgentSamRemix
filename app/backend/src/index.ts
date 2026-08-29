@@ -22,6 +22,7 @@ import {
 } from '../agentsam/terminal/runtime';
 import { probeExecOS } from '../agentsam/terminal/execos';
 import { isExecLane, resolveUserRuntimeScope, type ExecLane } from '../agentsam/terminal/registry';
+import { handleRetrievalHttpRequest } from '../http/retrieval/routes.js';
 import type { Env } from './env';
 
 export { AgentSam } from '../agentsam/runtime/AgentSam';
@@ -143,6 +144,14 @@ export default {
       if (!authenticated) return json({ error: 'session_required' }, 401);
       const response = await routeAgentRequest(request, env);
       return response || json({ error: 'agent_route_not_found' }, 404);
+    }
+
+    if (url.pathname === '/api/agent/retrieval/query') {
+      if (!authenticated) return json({ error: 'session_required' }, 401);
+      const scope = await authenticatedRuntimeScope(env, requestIdentity);
+      if (!scope) return json({ error: 'workspace_scope_required' }, 409);
+      const response = await handleRetrievalHttpRequest(request, env, scope);
+      return response || json({ error: 'retrieval_route_not_found' }, 404);
     }
 
     if (url.pathname === '/api/exec/status' && request.method === 'GET') {

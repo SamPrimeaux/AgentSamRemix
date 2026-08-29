@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "retrieval-eval-v1",
+  "repoFullName": "SamPrimeaux/AgentSamRemix",
+  "defaults": {
+    "candidateK": 32,
+    "topK": 8,
+    "tokenBudget": 4800
+  },
+  "cases": [
+    {
+      "id": "terminal-execution-boundary",
+      "query": "Where does Agent Sam execute an explicit terminal lane and enforce the current user/workspace execution scope?",
+      "expectedPaths": [
+        "app/backend/agentsam/terminal/runtime.ts",
+        "app/backend/agentsam/terminal/registry.ts"
+      ]
+    },
+    {
+      "id": "browser-session-owner",
+      "query": "What owns the reusable Browser Run session and exposes its live view?",
+      "expectedPaths": [
+        "app/backend/agentsam/runtime/AgentSam.ts"
+      ]
+    },
+    {
+      "id": "exec-http-route",
+      "query": "Where is POST /api/exec/run handled before terminal execution?",
+      "expectedPaths": [
+        "app/backend/src/index.ts"
+      ]
+    },
+    {
+      "id": "vault-key-derivation",
+      "query": "Where is the vault AES-GCM key derived with HKDF for encrypted credentials?",
+      "expectedPaths": [
+        "app/backend/credentials/crypto-vault.js",
+        "app/backend/credentials/vault-key-material.js"
+      ]
+    },
+    {
+      "id": "retrieval-orchestrator",
+      "query": "Where does hybrid code retrieval combine AST, lexical, dense ANN, graph expansion, RRF, reranking, diversity and token packing?",
+      "expectedPaths": [
+        "app/backend/knowledge/retrieval/retrieve.js"
+      ]
+    },
+    {
+      "id": "ticket-tool",
+      "query": "Where is the native agentsam_ticket tool implemented for durable engineering tickets?",
+      "expectedPaths": [
+        "app/backend/agentsam/tools/tickets.js",
+        "app/backend/tickets/repository.js"
+      ]
+    }
+  ]
+}

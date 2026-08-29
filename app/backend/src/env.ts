@@ -1,6 +1,7 @@
 export interface Env {
   AGENTSAM_WAI: Ai;
   DB: D1Database;
+  HYPERDRIVE: Hyperdrive;
   WEBSITE_ASSETS: R2Bucket;
   ASSETS: R2Bucket;
   APP_ASSETS: Fetcher;
@@ -25,7 +26,12 @@ export interface Env {
   IAM_CLIENT_SECRET?: string;
   IAM_OAUTH_ISSUER?: string;
 
+  VAULT_MASTER_KEY?: string;
+  VAULT_KEY?: string;
+  USER_SECRET_ENCRYPTION_KEY?: string;
   SECRETS_ENCRYPTION_KEY?: string;
   GEMINI_API_KEY?: string;
   GOOGLE_AI_API_KEY?: string;
+  OPENAI_API_KEY?: string;
+  ANTHROPIC_API_KEY?: string;
 }

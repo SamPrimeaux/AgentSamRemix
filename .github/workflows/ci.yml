@@ -1,0 +1,47 @@
+name: AgentSamRemix CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - feat/retrieval-v1
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Retrieval unit tests
+        run: npm run test:retrieval
+
+      - name: Retrieval eval harness syntax
+        run: node --check scripts/eval-retrieval-v1.mjs
+
+      - name: No donor runtime imports
+        run: |
+          if grep -R -E "(from|import\()[[:space:]]*['\"][^'\"]*imports/agentsamfast" app/backend --include='*.js' --include='*.ts'; then
+            echo "Runtime must not import donor-tree AgentSamFast code"
+            exit 1
+          fi
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build

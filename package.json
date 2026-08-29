@@ -8,6 +8,8 @@
     "build": "vite build --config app/frontend/vite.config.ts",
     "typecheck": "tsc --noEmit",
     "test:ui": "playwright test",
+    "test:retrieval": "node --test test/retrieval-v1.test.mjs",
+    "eval:retrieval": "node scripts/eval-retrieval-v1.mjs",
     "deploy": "npm run build && wrangler deploy"
   },
   "dependencies": {
@@ -27,6 +29,7 @@
     "cookie-parser": "^1.4.7",
     "express": "^5.2.1",
     "lucide-react": "^1.35.0",
+    "pg": "^8.20.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "zod": "^4.5.2"
