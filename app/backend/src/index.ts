@@ -1,4 +1,4 @@
-import { getAgentByName, routeAgentRequest } from 'agents';
+import { routeAgentRequest } from 'agents';
 import { identityContextFromSdkSession } from '../identity/request-context.js';
 import {
   LOGIN_IDP_PROVIDERS,
@@ -23,6 +23,7 @@ import {
 import { probeExecOS } from '../agentsam/terminal/execos';
 import { isExecLane, resolveUserRuntimeScope, type ExecLane } from '../agentsam/terminal/registry';
 import { handleRetrievalHttpRequest } from '../http/retrieval/routes.js';
+import { handleBrowserLiveViewHttpRequest } from '../http/browser/live-view.js';
 import type { Env } from './env';
 
 export { AgentSam } from '../agentsam/runtime/AgentSam';
@@ -38,10 +39,6 @@ function json(data: unknown, status = 200): Response {
 
 function trim(value: unknown): string {
   return value == null ? '' : String(value).trim();
-}
-
-function agentNameForUser(userId: string): string {
-  return `user-${String(userId || 'default').replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 80)}`;
 }
 
 async function authenticatedRuntimeScope(env: Env, requestIdentity: any) {
@@ -211,23 +208,16 @@ export default {
       return json(result, result.ok ? 200 : 502);
     }
 
-    // Live Browser Run state comes from the same Think Agent that owns Code
-    // Mode. BrowserConnector persists the shared session id in this DO, so a
-    // second browser-session DO would duplicate authority.
-    if (url.pathname === '/api/browser/live-view' && request.method === 'GET') {
+    // Browser Run state stays owned by the same Think Agent that owns Code
+    // Mode. The Worker proves the human session once, then delegates the HTTP
+    // protocol to app/backend/http/browser without creating another session
+    // resolver or BrowserSession authority.
+    if (url.pathname === '/api/browser/live-view') {
       if (!authenticated) return json({ error: 'session_required' }, 401);
       const userId = trim(requestIdentity?.user?.id);
       if (!userId) return json({ error: 'user_scope_required' }, 409);
-      const agent = await getAgentByName(env.AgentSam as any, agentNameForUser(userId)) as any;
-      return json(await agent.getBrowserLiveView());
-    }
-
-    if (url.pathname === '/api/browser/live-view' && request.method === 'DELETE') {
-      if (!authenticated) return json({ error: 'session_required' }, 401);
-      const userId = trim(requestIdentity?.user?.id);
-      if (!userId) return json({ error: 'user_scope_required' }, 409);
-      const agent = await getAgentByName(env.AgentSam as any, agentNameForUser(userId)) as any;
-      return json(await agent.closeBrowserLiveView());
+      const response = await handleBrowserLiveViewHttpRequest(request, env, { userId });
+      return response || json({ error: 'browser_route_not_found' }, 404);
     }
 
     if (url.pathname === '/api/settings/ai-keys/gemini') {
