@@ -5,7 +5,6 @@ on:
   push:
     branches:
       - main
-      - feat/retrieval-v1
 
 permissions:
   contents: read
@@ -26,6 +25,9 @@ jobs:
 
       - name: Install
         run: npm ci
+
+      - name: Browser ownership tests
+        run: npm run test:browser
 
       - name: Retrieval unit tests
         run: npm run test:retrieval
