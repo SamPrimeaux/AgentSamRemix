@@ -9,7 +9,8 @@
   "keep_vars": true,
 
   "vars": {
-    "IAM_CLIENT_ID": "iam_identity_47843d145d72455e83b6"
+    "IAM_CLIENT_ID": "iam_identity_47843d145d72455e83b6",
+    "ACP_CLIENT_ID": "iam_dcr_d80b0615148b49de814f"
   },
 
   "ai": {
