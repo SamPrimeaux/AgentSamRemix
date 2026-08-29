@@ -109,3 +109,40 @@ export function identityContextFromAuthContext(ctx) {
     },
   };
 }
+
+/**
+ * authUser — SSOT for "who is this person," sourced from exactly one
+ * table (`auth_users`) via exactly one query, defined in exactly this
+ * function. No other file in this codebase may run
+ * `SELECT ... FROM auth_users` directly — CI enforces this
+ * (see "Single auth_users read authority invariant" in ci.yml).
+ *
+ * Fields are strictly facts about the person from that one row.
+ * Request-scoped data (workspace, tenant, capabilities) is resolved
+ * alongside this by identityContextFromAuthContext(), never folded
+ * into authUser itself — a person's identity doesn't change per
+ * request; their workspace/capabilities do.
+ *
+ * Any function gating permissions or spending money must receive its
+ * authUser from this call (directly or via IdentityContext.user) —
+ * never construct or accept a hand-built {id, email, ...} object as
+ * if it were one.
+ *
+ * @param {{ DB: any }} env
+ * @param {string} id auth_users.id (au_*)
+ * @returns {Promise<IdentityUser | null>}
+ */
+export async function loadAuthUser(env, id) {
+  const authUserId = String(id ?? '').trim();
+  if (!authUserId || !env?.DB) return null;
+  const row = await env.DB.prepare(
+    `SELECT id, person_uuid, email, display_name FROM auth_users WHERE id = ? LIMIT 1`,
+  ).bind(authUserId).first().catch(() => null);
+  if (!row?.id) return null;
+  return {
+    id: String(row.id),
+    personId: row.person_uuid ?? null,
+    email: row.email ?? null,
+    displayName: row.display_name ?? null,
+  };
+}
