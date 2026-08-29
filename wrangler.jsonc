@@ -1,0 +1,37 @@
+{
+  // Fill in name/account_id before first deploy. Never commit a real
+  // account_id or database_id here if this repo is ever made public —
+  // use wrangler environments / secrets for anything sensitive.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "agentsamremix",
+  "main": "worker/index.ts",
+  "compatibility_date": "2026-08-28",
+  "compatibility_flags": ["nodejs_compat"],
+
+  // Do not add a binding here without a real implementation in worker/
+  // consuming it. Matches .env.example — keep both files in sync.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "REPLACE_ME",
+      "database_id": "REPLACE_ME"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSION_CACHE",
+      "id": "REPLACE_ME"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "ASSETS",
+      "bucket_name": "REPLACE_ME"
+    }
+  ],
+
+  "vars": {
+    // Non-secret only. IAM_CLIENT_SECRET, RESEND_API_KEY etc. go through
+    // `wrangler secret put`, never in this file.
+  }
+}
