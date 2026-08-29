@@ -8,7 +8,9 @@
   "vars": {
     "IAM_CLIENT_ID": "iam_identity_47843d145d72455e83b6",
     "ACP_CLIENT_ID": "iam_dcr_d80b0615148b49de814f",
-    "AGENTSAM_MODEL": "@cf/moonshotai/kimi-k2.7-code"
+    "GOOGLE_AI_PROJECT_NUMBER": "427617292678",
+    "GOOGLE_AI_PROJECT_NAME": "projects/427617292678",
+    "GOOGLE_AI_PROJECT_DISPLAY_NAME": "AgentSamRemix"
   },
   "ai": {
     "binding": "AGENTSAM_WAI"
