@@ -194,7 +194,7 @@ export const BINDING_FAMILY_META: Record<BindingFamily, BindingFamilyMeta> = {
     badgeColor: '#06b6d4',
     category: 'AI & Search',
     description: 'Autonomous browser verification via Kitesurf Worker Browser & real Chromium CDP.',
-    exampleBinding: 'BROWSER',
+    exampleBinding: 'MYBROWSER',
   },
   vectorize: {
     family: 'vectorize',
@@ -276,7 +276,7 @@ export const DEFAULT_RUNTIME_BINDINGS: RuntimeBinding[] = [
   {
     id: 'bind-browser-1',
     family: 'browser',
-    binding: 'BROWSER',
+    binding: 'MYBROWSER',
     enabled: true,
     environment: 'all',
     description: 'Dual-engine browser verifier (Kitesurf Worker + Chromium CDP)',

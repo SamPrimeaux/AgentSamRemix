@@ -1,4 +1,4 @@
-import { routeAgentRequest } from 'agents';
+import { getAgentByName, routeAgentRequest } from 'agents';
 import { identityContextFromSdkSession } from '../identity/request-context.js';
 import {
   LOGIN_IDP_PROVIDERS,
@@ -14,11 +14,18 @@ import {
 import { verifyBridgeKey, bridgeUnauthorized } from './auth/bridge-key';
 import { getAiKeyStatus, setAiKey, clearAiKey, resolveAiKey } from './lib/aiKeyStore';
 import { streamGeminiPage } from './lib/geminiProxy';
-import { executeOnDefaultVm, getHostExecStatus } from '../agentsam/runtime/host-exec';
+import {
+  executeTerminalLane,
+  rememberExecLane,
+  terminalRuntimeStatus,
+} from '../agentsam/terminal/runtime';
+import { probeExecOS } from '../agentsam/terminal/execos';
+import { isExecLane, resolveUserRuntimeScope, type ExecLane } from '../agentsam/terminal/registry';
 import type { Env } from './env';
 
 export { AgentSam } from '../agentsam/runtime/AgentSam';
 export { CodemodeRuntime } from '@cloudflare/codemode';
+export { Sandbox } from '@cloudflare/sandbox';
 
 function json(data: unknown, status = 200): Response {
   return new Response(JSON.stringify(data), {
@@ -27,8 +34,45 @@ function json(data: unknown, status = 200): Response {
   });
 }
 
+function trim(value: unknown): string {
+  return value == null ? '' : String(value).trim();
+}
+
+function agentNameForUser(userId: string): string {
+  return `user-${String(userId || 'default').replace(/[^a-zA-Z0-9_-]/g, '-').slice(0, 80)}`;
+}
+
+async function authenticatedRuntimeScope(env: Env, requestIdentity: any) {
+  const userId = trim(requestIdentity?.user?.id);
+  if (!userId) return null;
+  const workspaceId = trim(requestIdentity?.workspace?.id || requestIdentity?.workspace?.storedActiveId);
+  const tenantId = trim(requestIdentity?.tenant?.id) || null;
+  if (workspaceId) return { userId, workspaceId, tenantId };
+  return resolveUserRuntimeScope(env, userId);
+}
+
+async function machineRuntimeScope(env: Env, request: Request, body: any) {
+  const userId = trim(request.headers.get('X-User-Id') || body?.userId || body?.user_id);
+  if (!userId) return null;
+  const explicitWorkspaceId = trim(request.headers.get('X-Workspace-Id') || body?.workspaceId || body?.workspace_id);
+  const explicitTenantId = trim(request.headers.get('X-Tenant-Id') || body?.tenantId || body?.tenant_id);
+  if (explicitWorkspaceId) {
+    return { userId, workspaceId: explicitWorkspaceId, tenantId: explicitTenantId || null };
+  }
+  const resolved = await resolveUserRuntimeScope(env, userId);
+  if (!resolved) return null;
+  return { ...resolved, tenantId: explicitTenantId || resolved.tenantId };
+}
+
+function laneForLegacyMachinePath(pathname: string): ExecLane | null {
+  if (pathname === '/api/terminal/local') return 'local';
+  if (pathname === '/api/terminal/vm') return 'remote';
+  if (pathname === '/api/terminal/sandbox') return 'sandbox';
+  return null;
+}
+
 export default {
-  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+  async fetch(request: Request, env: Env, _ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
     const identityAdapter = createCloudflareD1Adapter(env.DB);
@@ -55,18 +99,23 @@ export default {
       });
     }
 
-    // Machine-to-machine compatibility. The bridge secret stays server-side;
-    // the actual process boundary is the private ExecOS VPC service.
-    if (url.pathname === '/api/terminal/vm' && request.method === 'POST') {
+    // Machine-to-machine compatibility routes. A bridge key proves machine
+    // authority only; user/workspace scope must be explicit or resolvable from
+    // the supplied X-User-Id. No implicit operator identity and no lane hop.
+    const machineLane = laneForLegacyMachinePath(url.pathname);
+    if (machineLane && request.method === 'POST') {
       if (!verifyBridgeKey(request, env)) return bridgeUnauthorized();
-      const body = await request.json().catch(() => null) as { command?: string; cwd?: string } | null;
-      const result = await executeOnDefaultVm(env, body?.command || '', { cwd: body?.cwd });
+      const body = await request.json().catch(() => null) as any;
+      const scope = await machineRuntimeScope(env, request, body);
+      if (!scope) return json({ error: 'execution_identity_required' }, 400);
+      const result = await executeTerminalLane(env, {
+        ...scope,
+        lane: machineLane,
+        command: body?.command || '',
+        cwd: body?.cwd,
+        connectionId: body?.connectionId || body?.connection_id,
+      });
       return json(result, result.ok ? 200 : 502);
-    }
-
-    if (url.pathname === '/api/terminal/local' && request.method === 'POST') {
-      if (!verifyBridgeKey(request, env)) return bridgeUnauthorized();
-      return json({ error: 'not_implemented', lane: 'local', use: 'execos_vm' }, 501);
     }
 
     if (url.pathname.startsWith('/api/auth') || url.pathname.startsWith('/api/oauth') || url.pathname.startsWith('/auth')) {
@@ -94,21 +143,72 @@ export default {
       return response || json({ error: 'agent_route_not_found' }, 404);
     }
 
-    // Direct terminal UI endpoint. This never accepts a bridge key from the browser.
     if (url.pathname === '/api/exec/status' && request.method === 'GET') {
       if (!authenticated) return json({ error: 'session_required' }, 401);
-      return json(await getHostExecStatus(env));
+      const scope = await authenticatedRuntimeScope(env, requestIdentity);
+      if (!scope) return json({ error: 'workspace_scope_required' }, 409);
+      return json(await terminalRuntimeStatus(env, scope));
     }
 
-    if (url.pathname === '/api/exec/host' && request.method === 'POST') {
+    if (url.pathname === '/api/exec/preference' && request.method === 'PUT') {
       if (!authenticated) return json({ error: 'session_required' }, 401);
-      const body = await request.json().catch(() => null) as { command?: string; cwd?: string } | null;
-      const result = await executeOnDefaultVm(env, body?.command || '', {
+      const scope = await authenticatedRuntimeScope(env, requestIdentity);
+      if (!scope) return json({ error: 'workspace_scope_required' }, 409);
+      const body = await request.json().catch(() => null) as { lane?: string } | null;
+      if (!isExecLane(body?.lane)) return json({ error: 'exec_lane_invalid' }, 400);
+      await rememberExecLane(env, scope.userId, scope.workspaceId, body.lane);
+      return json({ ok: true, lane: body.lane });
+    }
+
+    if (url.pathname === '/api/exec/run' && request.method === 'POST') {
+      if (!authenticated) return json({ error: 'session_required' }, 401);
+      const scope = await authenticatedRuntimeScope(env, requestIdentity);
+      if (!scope) return json({ error: 'workspace_scope_required' }, 409);
+      const body = await request.json().catch(() => null) as any;
+      if (!isExecLane(body?.lane)) return json({ error: 'exec_lane_required' }, 400);
+      const result = await executeTerminalLane(env, {
+        ...scope,
+        lane: body.lane,
+        command: body?.command || '',
         cwd: body?.cwd,
-        userId: requestIdentity.user.id,
-        tenantId: requestIdentity.tenant.id || undefined,
+        connectionId: body?.connectionId || body?.connection_id,
       });
       return json(result, result.ok ? 200 : 502);
+    }
+
+    // Temporary compatibility alias from the first Remix sprint. It is now an
+    // explicit remote lane, not a separate execution authority.
+    if (url.pathname === '/api/exec/host' && request.method === 'POST') {
+      if (!authenticated) return json({ error: 'session_required' }, 401);
+      const scope = await authenticatedRuntimeScope(env, requestIdentity);
+      if (!scope) return json({ error: 'workspace_scope_required' }, 409);
+      const body = await request.json().catch(() => null) as any;
+      const result = await executeTerminalLane(env, {
+        ...scope,
+        lane: 'remote',
+        command: body?.command || '',
+        cwd: body?.cwd,
+      });
+      return json(result, result.ok ? 200 : 502);
+    }
+
+    // Live Browser Run state comes from the same Think Agent that owns Code
+    // Mode. BrowserConnector persists the shared session id in this DO, so a
+    // second browser-session DO would duplicate authority.
+    if (url.pathname === '/api/browser/live-view' && request.method === 'GET') {
+      if (!authenticated) return json({ error: 'session_required' }, 401);
+      const userId = trim(requestIdentity?.user?.id);
+      if (!userId) return json({ error: 'user_scope_required' }, 409);
+      const agent = await getAgentByName(env.AgentSam as any, agentNameForUser(userId)) as any;
+      return json(await agent.getBrowserLiveView());
+    }
+
+    if (url.pathname === '/api/browser/live-view' && request.method === 'DELETE') {
+      if (!authenticated) return json({ error: 'session_required' }, 401);
+      const userId = trim(requestIdentity?.user?.id);
+      if (!userId) return json({ error: 'user_scope_required' }, 409);
+      const agent = await getAgentByName(env.AgentSam as any, agentNameForUser(userId)) as any;
+      return json(await agent.closeBrowserLiveView());
     }
 
     if (url.pathname === '/api/settings/ai-keys/gemini') {
@@ -140,23 +240,25 @@ export default {
       return streamGeminiPage(apiKey, body, request.signal);
     }
 
-    // Retire demo endpoints rather than returning fabricated success data.
     if (url.pathname === '/api/vision/analyze') return json({ error: 'not_implemented' }, 501);
     if (url.pathname === '/api/mission/execute') return json({ error: 'use_agent_chat' }, 410);
 
     if (url.pathname === '/api/health') {
-      const host = await getHostExecStatus(env);
+      const execos = await probeExecOS(env);
       return json({
         status: 'ok',
         runtime: 'cloudflare-worker',
         agent: 'Think',
         codeMode: true,
-        browserRun: Boolean(env.BROWSER),
-        execos: host.ok,
+        browserRun: Boolean(env.MYBROWSER),
+        browserSessionAuthority: 'AgentSam',
+        execos: execos.ok,
+        vpc: Boolean(env.PTY_SERVICE),
+        sandbox: Boolean(env.MY_CONTAINER),
+        sessionCache: Boolean(env.SESSION_CACHE),
       });
     }
 
-    // Worker-first routes that are not API/agent requests still fall through to the SPA.
     if (request.method === 'GET' && env.APP_ASSETS) return env.APP_ASSETS.fetch(request);
     return json({ error: 'not_found' }, 404);
   },

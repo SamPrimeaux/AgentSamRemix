@@ -55,7 +55,7 @@ export default {
         status: 'online',
         runtime: '@cloudflare/computer',
         isolate_id: crypto.randomUUID(),
-        bindings: ['AI', 'BROWSER', 'DB', 'CACHE_KV', 'VECTOR_INDEX'],
+        bindings: ['AI', 'MYBROWSER', 'DB', 'CACHE_KV', 'VECTOR_INDEX'],
       });
     }
 

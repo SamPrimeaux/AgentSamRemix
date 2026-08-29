@@ -41,7 +41,7 @@ export function generateWranglerJsonc(
   const browser = activeBindings.find(b => b.family === 'browser') as BrowserBinding | undefined;
   if (browser) {
     configObj.browser = {
-      binding: browser.binding || 'BROWSER',
+      binding: browser.binding || 'MYBROWSER',
     };
   }
 
@@ -229,7 +229,7 @@ export function parseWranglerJsoncToBindings(
       parsed.push({
         id: `bind-browser-${Date.now()}-1`,
         family: 'browser',
-        binding: data.browser.binding || 'BROWSER',
+        binding: data.browser.binding || 'MYBROWSER',
         enabled: true,
         environment: 'all',
         description: 'Browser verification lane',

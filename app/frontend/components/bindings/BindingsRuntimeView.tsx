@@ -216,7 +216,7 @@ export const BindingsRuntimeView: React.FC<BindingsRuntimeViewProps> = ({
         newBinding = {
           id: `bind-browser-${Date.now()}`,
           family: 'browser',
-          binding: bindingIdentifier || 'BROWSER',
+          binding: bindingIdentifier || 'MYBROWSER',
           enabled: true,
           environment: 'all',
           description: newBindingDesc || meta.description,

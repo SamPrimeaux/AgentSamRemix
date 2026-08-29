@@ -3378,3 +3378,26 @@ button, input, textarea { font: inherit; }
   .as-files { padding:5px 3px; }
   .as-terminal-body { height:220px; }
 }
+
+/* Runtime lane selector + real Browser Run live view */
+.as-terminal-body { grid-template-rows:38px minmax(0,1fr) 35px; }
+.as-terminal-controls { min-width:0; display:flex; align-items:center; gap:10px; padding:0 10px; border-bottom:1px solid #152237; }
+.as-lane-switcher { display:flex; align-items:center; gap:3px; padding:3px; border:1px solid #1d2c43; border-radius:7px; background:#080f1a; }
+.as-lane-switcher button { display:flex; align-items:center; gap:5px; height:24px; padding:0 8px; border:0; border-radius:5px; background:transparent; color:#65758e; font-size:9px; cursor:pointer; }
+.as-lane-switcher button.active { background:#142238; color:#e3ebf7; }
+.as-lane-switcher i { width:5px; height:5px; border-radius:50%; background:#4c596d; }
+.as-lane-switcher i.ready { background:#34d399; box-shadow:0 0 6px rgba(52,211,153,.38); }
+.as-terminal-controls .as-terminal-cwd { flex:1; min-width:0; padding:0; border:0; }
+.as-live-browser { flex:1; min-height:0; display:flex; flex-direction:column; background:#060b12; }
+.as-live-browser-bar { height:34px; min-height:34px; display:flex; align-items:center; gap:8px; padding:0 9px; border-bottom:1px solid #1b293e; background:#091220; }
+.as-live-dot { width:6px; height:6px; border-radius:50%; background:#34d399; box-shadow:0 0 7px rgba(52,211,153,.45); }
+.as-live-url { min-width:0; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; color:#7788a2; font-size:9px; }
+.as-live-browser-bar button,.as-browser-refresh { border:1px solid #263751; border-radius:6px; background:#0e1b2d; color:#92a4bd; padding:4px 8px; font-size:9px; cursor:pointer; }
+.as-live-browser iframe { width:100%; flex:1; min-height:0; border:0; background:#fff; }
+.as-browser-error { color:#fda4af!important; }
+.as-browser-refresh { margin-top:4px; }
+@media (max-width: 800px) {
+  .as-terminal-controls { gap:6px; padding:0 6px; }
+  .as-lane-switcher button { padding:0 6px; }
+  .as-terminal-cwd span { display:none; }
+}

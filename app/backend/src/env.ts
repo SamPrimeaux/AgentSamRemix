@@ -4,10 +4,17 @@ export interface Env {
   WEBSITE_ASSETS: R2Bucket;
   ASSETS: R2Bucket;
   APP_ASSETS: Fetcher;
-  IAM_VPC: Fetcher;
+
   AgentSam: DurableObjectNamespace;
-  BROWSER: any;
+  MY_CONTAINER: DurableObjectNamespace<any>;
+  MYBROWSER: any;
   LOADER: WorkerLoader;
+
+  EXECOS: Fetcher;
+  PTY_SERVICE: Fetcher;
+  SESSION_CACHE: KVNamespace;
+
+  EXECOS_KEY?: string;
   AGENTSAM_BRIDGE_KEY?: string;
   AGENTSAM_MODEL?: string;
 

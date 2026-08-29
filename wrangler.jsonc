@@ -32,7 +32,7 @@
   ],
   "vpc_services": [
     {
-      "binding": "IAM_VPC",
+      "binding": "PTY_SERVICE",
       "service_id": "019db639-7c70-7071-8ef3-32ec0392a9ff",
       "remote": true
     }
@@ -57,6 +57,10 @@
       {
         "name": "AgentSam",
         "class_name": "AgentSam"
+      },
+      {
+        "name": "MY_CONTAINER",
+        "class_name": "Sandbox"
       }
     ]
   },
@@ -66,14 +70,50 @@
       "new_sqlite_classes": [
         "AgentSam"
       ]
+    },
+    {
+      "tag": "agentsam-v2",
+      "new_sqlite_classes": [
+        "Sandbox"
+      ]
     }
   ],
   "browser": {
-    "binding": "BROWSER"
+    "binding": "MYBROWSER"
   },
   "worker_loaders": [
     {
       "binding": "LOADER"
     }
-  ]
+  ],
+  "services": [
+    {
+      "binding": "EXECOS",
+      "service": "execos"
+    }
+  ],
+  "kv_namespaces": [
+    {
+      "binding": "SESSION_CACHE",
+      "id": "dc87920b0a9247979a213c09df9a0234"
+    }
+  ],
+  "containers": [
+    {
+      "class_name": "Sandbox",
+      "image": "docker.io/cloudflare/sandbox:0.12.9",
+      "instance_type": "lite",
+      "max_instances": 3
+    }
+  ],
+  "observability": {
+    "enabled": true,
+    "logs": {
+      "enabled": true,
+      "invocation_logs": true
+    },
+    "traces": {
+      "enabled": true
+    }
+  }
 }
