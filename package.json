@@ -8,6 +8,7 @@
     "build": "vite build --config app/frontend/vite.config.ts",
     "typecheck": "tsc --noEmit",
     "test:ui": "playwright test",
+    "test:browser": "node --test test/browser-live-view.test.mjs",
     "test:retrieval": "node --test test/retrieval-v1.test.mjs",
     "eval:retrieval": "node scripts/eval-retrieval-v1.mjs",
     "deploy": "npm run build && wrangler deploy"
