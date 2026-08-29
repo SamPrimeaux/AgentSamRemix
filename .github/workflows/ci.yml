@@ -35,6 +35,14 @@ jobs:
       - name: Retrieval eval harness syntax
         run: node --check scripts/eval-retrieval-v1.mjs
 
+      - name: Frontend root invariant
+        run: |
+          if [ -d app/dashboard ] && find app/dashboard -type f -print -quit | grep -q .; then
+            echo "Browser/product implementation belongs under app/frontend, not app/dashboard"
+            find app/dashboard -type f -print
+            exit 1
+          fi
+
       - name: No donor runtime imports
         run: |
           if grep -R -E "(from|import\()[[:space:]]*['\"][^'\"]*imports/agentsamfast" app/backend --include='*.js' --include='*.ts'; then
