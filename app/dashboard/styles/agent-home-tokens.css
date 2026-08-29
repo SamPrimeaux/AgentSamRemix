@@ -1,0 +1,32 @@
+/* Agent Home — bridges CMS theme tokens into the atmospheric shell. */
+
+:root {
+  --agent-bg-deep: #050b12;
+  --agent-accent: var(--color-primary, var(--solar-cyan, rgb(191 230 236)));
+  --agent-accent-soft: color-mix(in srgb, var(--agent-accent) 55%, transparent);
+  --agent-accent-faint: color-mix(in srgb, var(--agent-accent) 18%, transparent);
+  --agent-glow-accent: var(--color-primary, var(--solar-cyan));
+
+  --glass-bg: color-mix(in srgb, var(--bg-panel, #b4d2dc) 6%, transparent);
+  --glass-bg-strong: color-mix(in srgb, var(--bg-panel, #b4d2dc) 10%, transparent);
+  --glass-border: color-mix(in srgb, var(--agent-accent) 28%, transparent);
+  --glass-blur: 18px;
+
+  --agent-text-primary: var(--text-main, #dce6e9);
+  --agent-text-secondary: var(--text-muted, #8fa3ab);
+  --agent-text-faint: color-mix(in srgb, var(--text-muted, #8fa3ab) 70%, transparent);
+
+  --agent-vignette: 0.38;
+  --agent-grain: 0.035;
+  --agent-glass-opacity: 0.18;
+
+  --font-serif: 'Source Serif 4', 'Iowan Old Style', 'Palatino', Georgia, serif;
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+  --agent-radius-bar: 28px;
+  --agent-radius-pill: 10px;
+}
+
+.agent-home__composer-host .iam-chat-composer-glass--atmospheric {
+  opacity: calc(0.72 + var(--agent-glass-opacity, 0.18) * 0.28);
+}

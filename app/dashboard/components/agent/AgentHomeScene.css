@@ -1,0 +1,62 @@
+.agent-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: var(--bg-canvas, var(--agent-bg-deep, #050b12));
+  z-index: 0;
+}
+
+.agent-scene__gradient,
+.agent-scene__image,
+.agent-scene__video,
+.agent-scene__preset {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.agent-scene__image {
+  background-size: cover;
+  background-position: center;
+}
+
+.agent-scene__gradient {
+  pointer-events: none;
+}
+
+.agent-scene__preset--minimal-dark {
+  background: var(--bg-canvas, var(--agent-bg-deep, #050b12));
+}
+
+.agent-scene__vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse 100% 90% at 50% 42%,
+    transparent 52%,
+    rgba(0, 0, 0, calc(var(--agent-vignette, 0.38) * 1.15)) 100%
+  );
+  pointer-events: none;
+}
+
+.agent-scene__grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: overlay;
+  opacity: var(--agent-grain, 0.035);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.agent-scene__webgl {
+  position: absolute;
+  inset: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .agent-scene__video {
+    display: none;
+  }
+}

@@ -25,6 +25,7 @@
     "@cloudflare/voice": "^0.4.0",
     "@google/genai": "^1.35.0",
     "@inneranimalmedia/agentsam-sdk": "^2.0.0-alpha.identity.11",
+    "@inneranimalmedia/client-core": "file:packages/client-core",
     "@monaco-editor/react": "^4.7.0",
     "agents": "^0.22.0",
     "ai": "^7.0.84",
@@ -34,6 +35,7 @@
     "pg": "^8.20.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
+    "react-router-dom": "^7.18.3",
     "zod": "^4.5.2"
   },
   "devDependencies": {

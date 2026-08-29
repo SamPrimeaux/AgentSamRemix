@@ -1,0 +1,98 @@
+.agent-hero {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+  width: 100%;
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.agent-hero__greeting-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 100%;
+  text-align: center;
+}
+
+.agent-hero__mark {
+  filter: drop-shadow(0 0 6px var(--agent-accent-soft));
+  flex-shrink: 0;
+}
+
+.agent-hero__greeting {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(28px, 4vw, 42px);
+  color: var(--agent-text-primary);
+  letter-spacing: -0.01em;
+  margin: 0;
+  text-shadow: 0 0 24px rgba(0, 0, 0, 0.4);
+}
+
+.agent-hero__pills {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.agent-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: var(--agent-radius-pill);
+  border: 1px solid color-mix(in srgb, var(--glass-border) 90%, var(--agent-text-primary) 10%);
+  background: color-mix(in srgb, var(--glass-bg) 85%, var(--agent-bg-deep) 15%);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  color: var(--agent-text-secondary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  cursor: pointer;
+  transition:
+    color 0.15s ease,
+    border-color 0.15s ease,
+    background 0.15s ease,
+    transform 0.1s ease,
+    box-shadow 0.15s ease;
+}
+
+.agent-pill:hover {
+  color: var(--agent-text-primary);
+  border-color: var(--agent-accent-soft);
+  background: color-mix(in srgb, var(--glass-bg-strong) 90%, transparent);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--agent-text-primary) 8%, transparent);
+}
+
+.agent-pill:active {
+  transform: scale(0.97);
+}
+
+.agent-pill:focus-visible {
+  outline: 2px solid var(--agent-accent);
+  outline-offset: 2px;
+}
+
+@media (max-width: 480px) {
+  .agent-hero__greeting {
+    font-size: 30px;
+  }
+}
+
+@media (max-width: 430px) {
+  .agent-home__stack--hero .agent-hero {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-height: 0;
+  }
+}
