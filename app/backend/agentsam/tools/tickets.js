@@ -12,7 +12,7 @@ const ticketStatus = z.enum(['backlog', 'active', 'blocked', 'in_review', 'shipp
 
 export function createAgentSamTicketTool(env, resolveActor) {
   return tool({
-    description: 'Read and update the canonical Agent Sam engineering ticket spine in D1. Use one operation at a time. Create is idempotent when dedupKey is supplied.',
+    description: 'Read and update the canonical Agent Sam engineering ticket spine in D1. Use one operation at a time. Create is idempotent when dedupKey is supplied; docPath should point at the prose SSOT when one exists.',
     inputSchema: z.object({
       operation: z.enum(['list', 'get', 'create', 'set_status', 'add_note']),
       ticketId: z.string().max(128).optional(),
@@ -25,6 +25,7 @@ export function createAgentSamTicketTool(env, resolveActor) {
       priority: z.enum(['P0', 'P1', 'P2', 'P3']).optional(),
       tags: z.array(z.string().max(80)).max(30).optional(),
       dedupKey: z.string().max(128).optional(),
+      docPath: z.string().max(400).optional(),
       query: z.string().max(240).optional(),
       note: z.string().max(4000).optional(),
       commitSha: z.string().max(64).optional(),
@@ -63,6 +64,7 @@ export function createAgentSamTicketTool(env, resolveActor) {
               priority: input.priority,
               tags: input.tags,
               dedup_key: input.dedupKey,
+              doc_path: input.docPath,
             }, actor),
           };
         case 'set_status':

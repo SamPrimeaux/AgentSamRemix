@@ -8,7 +8,7 @@ on:
       - feat/retrieval-v1
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   verify:
@@ -24,11 +24,14 @@ jobs:
           node-version: '22'
           cache: npm
 
-      - name: Install and refresh lock
-        run: npm install --ignore-scripts
+      - name: Install
+        run: npm ci
 
       - name: Retrieval unit tests
         run: npm run test:retrieval
+
+      - name: Retrieval eval harness syntax
+        run: node --check scripts/eval-retrieval-v1.mjs
 
       - name: No donor runtime imports
         run: |
@@ -42,16 +45,3 @@ jobs:
 
       - name: Build
         run: npm run build
-
-      - name: Commit generated package lock
-        if: github.event_name == 'push' && github.ref_name == 'feat/retrieval-v1'
-        run: |
-          if git diff --quiet -- package-lock.json; then
-            echo "package-lock.json already current"
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json
-          git commit -m "chore: refresh package lock for pg"
-          git push origin HEAD:feat/retrieval-v1
