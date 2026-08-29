@@ -17,6 +17,19 @@ export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
 
+    // Public Agent Sam landing page.
+    // /workbench remains the React application.
+    if (
+      url.pathname === '/' &&
+      request.method === 'GET' &&
+      env.FRONTEND_ASSETS
+    ) {
+      const homeUrl = new URL('/agentsam-home.html', request.url);
+      return env.FRONTEND_ASSETS.fetch(
+        new Request(homeUrl.toString(), request),
+      );
+    }
+
     // 0. Machine-to-machine routes — bridge key only, never user session.
     // Real PTY/VM wiring is not implemented yet. This gate is real; the
     // execution behind it is deliberately not — see comments below.

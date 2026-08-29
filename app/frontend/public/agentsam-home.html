@@ -1,0 +1,1217 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Sam — Cloud Contained Sandboxes</title>
+<meta name="description" content="npm i @inneranimalmedia/agentsam-sdk — sandboxes, tools, and promote-only paths for Agent Sam.">
+<style id="agentsam-page-css">
+/* Agent Sam landing — page styles (shared across sections) */
+main.agentsam-landing { padding-top: 76px; }
+
+    :root {
+      color-scheme: dark;
+      --bg: #030711;
+      --bg-2: #050b15;
+      --panel: rgba(9, 18, 31, 0.72);
+      --panel-strong: rgba(12, 26, 44, 0.92);
+      --panel-soft: rgba(15, 35, 58, 0.54);
+      --line: rgba(121, 199, 255, 0.17);
+      --line-strong: rgba(121, 199, 255, 0.36);
+      --text: #f1f7ff;
+      --muted: rgba(229, 238, 248, 0.66);
+      --soft: rgba(229, 238, 248, 0.42);
+      --blue: #7fc8ff;
+      --blue-2: #3aa8f8;
+      --cyan: #45e6ff;
+      --green: #b8ff80;
+      --purple: #b68cff;
+      --warn: #ffc766;
+      --danger: #ff7d92;
+      --shadow: 0 32px 90px rgba(0, 0, 0, 0.58);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --radius: 28px;
+      --max: 1180px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html {
+      scroll-behavior: smooth;
+      background: var(--bg);
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--sans);
+      color: var(--text);
+      background:
+        radial-gradient(circle at 50% 10%, rgba(86, 170, 255, 0.15), transparent 34rem),
+        radial-gradient(circle at 90% 45%, rgba(57, 171, 255, 0.10), transparent 36rem),
+        linear-gradient(180deg, #020611 0%, #040912 38%, #02060f 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(130, 204, 255, 0.035) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(130, 204, 255, 0.035) 1px, transparent 1px);
+      background-size: 88px 88px;
+      mask-image: linear-gradient(180deg, transparent, black 12%, black 86%, transparent);
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(circle at 50% 0%, transparent 0 24%, rgba(0,0,0,.38) 66%, rgba(0,0,0,.64));
+      z-index: 30;
+      mix-blend-mode: multiply;
+    }
+
+    a { color: inherit; text-decoration: none; }
+
+    button, input, select {
+      font: inherit;
+      color: inherit;
+    }
+
+    .shell {
+      width: min(100%, 100vw);
+      border-inline: 1px solid rgba(135, 203, 255, 0.10);
+    }
+
+
+    .hero {
+      min-height: 860px;
+      position: relative;
+      display: grid;
+      place-items: center;
+      padding: 132px 22px 90px;
+      overflow: hidden;
+      border-bottom: 1px solid rgba(127, 200, 255, 0.12);
+    }
+
+    .hero-grid {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 70px;
+      height: 280px;
+      opacity: .86;
+      pointer-events: none;
+      background-image: radial-gradient(circle, rgba(107, 182, 238, 0.30) 0 2px, transparent 2.6px);
+      background-size: 24px 24px;
+      mask-image: radial-gradient(ellipse at 34% 45%, black 0 32%, transparent 68%);
+    }
+
+    .hero-lines {
+      position: absolute;
+      width: 1050px;
+      height: 360px;
+      left: 50%;
+      transform: translateX(-16%);
+      bottom: 70px;
+      pointer-events: none;
+      opacity: .75;
+    }
+
+    .hero-orb {
+      position: absolute;
+      left: calc(50% - 17px);
+      bottom: 214px;
+      width: 9px;
+      height: 9px;
+      border-radius: 99px;
+      background: #bde5ff;
+      box-shadow: 0 0 0 1px rgba(255,255,255,.6), 0 0 12px 4px rgba(127,200,255,.6), 0 0 48px 18px rgba(127,200,255,.22);
+      animation: pulse 2.7s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(.9); opacity: .72; }
+      50% { transform: scale(1.22); opacity: 1; }
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      width: min(980px, 100%);
+      margin-top: -120px;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      padding: 9px 12px;
+      border: 1px solid rgba(127, 200, 255, .18);
+      border-radius: 999px;
+      color: rgba(229, 238, 248, .70);
+      background: rgba(5, 14, 25, .52);
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    .eyebrow i {
+      width: 8px;
+      height: 8px;
+      border-radius: 99px;
+      display: block;
+      background: var(--blue);
+      box-shadow: 0 0 16px rgba(127,200,255,.86);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(58px, 10.2vw, 132px);
+      line-height: .88;
+      letter-spacing: -.08em;
+      font-weight: 420;
+      color: transparent;
+      background: linear-gradient(180deg, #a8dcff 0%, #73c2fb 48%, #4c9fe2 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      text-wrap: balance;
+      text-shadow: 0 0 54px rgba(77, 167, 238, .10);
+    }
+
+    .hero-copy p {
+      width: min(560px, 92%);
+      margin: 28px auto 0;
+      color: rgba(229, 238, 248, .74);
+      font-size: clamp(17px, 2vw, 22px);
+      line-height: 1.45;
+      text-wrap: balance;
+    }
+
+    .hero-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 34px;
+    }
+
+    .btn {
+      border: 1px solid rgba(127, 200, 255, .22);
+      border-radius: 8px;
+      height: 52px;
+      padding: 0 24px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      font-family: var(--mono);
+      font-size: 14px;
+      letter-spacing: .01em;
+      background: rgba(7, 15, 26, .82);
+      color: rgba(242, 248, 255, .86);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.02);
+      cursor: pointer;
+      transition: transform .18s ease, border-color .18s ease, background .18s ease;
+    }
+
+    .btn:hover { transform: translateY(-2px); border-color: rgba(127, 200, 255, .48); background: rgba(15, 31, 52, .84); }
+    .btn-primary { background: #eaf6ff; color: #07111d; border-color: #eaf6ff; }
+    .btn-primary:hover { background: #ffffff; border-color: #ffffff; }
+
+    .orbit-strip {
+      position: absolute;
+      bottom: 22px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: min(960px, calc(100% - 36px));
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      z-index: 3;
+    }
+
+    .metric {
+      border: 1px solid rgba(127, 200, 255, .13);
+      background: rgba(4, 11, 20, .48);
+      border-radius: 16px;
+      padding: 14px 15px;
+      min-width: 0;
+      backdrop-filter: blur(12px);
+    }
+
+    .metric b {
+      display: block;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+
+    .metric span {
+      display: block;
+      font-size: 12px;
+      color: rgba(229,238,248,.52);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .story {
+      position: relative;
+      max-width: var(--max);
+      margin: 0 auto;
+    }
+
+    .progress-rail {
+      position: sticky;
+      top: 110px;
+      float: left;
+      width: 138px;
+      margin-left: 12px;
+      height: 360px;
+      display: flex;
+      align-items: flex-start;
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    .rail-line {
+      position: relative;
+      width: 1px;
+      height: 100%;
+      background: linear-gradient(180deg, transparent, rgba(127,200,255,.22) 16%, rgba(127,200,255,.26) 78%, transparent);
+      margin-left: 28px;
+    }
+
+    .rail-dot {
+      position: absolute;
+      left: -4px;
+      top: 44px;
+      width: 9px;
+      height: 9px;
+      border-radius: 99px;
+      background: var(--blue);
+      box-shadow: 0 0 24px rgba(127,200,255,.88);
+      transition: top .38s cubic-bezier(.2,.8,.2,1);
+    }
+
+    .rail-labels {
+      margin-left: 18px;
+      margin-top: 28px;
+      display: grid;
+      gap: 7px;
+      font-family: var(--mono);
+      font-size: 14px;
+      color: rgba(127, 200, 255, .34);
+    }
+
+    .rail-labels span {
+      transition: color .25s ease, transform .25s ease;
+    }
+
+    .rail-labels span.active {
+      color: var(--blue);
+      transform: translateX(2px);
+    }
+
+    .section {
+      position: relative;
+      min-height: 790px;
+      display: grid;
+      grid-template-columns: minmax(280px, 420px) minmax(420px, 1fr);
+      gap: 80px;
+      align-items: center;
+      padding: 120px 20px 120px 230px;
+      border-bottom: 1px solid rgba(127, 200, 255, 0.09);
+    }
+
+    .section::before {
+      content: "";
+      position: absolute;
+      inset: 10% -8% 10% 38%;
+      background: radial-gradient(ellipse at center, rgba(92, 174, 255, .11), transparent 62%);
+      opacity: .8;
+      pointer-events: none;
+    }
+
+    .section-copy, .mock-wrap { position: relative; z-index: 2; }
+
+    .section h2 {
+      margin: 0 0 18px;
+      font-size: clamp(34px, 4vw, 52px);
+      line-height: 1.02;
+      letter-spacing: -.055em;
+      font-weight: 460;
+      text-wrap: balance;
+    }
+
+    .section-lead {
+      margin: 0 0 36px;
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.45;
+      max-width: 530px;
+    }
+
+    .feature-list {
+      display: grid;
+      gap: 24px;
+    }
+
+    .feature {
+      display: grid;
+      grid-template-columns: 38px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .feature svg {
+      width: 28px;
+      height: 28px;
+      stroke: var(--blue);
+      filter: drop-shadow(0 0 18px rgba(127,200,255,.26));
+    }
+
+    .feature h3 {
+      margin: 0 0 8px;
+      font-family: var(--mono);
+      font-size: 19px;
+      line-height: 1.35;
+      font-weight: 430;
+      letter-spacing: .01em;
+    }
+
+    .feature p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+      font-size: 16px;
+    }
+
+    .mock-wrap {
+      min-height: 420px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mock-card {
+      width: min(650px, 100%);
+      border: 1px solid rgba(127, 200, 255, .23);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(135deg, rgba(7, 16, 28, .90), rgba(17, 45, 72, .70)),
+        radial-gradient(circle at 78% 2%, rgba(127,200,255,.18), transparent 18rem);
+      box-shadow: var(--shadow), inset 0 1px 0 rgba(255,255,255,.04);
+      overflow: hidden;
+      transform: perspective(900px) rotateY(-3deg) rotateX(1deg);
+    }
+
+    .mock-card.wide { width: min(720px, 100%); }
+
+    .mock-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(127, 200, 255, .11);
+      padding: 22px 24px;
+      gap: 16px;
+    }
+
+    .mock-title {
+      font-family: var(--mono);
+      font-size: 15px;
+      color: rgba(242,248,255,.92);
+      letter-spacing: -.01em;
+    }
+
+    .mock-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+    }
+
+    .chip {
+      border: 1px solid rgba(127, 200, 255, .14);
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: rgba(2, 8, 16, .36);
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(229, 238, 248, .58);
+      white-space: nowrap;
+    }
+
+    .chip.ready {
+      color: rgba(225, 255, 202, .94);
+      border-color: rgba(184,255,128,.22);
+      background: rgba(184,255,128,.07);
+    }
+
+    .chip.purple {
+      color: rgba(224, 205, 255, .94);
+      border-color: rgba(182,140,255,.24);
+      background: rgba(182,140,255,.08);
+    }
+
+    .mock-body { padding: 24px; }
+
+    .usage {
+      display: grid;
+      grid-template-columns: 105px 1fr 44px;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 26px;
+      font-family: var(--mono);
+      color: rgba(229,238,248,.54);
+      font-size: 12px;
+    }
+
+    .bar {
+      height: 7px;
+      border-radius: 99px;
+      overflow: hidden;
+      background: rgba(127,200,255,.09);
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--purple), var(--blue));
+      width: 58%;
+      box-shadow: 0 0 20px rgba(182,140,255,.26);
+      animation: breatheWidth 4s ease-in-out infinite;
+    }
+
+    @keyframes breatheWidth {
+      0%, 100% { width: 52%; }
+      50% { width: 76%; }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: var(--mono);
+      font-size: 13px;
+      color: rgba(229,238,248,.70);
+    }
+
+    th {
+      text-align: left;
+      color: rgba(229,238,248,.42);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 14px 0;
+      border-bottom: 1px solid rgba(127,200,255,.10);
+    }
+
+    td {
+      padding: 15px 0;
+      border-bottom: 1px solid rgba(127,200,255,.11);
+      white-space: nowrap;
+    }
+
+    td:first-child { color: var(--blue); }
+    .mini-dot { display: inline-block; width: 7px; height: 7px; border-radius: 99px; margin-right: 10px; background: var(--green); box-shadow: 0 0 14px rgba(184,255,128,.75); }
+    .mini-dot.off { background: rgba(229,238,248,.32); box-shadow: none; }
+    .running { color: var(--green); }
+    .pending { color: rgba(229,238,248,.42); }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+      font-family: var(--mono);
+    }
+
+    .field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .field.full { grid-column: 1 / -1; }
+
+    .field label {
+      color: rgba(229,238,248,.50);
+      font-size: 12px;
+    }
+
+    .field input, .field select {
+      width: 100%;
+      border: 1px solid rgba(127,200,255,.13);
+      border-radius: 7px;
+      background: rgba(2, 8, 16, .48);
+      min-height: 43px;
+      padding: 0 12px;
+      color: rgba(242,248,255,.84);
+      outline: none;
+    }
+
+    .field input:focus, .field select:focus { border-color: rgba(127,200,255,.45); box-shadow: 0 0 0 3px rgba(127,200,255,.07); }
+
+    .rule-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-top: 1px solid rgba(127,200,255,.10);
+      border-bottom: 1px solid rgba(127,200,255,.10);
+      padding: 15px 0;
+      margin-top: 16px;
+      font-family: var(--mono);
+      color: rgba(229,238,248,.52);
+      font-size: 12px;
+    }
+
+    .add-rule {
+      margin-left: auto;
+      height: 31px;
+      padding: 0 13px;
+      border-radius: 7px;
+      border: 1px solid rgba(184,255,128,.20);
+      background: rgba(184,255,128,.07);
+      color: rgba(225,255,202,.92);
+      font-family: var(--mono);
+      cursor: pointer;
+    }
+
+    .terminal-shell {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      min-height: 440px;
+    }
+
+    .app-rail {
+      padding: 24px 18px;
+      border-right: 1px solid rgba(127,200,255,.10);
+      background: rgba(0,0,0,.14);
+      font-family: var(--mono);
+      font-size: 12px;
+      color: rgba(229,238,248,.42);
+    }
+
+    .app-rail strong {
+      display: block;
+      color: rgba(242,248,255,.86);
+      margin-bottom: 22px;
+      font-family: var(--sans);
+    }
+
+    .rail-menu {
+      display: grid;
+      gap: 11px;
+    }
+
+    .rail-menu span {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .rail-menu i {
+      width: 13px;
+      height: 13px;
+      border: 1px solid rgba(127,200,255,.24);
+      border-radius: 4px;
+    }
+
+    .terminal-area { padding: 22px; min-width: 0; }
+
+    .terminal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .terminal-head h4 { margin: 0; font-family: var(--mono); font-size: 15px; }
+
+    .terminal-window {
+      border: 1px solid rgba(127,200,255,.13);
+      border-radius: 14px;
+      overflow: hidden;
+      background: rgba(3, 8, 15, .72);
+      font-family: var(--mono);
+      color: rgba(210, 230, 247, .78);
+      font-size: 12px;
+      min-height: 285px;
+    }
+
+    .terminal-tab {
+      padding: 8px 12px;
+      border-bottom: 1px solid rgba(127,200,255,.10);
+      background: rgba(127,200,255,.06);
+      color: rgba(229,238,248,.55);
+    }
+
+    .terminal-output {
+      padding: 15px;
+      line-height: 1.62;
+      min-height: 244px;
+      white-space: pre-wrap;
+    }
+
+    .prompt { color: #ff9bb1; }
+    .command { color: #c2e5ff; }
+    .ok { color: var(--green); }
+    .muted { color: rgba(229,238,248,.36); }
+
+    .agent-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .agent-card {
+      border: 1px solid rgba(127,200,255,.13);
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(3, 10, 18, .40);
+      min-height: 142px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .agent-card::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      border-radius: inherit;
+      background: radial-gradient(circle at 20% 0%, rgba(127,200,255,.18), transparent 16rem);
+      pointer-events: none;
+    }
+
+    .agent-card b {
+      position: relative;
+      display: block;
+      font-family: var(--mono);
+      font-size: 14px;
+      margin-bottom: 8px;
+    }
+
+    .agent-card p {
+      position: relative;
+      margin: 0;
+      color: rgba(229,238,248,.57);
+      font-size: 13px;
+      line-height: 1.44;
+    }
+
+    .connector-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .connector-row span {
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(229,238,248,.52);
+      border: 1px solid rgba(127,200,255,.13);
+      border-radius: 999px;
+      padding: 7px 9px;
+      background: rgba(127,200,255,.04);
+    }
+
+    .observe-card .mock-body { display: grid; gap: 14px; }
+
+    .trace-row {
+      display: grid;
+      grid-template-columns: 120px 1fr 72px;
+      align-items: center;
+      gap: 13px;
+      padding: 13px 0;
+      border-bottom: 1px solid rgba(127,200,255,.10);
+      font-family: var(--mono);
+      font-size: 12px;
+    }
+
+    .trace-row:last-child { border-bottom: 0; }
+    .trace-row .name { color: var(--blue); }
+    .trace-row .desc { color: rgba(229,238,248,.58); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .trace-row .latency { color: rgba(229,238,248,.42); text-align: right; }
+
+    .mini-progress {
+      position: relative;
+      width: 100%;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(127,200,255,.08);
+      overflow: hidden;
+      margin: 10px 0 4px;
+    }
+
+    .mini-progress span {
+      display: block;
+      width: 66%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--blue), var(--green));
+      animation: loading 2.6s ease-in-out infinite;
+    }
+
+    @keyframes loading {
+      0%,100% { transform: translateX(-30%); }
+      50% { transform: translateX(35%); }
+    }
+
+    .final {
+      max-width: var(--max);
+      margin: 0 auto;
+      padding: 126px 20px 150px 230px;
+      position: relative;
+    }
+
+    .final-panel {
+      border: 1px solid rgba(127, 200, 255, .16);
+      border-radius: 34px;
+      padding: clamp(28px, 5vw, 64px);
+      background:
+        radial-gradient(circle at 18% 0%, rgba(127,200,255,.17), transparent 28rem),
+        linear-gradient(135deg, rgba(9, 19, 32, .88), rgba(5, 12, 23, .70));
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .final-panel::after {
+      content: "";
+      position: absolute;
+      inset: auto -20% -30% 20%;
+      height: 240px;
+      background: radial-gradient(ellipse, rgba(127,200,255,.12), transparent 66%);
+    }
+
+    .final h2 {
+      margin: 0;
+      max-width: 790px;
+      font-size: clamp(42px, 7vw, 86px);
+      line-height: .96;
+      font-weight: 430;
+      letter-spacing: -.065em;
+    }
+
+    .final p {
+      margin: 22px 0 0;
+      color: var(--muted);
+      max-width: 610px;
+      font-size: 18px;
+      line-height: 1.5;
+    }
+
+    .launch-grid {
+      position: relative;
+      z-index: 2;
+      margin-top: 42px;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .launch-step {
+      border: 1px solid rgba(127,200,255,.13);
+      border-radius: 20px;
+      padding: 18px;
+      background: rgba(3, 8, 15, .44);
+      min-height: 142px;
+    }
+
+    .launch-step span {
+      display: inline-flex;
+      width: 31px;
+      height: 31px;
+      border-radius: 12px;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(127,200,255,.20);
+      color: var(--blue);
+      font-family: var(--mono);
+      margin-bottom: 18px;
+    }
+
+    .launch-step b { display: block; font-family: var(--mono); font-size: 14px; margin-bottom: 8px; }
+    .launch-step small { color: rgba(229,238,248,.54); line-height: 1.45; display: block; }
+
+    .hidden-mobile { display: initial; }
+
+    @media (prefers-reduced-motion: reduce) {
+      html { scroll-behavior: auto; }
+      *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
+    }
+
+    @media (max-width: 1040px) {
+      .section { padding-left: 170px; gap: 44px; grid-template-columns: minmax(260px, 390px) minmax(360px, 1fr); }
+      .final { padding-left: 170px; }
+      .progress-rail { width: 120px; }
+    }
+
+    @media (max-width: 840px) {
+      .nav { height: 56px; top: 10px; }
+      .nav-links { display: none; }
+      .status-pill { font-size: 11px; padding: 9px 10px; }
+      .hero { min-height: 760px; padding-top: 112px; }
+      .hero-copy { margin-top: -140px; }
+      .hero-grid { bottom: 86px; background-size: 20px 20px; }
+      .hero-lines { width: 760px; transform: translateX(-22%); bottom: 84px; opacity: .58; }
+      .hero-orb { bottom: 220px; left: calc(50% - 4px); }
+      .orbit-strip { grid-template-columns: repeat(2, 1fr); bottom: 18px; }
+      .progress-rail {
+        float: none;
+        position: sticky;
+        top: 76px;
+        width: calc(100% - 28px);
+        height: auto;
+        margin: 0 auto;
+        padding: 12px;
+        border: 1px solid rgba(127,200,255,.12);
+        border-radius: 18px;
+        background: rgba(3, 9, 18, .62);
+        backdrop-filter: blur(18px);
+      }
+      .rail-line { display: none; }
+      .rail-labels { margin: 0; grid-template-columns: repeat(4, 1fr); width: 100%; gap: 0; text-align: center; font-size: 12px; }
+      .rail-labels span { padding: 8px 5px; border-radius: 12px; }
+      .rail-labels span.active { background: rgba(127,200,255,.09); transform: none; }
+      .section { min-height: auto; grid-template-columns: 1fr; gap: 34px; padding: 82px 18px; }
+      .section::before { inset: 15% -20% 5% -10%; }
+      .mock-card { transform: none; }
+      .final { padding: 88px 18px 118px; }
+      .launch-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+
+    @media (max-width: 560px) {
+      .brand-sub { display: none; }
+      .brand-title { font-size: 14px; }
+      .mark { width: 31px; height: 31px; }
+      .status-pill span:last-child { max-width: 96px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+      h1 { font-size: clamp(52px, 16.3vw, 72px); line-height: .92; }
+      .hero { min-height: 710px; }
+      .hero-copy p { font-size: 16px; width: 100%; }
+      .hero-actions { gap: 10px; }
+      .btn { width: 100%; height: 50px; }
+      .orbit-strip { display: none; }
+      .hero-grid { height: 240px; mask-image: radial-gradient(ellipse at 50% 50%, black 0 33%, transparent 72%); }
+      .section h2 { font-size: 35px; }
+      .section-lead { font-size: 16px; }
+      .feature { grid-template-columns: 32px 1fr; gap: 13px; }
+      .feature h3 { font-size: 16px; }
+      .feature p { font-size: 14px; }
+      .mock-top { padding: 18px; align-items: flex-start; flex-direction: column; }
+      .mock-body { padding: 18px; }
+      .usage { grid-template-columns: 1fr; gap: 8px; }
+      table { font-size: 11px; }
+      th:nth-child(2), td:nth-child(2) { display: none; }
+      .form-grid { grid-template-columns: 1fr; }
+      .terminal-shell { grid-template-columns: 1fr; }
+      .app-rail { display: none; }
+      .agent-grid { grid-template-columns: 1fr; }
+      .trace-row { grid-template-columns: 90px 1fr; }
+      .trace-row .latency { display: none; }
+      .launch-grid { grid-template-columns: 1fr; }
+    }
+  
+</style>
+</head>
+<body data-footer-theme="dark" data-route="/agentsam">
+<main id="top" class="iam-public-page agentsam-landing" data-route="/agentsam">
+<section class="hero" data-section-key="hero" data-cms-section="hero" data-section-type="hero" aria-labelledby="hero-title">
+        <div class="hero-grid" aria-hidden="true"></div>
+        <svg class="hero-lines" viewBox="0 0 1050 360" aria-hidden="true" preserveAspectRatio="none">
+          <defs>
+            <linearGradient id="lineFade" x1="0" x2="1">
+              <stop offset="0" stop-color="#7fc8ff" stop-opacity="0.02" />
+              <stop offset="0.36" stop-color="#7fc8ff" stop-opacity="0.48" />
+              <stop offset="0.78" stop-color="#1a94df" stop-opacity="0.22" />
+              <stop offset="1" stop-color="#1a94df" stop-opacity="0" />
+            </linearGradient>
+          </defs>
+          <path d="M 50 36 C 172 150, 264 165, 368 178 S 693 180, 1050 180" fill="none" stroke="url(#lineFade)" stroke-width="1" />
+          <path d="M 50 74 C 164 150, 250 165, 368 178 S 693 180, 1050 180" fill="none" stroke="url(#lineFade)" stroke-width="1" />
+          <path d="M 50 112 C 154 154, 248 168, 368 178 S 693 180, 1050 180" fill="none" stroke="url(#lineFade)" stroke-width="1" />
+          <path d="M 50 150 C 156 168, 248 176, 368 178 S 693 180, 1050 180" fill="none" stroke="url(#lineFade)" stroke-width="1" />
+          <path d="M 50 180 C 162 180, 251 180, 368 178 S 693 180, 1050 180" fill="none" stroke="url(#lineFade)" stroke-width="1" />
+          <path d="M 50 210 C 162 190, 251 184, 368 178 S 693 180, 1050 180" fill="none" stroke="url(#lineFade)" stroke-width="1" />
+          <path d="M 50 248 C 164 206, 250 191, 368 178 S 693 180, 1050 180" fill="none" stroke="url(#lineFade)" stroke-width="1" />
+          <path d="M 50 286 C 172 210, 264 195, 368 178 S 693 180, 1050 180" fill="none" stroke="url(#lineFade)" stroke-width="1" />
+        </svg>
+        <div class="hero-orb" aria-hidden="true"></div>
+        <div class="hero-copy">
+          <div class="eyebrow"><i aria-hidden="true"></i> @inneranimalmedia/agentsam-sdk</div>
+          <h1 id="hero-title">Ship Agent Sam with a real SDK computer</h1>
+          <p>npm i @inneranimalmedia/agentsam-sdk — then give agents ephemeral sandboxes, scoped tools, terminals, and promote-only paths back into your Cloudflare stack.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#secure">Install the SDK</a>
+            <a class="btn" href="#observe">See sandbox sessions</a>
+          </div>
+        </div>
+        <div class="orbit-strip" aria-label="Capability metrics">
+          <div class="metric"><b>Ephemeral by default</b><span>agentsam-sdk sandboxed runs</span></div>
+          <div class="metric"><b>Tool-aware access</b><span>BYOK + platform secret lanes</span></div>
+          <div class="metric"><b>Parallel workers</b><span>parallel tool loops via SDK</span></div>
+          <div class="metric"><b>Persistent sessions</b><span>session state the SDK can resume</span></div>
+        </div>
+      </section>
+<div class="story">
+<aside class="progress-rail" aria-label="Capability section progress">
+          <div class="rail-line"><span class="rail-dot" id="railDot" aria-hidden="true"></span></div>
+          <div class="rail-labels">
+            <span data-rail="secure" class="active">Secure</span>
+            <span data-rail="scale">Scalable</span>
+            <span data-rail="state">Stateful</span>
+            <span data-rail="observe">Observable</span>
+          </div>
+        </aside>
+<section class="section" id="secure" data-section-key="secure" data-cms-section="secure" data-section="secure" aria-labelledby="secure-title">
+          <div class="section-copy">
+            <h2 id="secure-title">Run untrusted code safely</h2>
+            <p class="section-lead">AgentSam can explore packages, run commands, inspect files, and execute generated code without touching your core app infrastructure.</p>
+            <div class="feature-list">
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><path d="M12 3 20 6v6c0 5-3.4 7.7-8 9-4.6-1.3-8-4-8-9V6l8-3Z"/><path d="m9 12 2 2 4-5"/></svg>
+                <div><h3>MicroVM isolation</h3><p>Every risky action runs in a dedicated cloud sandbox instead of your live dashboard, repo, or customer system.</p></div>
+              </article>
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/><path d="M12 14v2"/></svg>
+                <div><h3>Auth proxy for credentials</h3><p>Secrets stay behind policy. Agents receive scoped access to only the services, files, and routes that task requires.</p></div>
+              </article>
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><path d="M4 6h16"/><path d="M7 12h10"/><path d="M10 18h4"/><path d="M4 6c2 0 3 6 8 6s6-6 8-6"/><path d="M7 12c1.4 0 2.2 6 5 6s3.6-6 5-6"/></svg>
+                <div><h3>Clean blast-radius boundaries</h3><p>Sandbox file systems, environment variables, package installs, and generated assets are disposable unless promoted.</p></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="mock-wrap">
+            <article class="mock-card wide" aria-label="Sandbox fleet mockup">
+              <div class="mock-top">
+                <div class="mock-title">AgentSam / Sandboxes</div>
+                <div class="mock-actions">
+                  <span class="chip ready">policy: locked</span>
+                  <span class="chip">root isolated</span>
+                </div>
+              </div>
+              <div class="mock-body">
+                <div class="usage">
+                  <span>Resource usage</span>
+                  <div class="bar" aria-hidden="true"><span></span></div>
+                  <span>CPU</span>
+                </div>
+                <table aria-label="Running sandboxes">
+                  <thead><tr><th>Sandbox</th><th>Started</th><th>Status</th></tr></thead>
+                  <tbody>
+                    <tr><td><span class="mini-dot"></span>sandbox-4f7eb1</td><td>runs agent-5</td><td class="running">running</td></tr>
+                    <tr><td><span class="mini-dot"></span>sandbox-b72da4</td><td>runs agent-8</td><td class="running">running</td></tr>
+                    <tr><td><span class="mini-dot"></span>sandbox-193af0</td><td>runs agent-2</td><td class="running">running</td></tr>
+                    <tr><td><span class="mini-dot off"></span>sandbox-567cbb</td><td>—</td><td class="pending">start soon</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </article>
+          </div>
+        </section>
+<section class="section" id="scale" data-section-key="scale" data-cms-section="scale" data-section="scale" aria-labelledby="scale-title">
+          <div class="section-copy">
+            <h2 id="scale-title">From npm install to an agent fleet</h2>
+            <p class="section-lead">The SDK is how products wire Agent Sam: import the client, attach tools, and open sandboxes for codegen, tests, browser research, and repo inspection without inventing a new agent runtime.</p>
+            <div class="feature-list">
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><path d="m13 2-9 12h7l-1 8 10-13h-7l1-7Z"/></svg>
+                <div><h3>One package, many agent workers</h3><p>Fan out audits, evals, migrations, and build attempts from the same @inneranimalmedia/agentsam-sdk entrypoint your dashboard already uses.</p></div>
+              </article>
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z"/><path d="M12 12 4 7.5"/><path d="M12 12v9"/><path d="m12 12 8-4.5"/></svg>
+                <div><h3>Bring your own stack</h3><p>Pin Node, Python, ffmpeg, browsers, and repo-specific deps in the sandbox image while the SDK keeps credentials on policy rails.</p></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="mock-wrap">
+            <article class="mock-card" aria-label="Create sandbox mockup">
+              <div class="mock-top">
+                <div class="mock-title">SDK sandbox request</div>
+                <span class="chip purple">agentsam-sdk</span>
+              </div>
+              <div class="mock-body">
+                <div class="form-grid">
+                  <div class="field full"><label>Snapshot</label><input value="@inneranimalmedia/agentsam-sdk@1.x" aria-label="Snapshot" /></div>
+                  <div class="field"><label>vCPUs</label><input value="4" aria-label="vCPUs" /></div>
+                  <div class="field"><label>Memory (MiB)</label><input value="4096" aria-label="Memory" /></div>
+                  <div class="field full"><label>Name</label><input value="sdk-run--inneranimalmedia" aria-label="Name" /></div>
+                  <div class="field"><label>TTL</label><input value="60 min" aria-label="TTL" /></div>
+                  <div class="field"><label>Idle TTL</label><input value="8 min" aria-label="Idle TTL" /></div>
+                </div>
+                <div class="rule-row">
+                  <span>Proxy Rules</span>
+                  <button class="add-rule" type="button">+ Add Rule</button>
+                </div>
+                <div class="field"><label>Access Control</label><select aria-label="Access control"><option>agentsam-sdk tool policy</option><option>Read-only filesystem</option><option>No external network</option></select></div>
+              </div>
+            </article>
+          </div>
+        </section>
+<section class="section" id="state" data-section-key="state" data-cms-section="state" data-section="state" aria-labelledby="state-title">
+          <div class="section-copy">
+            <h2 id="state-title">Sessions the SDK can actually resume</h2>
+            <p class="section-lead">Agent Sam sessions stream over the control plane the SDK talks to — keep state across turns, tunnel previews, then tear down when the job is done.</p>
+            <div class="feature-list">
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><path d="M6 3h12"/><path d="M6 21h12"/><path d="M8 3c0 5 8 5 8 9s-8 4-8 9"/><path d="M16 3c0 5-8 5-8 9s8 4 8 9"/></svg>
+                <div><h3>Configurable TTLs</h3><p>Expire idle sessions automatically so SDK experiments stay cheap and do not become surprise infrastructure.</p></div>
+              </article>
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><path d="M6 3v18"/><path d="M18 6v12"/><circle cx="6" cy="6" r="2"/><circle cx="18" cy="18" r="2"/><path d="M6 8c0 4 12 2 12 8"/></svg>
+                <div><h3>Snapshot and fork</h3><p>Snapshot a sandbox the SDK opened, restore it later, or fork alternatives so agents explore safely in parallel.</p></div>
+              </article>
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><path d="M4 8h10a4 4 0 0 1 0 8H9"/><path d="m7 12-3-4 3-4"/><path d="M20 16H10a4 4 0 0 1 0-8h5"/><path d="m17 12 3 4-3 4"/></svg>
+                <div><h3>Port tunneling</h3><p>Tunnel a preview the SDK opened — app, API, or build — without exposing the whole machine.</p></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="mock-wrap">
+            <article class="mock-card wide" aria-label="Live terminal mockup">
+              <div class="terminal-shell">
+                <aside class="app-rail">
+                  <strong>agentsam-sdk</strong>
+                  <div class="rail-menu">
+                    <span><i></i> All applications</span>
+                    <span><i></i> Search</span>
+                    <span><i></i> Home</span>
+                    <span><i></i> Tracing</span>
+                    <span><i></i> Monitoring</span>
+                    <span><i></i> Datasets &amp; evals</span>
+                    <span><i></i> Prompts</span>
+                    <span><i></i> Studio</span>
+                  </div>
+                </aside>
+                <div class="terminal-area">
+                  <div class="terminal-head">
+                    <h4>sandbox-8530bec8</h4>
+                    <div class="mock-actions"><span class="chip ready">READY</span><span class="chip purple">Open tunnel</span></div>
+                  </div>
+                  <div class="terminal-window">
+                    <div class="terminal-tab">Terminal</div>
+                    <pre class="terminal-output" id="terminalOutput"><span class="prompt">root@agentsam:~#</span> <span class="command">uname &amp;&amp; node -v</span>
+Linux
+v22.11.0
+<span class="prompt">root@agentsam:~#</span> <span class="command">npm i @inneranimalmedia/agentsam-sdk && agentsam --version</span>
+<span class="ok">✓</span> auth proxy policy validated
+<span class="ok">✓</span> worker bindings mocked
+<span class="ok">✓</span> preview tunnel listening on :8787
+<span class="muted">streaming logs to Agent Sam control plane...</span></pre>
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+<section class="section" id="observe" data-section-key="observe" data-cms-section="observe" data-section="observe" aria-labelledby="observe-title">
+          <div class="section-copy">
+            <h2 id="observe-title">Observe every agent run before it ships</h2>
+            <p class="section-lead">AgentSam needs more than a terminal. It needs traces, approvals, cost controls, logs, artifacts, and a clear path from experiment to production.</p>
+            <div class="feature-list">
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><path d="M3 12h4l3 8 4-16 3 8h4"/></svg>
+                <div><h3>Trace the decision path</h3><p>See which model, tool, repo, file, command, and sandbox produced each result.</p></div>
+              </article>
+              <article class="feature">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="1.5" aria-hidden="true"><path d="M12 3v18"/><path d="M5 8h14"/><path d="M7 16h10"/><path d="M8 8l-3 8"/><path d="M16 8l3 8"/></svg>
+                <div><h3>Human approval gates</h3><p>Let agents build aggressively, then require review before deploys, credential use, data writes, or billing-impacting actions.</p></div>
+              </article>
+            </div>
+          </div>
+
+          <div class="mock-wrap">
+            <article class="mock-card observe-card" aria-label="Agent run observability mockup">
+              <div class="mock-top">
+                <div class="mock-title">Control Plane / agent-run-9074</div>
+                <div class="mock-actions"><span class="chip ready">approved</span><span class="chip">cost: $0.31</span></div>
+              </div>
+              <div class="mock-body">
+                <div class="agent-grid">
+                  <div class="agent-card"><b>Planner</b><p>Reads the issue, creates a safe task graph, and asks for sandboxed execution.</p><div class="mini-progress"><span></span></div></div>
+                  <div class="agent-card"><b>Builder</b><p>Runs code, installs packages, executes tests, and returns only promoted artifacts.</p><div class="connector-row"><span>GitHub</span><span>D1</span><span>R2</span></div></div>
+                  <div class="agent-card"><b>Browser</b><p>Opens tunnel previews, captures screenshots, and reports UI regressions.</p><div class="connector-row"><span>Preview</span><span>Screenshot</span></div></div>
+                  <div class="agent-card"><b>Reviewer</b><p>Summarizes diffs, commands, logs, failures, risk, and what changed.</p><div class="connector-row"><span>Diff</span><span>Logs</span><span>Approval</span></div></div>
+                </div>
+                <div>
+                  <div class="trace-row"><span class="name">spawn</span><span class="desc">sandbox-8530bec8 from repo image</span><span class="latency">184ms</span></div>
+                  <div class="trace-row"><span class="name">execute</span><span class="desc">npm test, wrangler dry-run, static preview</span><span class="latency">31.4s</span></div>
+                  <div class="trace-row"><span class="name">promote</span><span class="desc">artifact bundle + review summary ready</span><span class="latency">2.1s</span></div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+</div>
+<section class="final" data-section-key="cta" data-cms-section="cta" data-section-type="cta_banner" aria-labelledby="final-title">
+        <div class="final-panel">
+          <div class="eyebrow"><i aria-hidden="true"></i> AgentSam operating layer</div>
+          <h2 id="final-title">Let the agent work hard without giving it your whole system.</h2>
+          <p>This page frames the product story: AgentSam gets a disposable computer, scoped tools, observable execution, and a clean promotion path back into your real Cloudflare, Supabase, GitHub, Gmail, Drive, and design workflows.</p>
+          <div class="launch-grid" aria-label="Sandbox run lifecycle">
+            <article class="launch-step"><span>01</span><b>Plan</b><small>AgentSam defines the task, needed tools, limits, and approval gates.</small></article>
+            <article class="launch-step"><span>02</span><b>Contain</b><small>A fresh sandbox starts with scoped credentials and task-specific policy.</small></article>
+            <article class="launch-step"><span>03</span><b>Execute</b><small>Code, terminals, previews, tests, and generated assets stay isolated.</small></article>
+            <article class="launch-step"><span>04</span><b>Promote</b><small>Only reviewed files, logs, patches, and artifacts move into production.</small></article>
+          </div>
+          <div class="hero-actions" style="justify-content:flex-start; position:relative; z-index:2;">
+            <a class="btn btn-primary" href="#top">Back to top</a>
+            <button class="btn" type="button" id="copyBrief">Copy capability brief</button>
+          </div>
+        </div>
+      </section>
+</main>
+<script>
+const sections = [...document.querySelectorAll('[data-section]')];
+    const labels = [...document.querySelectorAll('[data-rail]')];
+    const railDot = document.getElementById('railDot');
+
+    const setActive = (id) => {
+      labels.forEach((label, index) => {
+        const active = label.dataset.rail === id;
+        label.classList.toggle('active', active);
+        if (active && railDot) railDot.style.top = `${44 + index * 31}px`;
+      });
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      const visible = entries
+        .filter(entry => entry.isIntersecting)
+        .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+      if (visible) setActive(visible.target.dataset.section);
+    }, { rootMargin: '-28% 0px -45% 0px', threshold: [0.12, 0.24, 0.42] });
+
+    sections.forEach(section => observer.observe(section));
+
+    const copyButton = document.getElementById('copyBrief');
+    copyButton?.addEventListener('click', async () => {
+      const brief = `AgentSam Cloud Contained Sandbox Capabilities\n\nGive agents a secure computer: ephemeral isolated sandboxes for agent-generated code, terminals, previews, tests, and long-running build sessions. Core story: contain untrusted work, proxy credentials through policy, scale parallel agent fleets, preserve state with TTLs/snapshots/tunnels, observe every command and artifact, then promote only reviewed output back to production.`;
+      try {
+        await navigator.clipboard.writeText(brief);
+        copyButton.textContent = 'Copied brief';
+        setTimeout(() => copyButton.textContent = 'Copy capability brief', 1600);
+      } catch (error) {
+        copyButton.textContent = 'Brief ready';
+      }
+    });
+
+</script>
+</body>
+</html>

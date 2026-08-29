@@ -88,7 +88,7 @@ export function BrowserToolbar(p: BrowserToolbarProps) {
         <ToolBtn
           icon={<RotateCcw size={12} strokeWidth={1.75} />}
           title="Reload"
-          onClick={hardReload}
+          onClick={onHardReload}
         />
 
         <input
@@ -146,17 +146,7 @@ export function BrowserToolbar(p: BrowserToolbarProps) {
               : 'Element picker — hover to highlight, click to inspect'
           }
           active={mode === 'picker'}
-          onClick={() => {
-            if (mode === 'picker') {
-              setMode('browse');
-              void teardownPickerScript();
-              setPickerCrossOrigin(false);
-              setPickerHighlight(null);
-              return;
-            }
-            void loadRegistryPickersIfNeeded();
-            toggleMode('picker');
-          }}
+          onClick={onPickerToggle}
         />
 
         {designModeOn ? (
@@ -164,7 +154,7 @@ export function BrowserToolbar(p: BrowserToolbarProps) {
             icon={<Camera size={12} strokeWidth={1.75} />}
             title="Annotate — draw on frozen viewport"
             active={mode === 'annotate'}
-            onClick={() => void startAnnotateMode()}
+            onClick={onAnnotate}
           />
         ) : null}
 
@@ -173,7 +163,7 @@ export function BrowserToolbar(p: BrowserToolbarProps) {
           icon={<Bug size={12} strokeWidth={1.75} />}
           title="DevTools — real Chromium inspector (Browser Run)"
           active={devToolsOpen}
-          onClick={openDevTools}
+          onClick={onDevTools}
         />
 
         {/* ... menu */}
@@ -199,7 +189,7 @@ export function BrowserToolbar(p: BrowserToolbarProps) {
 
               <div className="h-px bg-[var(--border-subtle)] my-1" />
 
-              <button type="button" onClick={hardReload}
+              <button type="button" onClick={onHardReload}
                 className="w-full flex items-center gap-2.5 px-3 py-1.5 text-[11px] text-main hover:bg-[var(--bg-hover)] transition-colors text-left">
                 <RotateCcw size={12} className="text-muted shrink-0" /> Hard Reload
               </button>
