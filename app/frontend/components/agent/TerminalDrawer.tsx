@@ -1,6 +1,16 @@
 import React, { FormEvent, useEffect, useMemo, useState } from 'react';
 
-type Lane = 'local' | 'remote' | 'sandbox';
+type Lane = 'local' | 'remote' | 'sandbox' | 'environment';
+type RuntimeEnvironment = {
+  active?: boolean;
+  state?: string;
+  environmentId?: string | null;
+  sandboxId?: string;
+  machineType?: string | null;
+  zone?: string | null;
+  expiresAt?: string | null;
+  wakesOnFirstExec?: boolean;
+};
 type LaneInfo = {
   ok: boolean;
   state: string;
@@ -12,7 +22,7 @@ type LaneInfo = {
     shell?: string;
     defaultCwd?: string;
   } | null;
-  environment?: { state?: string; sandboxId?: string; wakesOnFirstExec?: boolean };
+  environment?: RuntimeEnvironment;
 };
 type Status = {
   ok: boolean;
@@ -30,12 +40,14 @@ type ExecResult = {
   lane?: Lane;
   cwd?: string;
   sandboxId?: string;
+  environmentId?: string;
 };
 
 const LANE_LABELS: Record<Lane, string> = {
   local: 'Local',
   remote: 'VM',
   sandbox: 'Sandbox',
+  environment: 'Environment',
 };
 
 export const TerminalDrawer: React.FC = () => {
@@ -47,20 +59,25 @@ export const TerminalDrawer: React.FC = () => {
   const [running, setRunning] = useState(false);
   const [status, setStatus] = useState<Status | null>(null);
   const [sandboxTouched, setSandboxTouched] = useState(false);
+  const [environmentTouched, setEnvironmentTouched] = useState(false);
+
+  async function refreshStatus(preferredOverride?: Lane) {
+    try {
+      const response = await fetch('/api/exec/status', { credentials: 'same-origin' });
+      const data = await response.json() as Status;
+      setStatus(data);
+      const preferred = preferredOverride || (data.preferredLane && data.lanes?.[data.preferredLane]
+        ? data.preferredLane
+        : 'local');
+      setLane(preferred);
+      setCwd((current) => current || data.lanes?.[preferred]?.connection?.defaultCwd || '');
+    } catch {
+      setStatus({ ok: false });
+    }
+  }
 
   useEffect(() => {
-    fetch('/api/exec/status', { credentials: 'same-origin' })
-      .then((r) => r.json())
-      .then((raw) => {
-        const data = raw as Status;
-        setStatus(data);
-        const preferred = data.preferredLane && data.lanes?.[data.preferredLane]
-          ? data.preferredLane
-          : 'local';
-        setLane(preferred);
-        setCwd(data.lanes?.[preferred]?.connection?.defaultCwd || '');
-      })
-      .catch(() => setStatus({ ok: false }));
+    void refreshStatus();
   }, []);
 
   const laneInfo = status?.lanes?.[lane];
@@ -70,7 +87,10 @@ export const TerminalDrawer: React.FC = () => {
   const laneSummary = useMemo(() => {
     if (!laneInfo?.connection) return `${LANE_LABELS[lane]} · ${laneState}`;
     const platform = laneInfo.connection.platform || laneInfo.connection.targetType || '';
-    return `${LANE_LABELS[lane]} · ${platform} · ${laneState}`;
+    const env = lane === 'environment' && laneInfo.environment?.machineType
+      ? ` · ${laneInfo.environment.machineType}`
+      : '';
+    return `${LANE_LABELS[lane]} · ${platform}${env} · ${laneState}`;
   }, [lane, laneInfo, laneState]);
 
   async function chooseLane(nextLane: Lane) {
@@ -85,15 +105,40 @@ export const TerminalDrawer: React.FC = () => {
     }).catch(() => undefined);
   }
 
+  async function destroyEnvironment() {
+    if (running) return;
+    setRunning(true);
+    setOutput((prev) => `${prev}\n\n[Environment] Releasing disposable GCP environment…`);
+    try {
+      const response = await fetch('/api/exec/environment', {
+        method: 'DELETE',
+        credentials: 'same-origin',
+      });
+      const data = await response.json().catch(() => ({})) as { ok?: boolean; state?: string; error?: string };
+      setOutput((prev) => `${prev}\n${data.ok ? 'Environment released.' : data.error || `HTTP ${response.status}`}`);
+      if (data.ok) setEnvironmentTouched(false);
+      await refreshStatus('environment');
+    } finally {
+      setRunning(false);
+    }
+  }
+
   async function run(event: FormEvent) {
     event.preventDefault();
     if (!command.trim() || running || !laneReady) return;
     const submitted = command.trim();
     setRunning(true);
-    const wakeNote = lane === 'sandbox' && !sandboxTouched
-      ? '\nSpinning up isolated Linux environment…'
-      : '';
-    if (lane === 'sandbox') setSandboxTouched(true);
+
+    let wakeNote = '';
+    if (lane === 'sandbox' && !sandboxTouched) {
+      wakeNote = '\nSpinning up isolated Cloudflare Linux…';
+      setSandboxTouched(true);
+    }
+    if (lane === 'environment' && !laneInfo?.environment?.active && !environmentTouched) {
+      wakeNote = '\nSpinning up GCP environment…';
+      setEnvironmentTouched(true);
+    }
+
     setOutput((prev) => `${prev}${wakeNote}\n\n[${LANE_LABELS[lane]}] $ ${submitted}`);
     setCommand('');
     try {
@@ -104,16 +149,23 @@ export const TerminalDrawer: React.FC = () => {
         body: JSON.stringify({ lane, command: submitted, cwd: cwd.trim() || undefined }),
       });
       const data = await res.json().catch(() => ({})) as ExecResult;
-      const receipt = [data.transport, data.target, Number.isFinite(data.exitCode) ? `exit ${data.exitCode}` : null]
-        .filter(Boolean)
-        .join(' · ');
+      const receipt = [
+        data.transport,
+        data.target,
+        data.environmentId ? data.environmentId : null,
+        Number.isFinite(data.exitCode) ? `exit ${data.exitCode}` : null,
+      ].filter(Boolean).join(' · ');
       setOutput((prev) => `${prev}\n${data.text || data.error || `HTTP ${res.status}`}${receipt ? `\n[${receipt}]` : ''}`);
+      await refreshStatus(lane);
     } catch (error) {
       setOutput((prev) => `${prev}\n${error instanceof Error ? error.message : 'execution_failed'}`);
     } finally {
       setRunning(false);
     }
   }
+
+  const workspaceLane = lane === 'sandbox' || lane === 'environment';
+  const environmentActive = Boolean(status?.lanes?.environment?.environment?.active);
 
   return (
     <div className={`as-terminal ${open ? 'as-terminal-open' : ''}`}>
@@ -144,8 +196,13 @@ export const TerminalDrawer: React.FC = () => {
             </div>
             <div className="as-terminal-cwd">
               <span>cwd</span>
-              <input value={cwd} onChange={(e) => setCwd(e.target.value)} placeholder={lane === 'sandbox' ? '/workspace' : '/path/to/repo'} />
+              <input value={cwd} onChange={(e) => setCwd(e.target.value)} placeholder={workspaceLane ? '/workspace' : '/path/to/repo'} />
             </div>
+            {lane === 'environment' && environmentActive && (
+              <button className="as-environment-release" type="button" onClick={() => void destroyEnvironment()} disabled={running}>
+                Release
+              </button>
+            )}
           </div>
           <pre>{output}</pre>
           <form onSubmit={run} className="as-terminal-input">

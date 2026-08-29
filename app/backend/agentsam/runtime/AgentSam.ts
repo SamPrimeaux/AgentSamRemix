@@ -5,6 +5,7 @@ import { tool, type ToolSet } from 'ai';
 import { z } from 'zod';
 import type { Env } from '../../src/env';
 import {
+  destroyTerminalEnvironment,
   executeTerminalLane,
   scopeFromAgentName,
   terminalRuntimeStatus,
@@ -27,10 +28,11 @@ export class AgentSam extends Think<Env> {
 
 Operate like a capable software engineering agent, not a chat-only assistant. Inspect before editing, keep changes focused, run relevant checks, and report concrete results.
 
-Execution is explicit and fail-loud. There are three real terminal lanes and you must choose the lane that matches the user's intent:
+Execution is explicit and fail-loud. There are four owned terminal lanes and you must choose the lane that matches the user's intent:
 - local: the user's registered Mac/workstation through ExecOS. Use this for the user's actual local checkout or machine-specific work.
 - remote: the registered always-on platform VM through ExecOS. Use this when work should continue independently of the local machine.
-- sandbox: an isolated Cloudflare Linux environment. Use this for package installs, disposable builds, risky experiments, unfamiliar repositories, dev servers, and verification that should not touch the user's machines.
+- sandbox: an isolated Cloudflare Linux container. Use this for Cloudflare-specific isolation, quick disposable builds, and experiments that should not touch the user's machines.
+- environment: a disposable GCP Linux VM owned by Agent Sam. Use this for a clean real Linux computer with /workspace, package installs, repo clones, dev servers, longer coding sprints, or work that should survive across many tool calls without touching Local or the permanent VM. It is auto-provisioned on first use and auto-expires.
 
 Never silently substitute one lane for another. If a requested lane is unavailable, report that exact failure. terminal_status tells you which registered lanes are currently usable. terminal_exec performs the work against the D1-authorized target for the current user and workspace.
 
@@ -51,7 +53,7 @@ Never claim a command, test, browser action, edit, deploy, or commit succeeded u
     if (this._domainTools) return this._domainTools;
 
     const terminalStatus = tool({
-      description: 'Return the registered Local, VM, and Sandbox execution lanes for this user/workspace without waking the sandbox container.',
+      description: 'Return the registered Local, VM, Sandbox, and disposable GCP Environment lanes for this user/workspace without waking or creating compute.',
       inputSchema: z.object({}),
       execute: async () => {
         const scope = await this.runtimeScope();
@@ -60,9 +62,9 @@ Never claim a command, test, browser action, edit, deploy, or commit succeeded u
     });
 
     const terminalExec = tool({
-      description: 'Execute a command on one explicit Agent Sam execution lane. local=registered user machine, remote=always-on platform VM, sandbox=isolated Cloudflare Linux. Never changes lanes on failure.',
+      description: 'Execute a command on one explicit Agent Sam execution lane. local=registered user machine, remote=always-on platform VM, sandbox=Cloudflare Linux container, environment=disposable owned GCP Linux VM. Never changes lanes on failure.',
       inputSchema: z.object({
-        lane: z.enum(['local', 'remote', 'sandbox']),
+        lane: z.enum(['local', 'remote', 'sandbox', 'environment']),
         command: z.string().min(1).max(24_000),
         cwd: z.string().min(1).max(2048).optional(),
         connectionId: z.string().min(1).max(256).optional(),
@@ -79,9 +81,19 @@ Never claim a command, test, browser action, edit, deploy, or commit succeeded u
       },
     });
 
+    const environmentDestroy = tool({
+      description: 'Destroy and release the current disposable GCP Environment for this user/workspace. Use after the environment is no longer needed or when the user asks for a clean reset.',
+      inputSchema: z.object({}),
+      execute: async () => {
+        const scope = await this.runtimeScope();
+        return destroyTerminalEnvironment(this.env, scope);
+      },
+    });
+
     this._domainTools = {
       terminal_status: terminalStatus,
       terminal_exec: terminalExec,
+      environment_destroy: environmentDestroy,
     };
     return this._domainTools;
   }

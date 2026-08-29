@@ -15,6 +15,7 @@ import { verifyBridgeKey, bridgeUnauthorized } from './auth/bridge-key';
 import { getAiKeyStatus, setAiKey, clearAiKey, resolveAiKey } from './lib/aiKeyStore';
 import { streamGeminiPage } from './lib/geminiProxy';
 import {
+  destroyTerminalEnvironment,
   executeTerminalLane,
   rememberExecLane,
   terminalRuntimeStatus,
@@ -68,6 +69,7 @@ function laneForLegacyMachinePath(pathname: string): ExecLane | null {
   if (pathname === '/api/terminal/local') return 'local';
   if (pathname === '/api/terminal/vm') return 'remote';
   if (pathname === '/api/terminal/sandbox') return 'sandbox';
+  if (pathname === '/api/terminal/environment') return 'environment';
   return null;
 }
 
@@ -176,6 +178,14 @@ export default {
       return json(result, result.ok ? 200 : 502);
     }
 
+    if (url.pathname === '/api/exec/environment' && request.method === 'DELETE') {
+      if (!authenticated) return json({ error: 'session_required' }, 401);
+      const scope = await authenticatedRuntimeScope(env, requestIdentity);
+      if (!scope) return json({ error: 'workspace_scope_required' }, 409);
+      const result = await destroyTerminalEnvironment(env, scope);
+      return json(result, result.ok ? 200 : 502);
+    }
+
     // Temporary compatibility alias from the first Remix sprint. It is now an
     // explicit remote lane, not a separate execution authority.
     if (url.pathname === '/api/exec/host' && request.method === 'POST') {
@@ -255,6 +265,7 @@ export default {
         execos: execos.ok,
         vpc: Boolean(env.PTY_SERVICE),
         sandbox: Boolean(env.MY_CONTAINER),
+        environment: Boolean(execos.ok && execos.environmentConfigured),
         sessionCache: Boolean(env.SESSION_CACHE),
       });
     }

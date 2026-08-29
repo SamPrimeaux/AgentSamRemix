@@ -1,6 +1,6 @@
 import type { Env } from '../../src/env';
 
-export type ExecLane = 'local' | 'remote' | 'sandbox';
+export type ExecLane = 'local' | 'remote' | 'sandbox' | 'environment';
 
 export type TerminalConnection = {
   id: string;
@@ -25,10 +25,11 @@ export const LANE_TARGET_TYPE: Record<ExecLane, string> = {
   local: 'user_hosted_tunnel',
   remote: 'platform_vm',
   sandbox: 'sandbox',
+  environment: 'ephemeral_vm',
 };
 
 export function isExecLane(value: unknown): value is ExecLane {
-  return value === 'local' || value === 'remote' || value === 'sandbox';
+  return value === 'local' || value === 'remote' || value === 'sandbox' || value === 'environment';
 }
 
 function trim(value: unknown): string {
@@ -36,7 +37,7 @@ function trim(value: unknown): string {
 }
 
 export function defaultCwdForConnection(connection: TerminalConnection): string {
-  if (connection.target_type === 'sandbox') return '/workspace';
+  if (connection.target_type === 'sandbox' || connection.target_type === 'ephemeral_vm') return '/workspace';
   const execUser = trim(connection.remote_exec_user || connection.username);
   if (!execUser) return connection.platform === 'macos' ? '/Users' : '/home';
   if (connection.platform === 'macos') return `/Users/${execUser}`;

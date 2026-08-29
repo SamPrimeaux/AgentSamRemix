@@ -9,6 +9,11 @@ import {
   type ExecLane,
 } from './registry';
 import { executeInSandbox, sandboxStatus } from '../sandbox/runtime';
+import {
+  destroyEnvironment,
+  environmentStatus,
+  executeInEnvironment,
+} from '../environment/runtime';
 
 const BLOCKED_HOST_COMMANDS = [
   /(^|[;&|]\s*)rm\s+-rf\s+\/(?:\s|$)/i,
@@ -41,17 +46,23 @@ export async function terminalRuntimeStatus(
   env: Env,
   scope: { userId: string; workspaceId: string; tenantId?: string | null },
 ) {
-  const [local, remote, sandbox, execos] = await Promise.all([
+  const [local, remote, sandbox, environment, execos] = await Promise.all([
     resolveTerminalConnection(env, { userId: scope.userId, workspaceId: scope.workspaceId, lane: 'local' }),
     resolveTerminalConnection(env, { userId: scope.userId, workspaceId: scope.workspaceId, lane: 'remote' }),
     resolveTerminalConnection(env, { userId: scope.userId, workspaceId: scope.workspaceId, lane: 'sandbox' }),
+    resolveTerminalConnection(env, { userId: scope.userId, workspaceId: scope.workspaceId, lane: 'environment' }),
     probeExecOS(env),
   ]);
-  const preferredLane = await preferredExecLane(env, scope.userId, scope.workspaceId);
+  const [preferredLane, currentEnvironment] = await Promise.all([
+    preferredExecLane(env, scope.userId, scope.workspaceId),
+    environment && execos.environmentConfigured
+      ? environmentStatus(env, scope)
+      : Promise.resolve({ ok: true, active: false, state: 'not_started', environmentId: null }),
+  ]);
   const sb = sandboxStatus(env, scope);
 
   return {
-    ok: Boolean(local || remote || sandbox),
+    ok: Boolean(local || remote || sandbox || environment),
     preferredLane,
     execos,
     lanes: {
@@ -70,6 +81,16 @@ export async function terminalRuntimeStatus(
         state: sandbox && sb.ok ? sb.state : sandbox ? 'unavailable' : 'not_registered',
         connection: publicConnection(sandbox),
         environment: sb,
+      },
+      environment: {
+        ok: Boolean(environment && execos.ok && execos.environmentConfigured),
+        state: !environment
+          ? 'not_registered'
+          : !execos.environmentConfigured
+            ? 'unavailable'
+            : currentEnvironment.state || 'not_started',
+        connection: publicConnection(environment),
+        environment: currentEnvironment,
       },
     },
   };
@@ -98,7 +119,13 @@ export async function executeTerminalLane(
     connectionId: input.connectionId,
   });
   if (!connection) {
-    return { ok: false, error: 'terminal_connection_not_found', exitCode: 1, text: `No active ${input.lane} terminal connection is registered for this user/workspace.`, lane: input.lane };
+    return {
+      ok: false,
+      error: 'terminal_connection_not_found',
+      exitCode: 1,
+      text: `No active ${input.lane} terminal connection is registered for this user/workspace.`,
+      lane: input.lane,
+    };
   }
 
   const cwd = trim(input.cwd) || defaultCwdForConnection(connection);
@@ -109,8 +136,28 @@ export async function executeTerminalLane(
     return { ...result, lane: input.lane, connection: publicConnection(connection) };
   }
 
+  // Host-backed machines and the owned GCP environment keep the same hard
+  // destructive-command guard. The Cloudflare Sandbox remains the disposable
+  // experimentation lane with its own isolation boundary.
   if (isBlockedHostCommand(command)) {
-    return { ok: false, error: 'command_blocked', exitCode: 1, text: 'Command blocked by AgentSamRemix host guard.', lane: input.lane };
+    return {
+      ok: false,
+      error: 'command_blocked',
+      exitCode: 1,
+      text: 'Command blocked by AgentSamRemix execution guard.',
+      lane: input.lane,
+    };
+  }
+
+  if (input.lane === 'environment') {
+    const result = await executeInEnvironment(env, {
+      userId: input.userId,
+      workspaceId: input.workspaceId,
+      tenantId: input.tenantId,
+      command,
+      cwd,
+    });
+    return { ...result, lane: input.lane, connection: publicConnection(connection), cwd };
   }
 
   const result = await executeViaExecOS(env, {
@@ -123,6 +170,13 @@ export async function executeTerminalLane(
     tenantId: input.tenantId,
   });
   return { ...result, lane: input.lane, connection: publicConnection(connection), cwd };
+}
+
+export async function destroyTerminalEnvironment(
+  env: Env,
+  scope: { userId: string; workspaceId: string; tenantId?: string | null },
+) {
+  return destroyEnvironment(env, scope);
 }
 
 export async function scopeFromAgentName(env: Env, agentName: string) {

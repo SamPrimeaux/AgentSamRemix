@@ -1,18 +1,12 @@
 import type { Env } from '../../src/env';
-import type { ExecLane, TerminalConnection } from './registry';
+import type { TerminalConnection } from './registry';
 
 function trim(value: unknown): string {
   return value == null ? '' : String(value).trim();
 }
 
-function execosKey(env: Env): string {
-  return trim(env.EXECOS_KEY || env.AGENTSAM_BRIDGE_KEY);
-}
-
-function targetForLane(lane: ExecLane): 'local' | 'remote' {
-  if (lane === 'local') return 'local';
-  if (lane === 'remote') return 'remote';
-  throw new Error('sandbox_is_not_execos_target');
+function bridgeKey(env: Env): string {
+  return trim(env.AGENTSAM_BRIDGE_KEY);
 }
 
 function responseText(data: any): string {
@@ -29,17 +23,56 @@ export async function probeExecOS(env: Env) {
   try {
     const response = await env.EXECOS.fetch(new Request('https://execos.internal/health'));
     const data = await response.json().catch(() => null) as any;
+    const targets = Array.isArray(data?.targets) ? data.targets : [];
     return {
       ok: response.ok && data?.status === 'ok',
       status: response.status,
       service: data?.service || null,
-      targets: Array.isArray(data?.targets) ? data.targets : [],
+      targets,
       localConfigured: Boolean(data?.local_exec_url),
       remoteConfigured: Boolean(data?.remote_exec_url),
+      environmentConfigured: Boolean(data?.environment_controller && targets.includes('environment')),
       keySet: Boolean(data?.key_set),
     };
   } catch (error) {
     return { ok: false, error: error instanceof Error ? error.message : 'execos_unreachable' };
+  }
+}
+
+export async function callExecOS(
+  env: Env,
+  path: string,
+  init: { method?: string; body?: unknown; timeoutMs?: number } = {},
+) {
+  const key = bridgeKey(env);
+  if (!env.EXECOS?.fetch) {
+    return { ok: false, status: 503, data: { ok: false, error: 'execos_binding_missing' } };
+  }
+  if (!key) {
+    return { ok: false, status: 503, data: { ok: false, error: 'bridge_key_missing' } };
+  }
+  try {
+    const response = await env.EXECOS.fetch(new Request(`https://execos.internal${path}`, {
+      method: init.method || 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Bridge-Key': key,
+      },
+      ...(init.body !== undefined ? { body: JSON.stringify(init.body) } : {}),
+      signal: AbortSignal.timeout(init.timeoutMs || 310_000),
+    }));
+    const data = await response.json().catch(() => ({})) as any;
+    return { ok: response.ok && data?.ok !== false, status: response.status, data };
+  } catch (error) {
+    return {
+      ok: false,
+      status: 503,
+      data: {
+        ok: false,
+        error: 'execos_service_unreachable',
+        detail: error instanceof Error ? error.message : 'execos_service_unreachable',
+      },
+    };
   }
 }
 
@@ -53,11 +86,10 @@ async function executeViaVPC(
   if (!env.PTY_SERVICE?.fetch) {
     return { ok: false, error: 'pty_service_binding_missing', exitCode: 1, text: 'PTY_SERVICE binding is not configured', transport: 'vpc' };
   }
-  const daemonIdentity = 'agentsam';
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
-    'X-IAM-Exec-Identity': daemonIdentity,
+    'X-IAM-Exec-Identity': 'agentsam',
     'X-IAM-Exec-Actor': 'agentsamremix',
     'X-User-Id': identity.userId,
     'X-Workspace-Id': identity.workspaceId,
@@ -101,47 +133,49 @@ export async function executeViaExecOS(
     tenantId?: string | null;
   },
 ) {
-  const key = execosKey(env);
-  if (env.EXECOS?.fetch && key) {
-    const target = targetForLane(input.lane);
-    try {
-      const response = await env.EXECOS.fetch(new Request('https://execos.internal/run', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-ExecOS-Key': key,
-          'X-User-Id': input.userId,
-          'X-Workspace-Id': input.workspaceId,
-          ...(input.tenantId ? { 'X-Tenant-Id': input.tenantId } : {}),
-        },
-        body: JSON.stringify({ command: input.command, target, cwd: input.cwd }),
-        signal: AbortSignal.timeout(120_000),
-      }));
-      const data = await response.json().catch(() => ({})) as any;
-      const exitCode = Number.isFinite(Number(data?.exit_code)) ? Number(data.exit_code) : response.ok ? 0 : 1;
-      return {
-        ok: response.ok && data?.ok !== false && exitCode === 0,
-        error: response.ok && data?.ok !== false && exitCode === 0 ? null : trim(data?.error) || `execos_${response.status}`,
-        exitCode,
-        text: responseText(data) || trim(data?.user_message) || (response.ok ? '(no output)' : `execos_${response.status}`),
-        stdout: typeof data?.stdout === 'string' ? data.stdout : '',
-        stderr: typeof data?.stderr === 'string' ? data.stderr : '',
-        transport: 'execos_service',
-        target: data?.target || target,
-        requestedLane: input.lane,
-        resolvedLane: data?.exec_lane || target,
-        connectionId: input.connection.id,
-        latencyMs: data?.latency_ms ?? null,
-      };
-    } catch (error) {
-      return { ok: false, error: 'execos_service_unreachable', exitCode: 1, text: error instanceof Error ? error.message : 'execos_service_unreachable', transport: 'execos_service' };
-    }
+  const target = input.lane === 'local' ? 'local' : 'remote';
+  const result = await callExecOS(env, '/run', {
+    method: 'POST',
+    timeoutMs: 120_000,
+    body: {
+      command: input.command,
+      target,
+      cwd: input.cwd,
+      user_id: input.userId,
+      workspace_id: input.workspaceId,
+      tenant_id: input.tenantId || undefined,
+    },
+  });
+
+  if (result.ok || result.data?.exit_code !== undefined) {
+    const data = result.data;
+    const exitCode = Number.isFinite(Number(data?.exit_code)) ? Number(data.exit_code) : result.ok ? 0 : 1;
+    return {
+      ok: result.ok && exitCode === 0,
+      error: result.ok && exitCode === 0 ? null : trim(data?.error) || `execos_${result.status}`,
+      exitCode,
+      text: responseText(data) || trim(data?.user_message) || (result.ok ? '(no output)' : `execos_${result.status}`),
+      stdout: typeof data?.stdout === 'string' ? data.stdout : '',
+      stderr: typeof data?.stderr === 'string' ? data.stderr : '',
+      transport: 'execos_service',
+      target: data?.target || target,
+      requestedLane: input.lane,
+      resolvedLane: data?.resolved_lane || target,
+      connectionId: input.connection.id,
+      latencyMs: data?.latency_ms ?? null,
+    };
   }
 
-  // Only the permanent remote VM has an infrastructure VPC fallback. Local
-  // must fail loud rather than silently executing on a different machine.
+  // Only the permanent remote VM has a direct VPC infrastructure fallback.
+  // Local fails loud rather than silently executing on another machine.
   if (input.lane === 'remote') {
     return executeViaVPC(env, input.command, input.cwd, input.connection, input);
   }
-  return { ok: false, error: key ? 'execos_binding_missing' : 'execos_key_missing', exitCode: 1, text: key ? 'EXECOS service binding is not configured.' : 'EXECOS_KEY/AGENTSAM_BRIDGE_KEY is not configured.', transport: 'none' };
+  return {
+    ok: false,
+    error: result.data?.error || 'execos_service_unreachable',
+    exitCode: 1,
+    text: result.data?.detail || result.data?.error || 'ExecOS service unavailable.',
+    transport: 'none',
+  };
 }

@@ -14,7 +14,6 @@ export interface Env {
   PTY_SERVICE: Fetcher;
   SESSION_CACHE: KVNamespace;
 
-  EXECOS_KEY?: string;
   AGENTSAM_BRIDGE_KEY?: string;
   AGENTSAM_MODEL?: string;
 

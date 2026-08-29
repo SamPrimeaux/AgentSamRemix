@@ -3401,3 +3401,10 @@ button, input, textarea { font: inherit; }
   .as-lane-switcher button { padding:0 6px; }
   .as-terminal-cwd span { display:none; }
 }
+.as-environment-release { height:24px; border:1px solid #3a2830; border-radius:5px; background:#171015; color:#c99ca9; padding:0 8px; font-size:9px; cursor:pointer; }
+.as-environment-release:disabled { opacity:.45; cursor:default; }
+@media (max-width: 800px) {
+  .as-lane-switcher { overflow-x:auto; max-width:55vw; }
+  .as-lane-switcher button { flex:0 0 auto; }
+  .as-environment-release { display:none; }
+}
