@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import {
   agentNamePrefixForUser,
   resolveOwnedAgentName,
-} from '../app/backend/browser/live-view.js';
+} from '../app/backend/browser/agent-name.js';
 
 const UUID_SUFFIX = '550e8400-e29b-41d4-a716-446655440000';
 
