@@ -7,6 +7,7 @@
     "dev": "concurrently -k -n vite,worker -c blue,green \"vite --config app/frontend/vite.config.ts\" \"wrangler dev\"",
     "build": "vite build --config app/frontend/vite.config.ts",
     "typecheck": "tsc --noEmit",
+    "test:retrieval": "node --test test/retrieval-v1.test.mjs",
     "test:ui": "playwright test",
     "deploy": "npm run build && wrangler deploy"
   },
