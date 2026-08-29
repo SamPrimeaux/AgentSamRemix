@@ -3,7 +3,12 @@
  *
  * user_oauth_tokens.user_id is always the canonical auth_users.id.
  * This leaf deliberately has no dependency on an integrations domain.
+ *
+ * Does not query auth_users directly — delegates to
+ * resolveAuthUserId() in identity-context.js, the sole reader.
  */
+
+import { resolveAuthUserId } from '../contracts/identity-context.js';
 
 /**
  * @param {any} env
@@ -11,46 +16,7 @@
  * @returns {Promise<string|null>}
  */
 export async function resolveIntegrationUserId(env, authUser) {
-  const raw = String(authUser?.id ?? '').trim();
-  const email = String(authUser?.email ?? '').trim();
-
-  if (!raw && !email) return null;
-
-  // Normal request/session path already carries canonical au_* IDs.
-  if (/^au_[A-Za-z0-9_-]+$/.test(raw)) {
-    return raw;
-  }
-
-  if (!env?.DB) return null;
-
-  if (raw) {
-    const byId = await env.DB
-      .prepare(`SELECT id FROM auth_users WHERE id = ? LIMIT 1`)
-      .bind(raw)
-      .first()
-      .catch(() => null);
-
-    if (byId?.id) return String(byId.id);
-  }
-
-  const lookupEmail = email || (raw.includes('@') ? raw : '');
-
-  if (lookupEmail) {
-    const byEmail = await env.DB
-      .prepare(
-        `SELECT id
-         FROM auth_users
-         WHERE lower(email) = lower(?)
-         LIMIT 1`,
-      )
-      .bind(lookupEmail)
-      .first()
-      .catch(() => null);
-
-    if (byEmail?.id) return String(byEmail.id);
-  }
-
-  return null;
+  return resolveAuthUserId(env, { id: authUser?.id, email: authUser?.email });
 }
 
 /**

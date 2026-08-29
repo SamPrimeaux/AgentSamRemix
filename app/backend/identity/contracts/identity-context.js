@@ -109,3 +109,81 @@ export function identityContextFromAuthContext(ctx) {
     },
   };
 }
+
+/**
+ * authUser — SSOT for "who is this person," sourced from exactly one
+ * table (`auth_users`) via exactly one query, defined in exactly this
+ * function. No other file in this codebase may run
+ * `SELECT ... FROM auth_users` directly — CI enforces this
+ * (see "Single auth_users read authority invariant" in ci.yml).
+ *
+ * Fields are strictly facts about the person from that one row.
+ * Request-scoped data (workspace, tenant, capabilities) is resolved
+ * alongside this by identityContextFromAuthContext(), never folded
+ * into authUser itself — a person's identity doesn't change per
+ * request; their workspace/capabilities do.
+ *
+ * Any function gating permissions or spending money must receive its
+ * authUser from this call (directly or via IdentityContext.user) —
+ * never construct or accept a hand-built {id, email, ...} object as
+ * if it were one.
+ *
+ * @param {{ DB: any }} env
+ * @param {string} id auth_users.id (au_*)
+ * @returns {Promise<IdentityUser | null>}
+ */
+export async function loadAuthUser(env, id) {
+  const authUserId = String(id ?? '').trim();
+  if (!authUserId || !env?.DB) return null;
+  const row = await env.DB.prepare(
+    `SELECT id, person_uuid, email, display_name FROM auth_users WHERE id = ? LIMIT 1`,
+  ).bind(authUserId).first().catch(() => null);
+  if (!row?.id) return null;
+  return {
+    id: String(row.id),
+    personId: row.person_uuid ?? null,
+    email: row.email ?? null,
+    displayName: row.display_name ?? null,
+  };
+}
+
+/**
+ * Resolve a raw/legacy identifier to the canonical auth_users.id.
+ *
+ * Companion to loadAuthUser() for the one legitimate case where a
+ * caller doesn't yet have a canonical au_* id — a legacy session, an
+ * OAuth callback keyed by email, an older stored reference. This is
+ * still the only file allowed to query auth_users; callers pass in
+ * whatever raw id/email they have and get back a canonical id (or
+ * null), then call loadAuthUser() with that id if they need the full
+ * record.
+ *
+ * @param {{ DB: any }} env
+ * @param {{ id?: string|null, email?: string|null }} raw
+ * @returns {Promise<string|null>}
+ */
+export async function resolveAuthUserId(env, raw = {}) {
+  const id = String(raw?.id ?? '').trim();
+  const email = String(raw?.email ?? '').trim();
+  if (!id && !email) return null;
+
+  // Already canonical — no DB hit needed.
+  if (/^au_[A-Za-z0-9_-]+$/.test(id)) return id;
+
+  if (!env?.DB) return null;
+
+  if (id) {
+    const byId = await env.DB.prepare(`SELECT id FROM auth_users WHERE id = ? LIMIT 1`)
+      .bind(id).first().catch(() => null);
+    if (byId?.id) return String(byId.id);
+  }
+
+  const lookupEmail = email || (id.includes('@') ? id : '');
+  if (lookupEmail) {
+    const byEmail = await env.DB.prepare(`SELECT id FROM auth_users WHERE lower(email) = lower(?) LIMIT 1`)
+      .bind(lookupEmail).first().catch(() => null);
+    if (byEmail?.id) return String(byEmail.id);
+  }
+
+  return null;
+}
