@@ -146,3 +146,44 @@ export async function loadAuthUser(env, id) {
     displayName: row.display_name ?? null,
   };
 }
+
+/**
+ * Resolve a raw/legacy identifier to the canonical auth_users.id.
+ *
+ * Companion to loadAuthUser() for the one legitimate case where a
+ * caller doesn't yet have a canonical au_* id — a legacy session, an
+ * OAuth callback keyed by email, an older stored reference. This is
+ * still the only file allowed to query auth_users; callers pass in
+ * whatever raw id/email they have and get back a canonical id (or
+ * null), then call loadAuthUser() with that id if they need the full
+ * record.
+ *
+ * @param {{ DB: any }} env
+ * @param {{ id?: string|null, email?: string|null }} raw
+ * @returns {Promise<string|null>}
+ */
+export async function resolveAuthUserId(env, raw = {}) {
+  const id = String(raw?.id ?? '').trim();
+  const email = String(raw?.email ?? '').trim();
+  if (!id && !email) return null;
+
+  // Already canonical — no DB hit needed.
+  if (/^au_[A-Za-z0-9_-]+$/.test(id)) return id;
+
+  if (!env?.DB) return null;
+
+  if (id) {
+    const byId = await env.DB.prepare(`SELECT id FROM auth_users WHERE id = ? LIMIT 1`)
+      .bind(id).first().catch(() => null);
+    if (byId?.id) return String(byId.id);
+  }
+
+  const lookupEmail = email || (id.includes('@') ? id : '');
+  if (lookupEmail) {
+    const byEmail = await env.DB.prepare(`SELECT id FROM auth_users WHERE lower(email) = lower(?) LIMIT 1`)
+      .bind(lookupEmail).first().catch(() => null);
+    if (byEmail?.id) return String(byEmail.id);
+  }
+
+  return null;
+}
