@@ -1,0 +1,35 @@
+#!/usr/bin/env node
+/**
+ * AgentSamRemix operator CLI — parsing + dispatch only.
+ * Commands live in app/backend/agentsam/tools/commands/ — the SSOT for
+ * tools in this repo. Never a top-level tools/ folder; see
+ * docs/platform/identity-substrate-2026-08.md for why.
+ *
+ * Pattern mirrors inneranimalmedia's tools/agentsam/cli.mjs deliberately.
+ * NOTE: named `agentsam`, same as inneranimalmedia's own bin/agentsam —
+ * if both repos are ever on PATH together this collides by name, not
+ * just path. Flagging, not resolving here.
+ */
+import { COMMANDS, usage, resolveVerb } from '../app/backend/agentsam/tools/commands/index.mjs';
+
+function main(argv) {
+  if (!argv.length) {
+    usage();
+    process.exit(2);
+  }
+  if (argv[0] === 'help' || argv[0] === '--help' || argv[0] === '-h') {
+    usage();
+    process.exit(0);
+  }
+  const [verb, ...rest] = argv;
+  const key = resolveVerb(verb);
+  const cmd = COMMANDS[key];
+  if (!cmd) {
+    console.error(`unknown verb: ${verb}`);
+    usage();
+    process.exit(2);
+  }
+  return cmd(rest);
+}
+
+main(process.argv.slice(2));
