@@ -5,6 +5,7 @@ export interface Env {
   AGENTSAM_WAI: any; // Workers AI binding
   DB: D1Database;
   WEBSITE_ASSETS: R2Bucket;
+  IAM_VPC: Fetcher; // Service binding for VPC
 }
 
 export default {

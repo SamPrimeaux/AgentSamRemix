@@ -16,5 +16,11 @@
       "binding": "WEBSITE_ASSETS",
       "bucket_name": "REPLACE_ME"
     }
+  ],
+  "services": [
+    {
+      "binding": "IAM_VPC",
+      "service": "iam-vpc"
+    }
   ]
 }
