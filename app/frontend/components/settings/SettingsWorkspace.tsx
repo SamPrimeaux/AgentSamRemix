@@ -1,6 +1,6 @@
 import React from 'react';
 import { Filter, KeyRound, Settings, X } from 'lucide-react';
-import { KeysSettingsComplete } from './KeysSettingsComplete';
+import { KeysSettings } from './KeysSettings';
 import { IndexRulesSettings } from './IndexRulesSettings';
 import './settings.css';
 
@@ -24,9 +24,9 @@ export const SettingsWorkspace: React.FC<Props> = ({ section, onNavigate, onClos
           <div className="as-settings-nav-title">Agent Sam</div>
           <button type="button" className={section === 'keys' ? 'active' : ''} onClick={() => onNavigate('keys')}><KeyRound size={16} /><span><strong>Keys &amp; Secrets</strong><small>BYOK and vault</small></span></button>
           <button type="button" className={section === 'indexrules' ? 'active' : ''} onClick={() => onNavigate('indexrules')}><Filter size={16} /><span><strong>Index Rules</strong><small>Repository policy</small></span></button>
-          <div className="as-settings-nav-note">These screens are wired to the same D1 control-plane authorities used by the runtime; they are not preference-only mockups.</div>
+          <div className="as-settings-nav-note">These screens use the same D1 and vault authorities as the runtime. They are not preference-only mockups.</div>
         </aside>
-        <main className="as-settings-main">{section === 'keys' ? <KeysSettingsComplete /> : <IndexRulesSettings />}</main>
+        <main className="as-settings-main">{section === 'keys' ? <KeysSettings /> : <IndexRulesSettings />}</main>
       </div>
     </div>
   );
