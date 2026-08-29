@@ -1,26 +1,42 @@
 {
+  "$schema": "./node_modules/wrangler/config-schema.json",
   "name": "agentsamremix",
-  "compatibility_date": "2024-03-20",
+  "main": "app/backend/src/index.ts",
+  "compatibility_date": "2026-08-29",
   "ai": {
     "binding": "AGENTSAM_WAI"
   },
   "d1_databases": [
     {
       "binding": "DB",
-      "database_name": "placeholder-not-yet-set",
-      "database_id": "placeholder-not-yet-set"
+      "database_name": "inneranimalmedia-business",
+      "database_id": "cf87b717-d4e2-4cf8-bab0-a81268e32d49"
     }
   ],
   "r2_buckets": [
     {
+      "binding": "ASSETS",
+      "bucket_name": "inneranimalmedia"
+    },
+    {
       "binding": "WEBSITE_ASSETS",
-      "bucket_name": "placeholder-not-yet-set"
+      "bucket_name": "agentsam-os-blueprint-content"
     }
   ],
-  "services": [
+  "vpc_services": [
     {
       "binding": "IAM_VPC",
-      "service": "iam-vpc"
+      "service_id": "019db639-7c70-7071-8ef3-32ec0392a9ff",
+      "remote": true
     }
-  ]
+  ],
+  "assets": {
+    "directory": "./app/frontend/dist",
+    "binding": "FRONTEND_ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": [
+      "/api/*",
+      "/auth/*"
+    ]
+  }
 }
