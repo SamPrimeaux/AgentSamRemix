@@ -271,7 +271,10 @@ const WorkOverview: React.FC<{ onOpenScratch: () => void; onOpenBrowser: () => v
     return () => { active = false; };
   }, []);
 
-  const lanes = Object.entries(exec?.lanes || {});
+  const lanes = Object.entries(exec?.lanes || {}) as Array<[
+    string,
+    { ok?: boolean; state?: string; connection?: { name?: string; platform?: string; defaultCwd?: string } | null },
+  ]>;
   const readyCount = lanes.filter(([, value]) => value?.ok).length;
 
   return (
