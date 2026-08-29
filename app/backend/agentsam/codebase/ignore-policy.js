@@ -3,7 +3,7 @@
  * Keyed by connected GitHub repo only (repo_full_name), never workspace.
  */
 export const IGNORE_POLICY_REPO_REQUIRED = 'repo_full_name_required';
-export const IGNORE_POLICY_EMPTY = 'ignore_policy_repo_required';
+export const IGNORE_POLICY_EMPTY = 'ignore_policy_empty';
 
 /** Minimal gitignore-style matcher for *, ** and ?. */
 export function matchIgnoreGlob(filePath, pattern) {
