@@ -1,0 +1,12 @@
+{
+  "name": "Agent Sam",
+  "short_name": "Agent Sam",
+  "description": "Cloudflare-native agent workbench for chat, code, browser, and explicit execution environments.",
+  "start_url": "/dashboard/agent",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#06070a",
+  "theme_color": "#06070a",
+  "categories": ["productivity", "developer"]
+}
