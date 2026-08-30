@@ -76,7 +76,7 @@ export async function resolveConversationProjectRef(env, input) {
   const userId = trim(input?.userId);
   const tenantId = trim(input?.tenantId);
   const requestedProjectRef = trim(input?.requestedProjectRef);
-  const explicit = input?.explicit === true;
+  const scopeExplicit = input?.scopeExplicit === true;
   const clear = input?.clear === true;
 
   if (!env?.DB || !conversationId || !userId || !tenantId) {
