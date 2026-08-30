@@ -144,14 +144,15 @@ export async function executeAgentChatSpine(env, request, ctx, pre) {
 
   const requestedSessionProjectRef = parseSessionProjectIdFromChatBody(body);
   const projectContextSource = String(body.project_context_source || '').trim();
-  // Prompt injection is opt-in only:
-  // - project_context_explicit=1 (one-shot bind from Agent Context Hub)
-  // - project_composer (every send from the project page composer)
-  // project_surface alone is not enough — sticky tooling must not inject memory.
+  // Scope and prompt material are separate authorities:
+  // - project_composer may bind the conversation to a project for tooling/resource scope.
+  // - only project_context_explicit=1 authorizes saved project context in this turn's prompt.
   const projectContextExplicit =
     body.project_context_explicit === true ||
     body.project_context_explicit === 1 ||
-    body.project_context_explicit === '1' ||
+    body.project_context_explicit === '1';
+  const projectScopeExplicit =
+    projectContextExplicit ||
     projectContextSource === 'project_composer';
   const projectContextClear =
     body.project_context_clear === true ||
