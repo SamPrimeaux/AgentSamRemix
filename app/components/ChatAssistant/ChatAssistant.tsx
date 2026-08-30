@@ -469,6 +469,22 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({
   useEffect(() => {
     conversationIdRef.current = conversationId;
   }, [conversationId]);
+
+  const thinkAgentSam = useThinkAgentSamChat({
+    conversationId,
+    setConversationId,
+    setMessages,
+  });
+  useEffect(() => {
+    setIsLoading(thinkAgentSam.isBusy);
+  }, [thinkAgentSam.isBusy]);
+  useEffect(() => {
+    if (!thinkAgentSam.connectionError) return;
+    setComposerToast(
+      thinkAgentSam.connectionError.message || 'Agent Sam connection failed.',
+    );
+  }, [thinkAgentSam.connectionError]);
+
   const {
     browserSurfaceRef,
     databaseSurfaceRef,
