@@ -84,7 +84,7 @@ export function deriveKnowledgeCandidatesFromExperience(exp) {
   if (fc === 'tool_execution_error' && err.includes('tool_outcome')) {
     candidates.push({
       memory_type: 'error',
-      memory_key: `error:tool:${projectKey || ws}:soft_fail`,
+      memory_key: `error:tool:${ws || 'workspace'}:soft_fail`,
       title: 'Tool soft-fail during agent run',
       content: trim(exp.error_message).slice(0, 500) || 'Tool returned non-ok outcome.',
       importance: 6,
