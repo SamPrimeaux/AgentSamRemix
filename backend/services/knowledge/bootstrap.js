@@ -57,6 +57,7 @@ export async function buildKnowledgeBootstrap(env, opts = {}) {
     maxItems: 16,
     includeRecentExperience: opts.includeRecentExperience !== false,
     includeGlobalPolicies: true,
+    includeProjectState: opts.projectContextExplicit === true,
   });
 
   const packet = emptyKnowledgePacket({
