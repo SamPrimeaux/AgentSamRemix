@@ -35,7 +35,7 @@
     "@cloudflare/voice": "^0.4.0",
     "@excalidraw/excalidraw": "^0.18.0",
     "@google/genai": "^1.35.0",
-    "@inneranimalmedia/agentsam-sdk": "^2.0.0-alpha.identity.11",
+    "@inneranimalmedia/agentsam-sdk": "2.0.0-alpha.identity.12",
     "@inneranimalmedia/client-3d-runtime": "file:packages/client-3d-runtime",
     "@inneranimalmedia/client-cms-editor": "file:packages/client-cms-editor",
     "@inneranimalmedia/client-core": "file:packages/client-core",
