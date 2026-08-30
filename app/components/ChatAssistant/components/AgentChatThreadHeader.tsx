@@ -89,12 +89,6 @@ export const AgentChatThreadHeader: FC<Props> = ({
 
   const canMutate = Boolean(convId);
 
-  const openTerminal = useCallback(() => {
-    setMenuOpen(false);
-    setProjectOpen(false);
-    window.dispatchEvent(new CustomEvent('iam:open-terminal'));
-  }, []);
-
   const displayTitle = useMemo(() => {
     if (!convId || unboundPath) return 'New chat';
     const t = threadTitle.trim();
