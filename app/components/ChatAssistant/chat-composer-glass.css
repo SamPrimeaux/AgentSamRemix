@@ -239,13 +239,28 @@
   }
 
   .iam-composer-attach,
+  .iam-composer-mic,
   .iam-composer-send {
-    width: 32px !important;
-    height: 32px !important;
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px;
+    min-height: 40px;
     padding: 0 !important;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    border-radius: 999px;
+  }
+
+  .iam-composer-attach {
+    order: -1;
+    margin-right: auto;
+    background: color-mix(in srgb, var(--dashboard-text) 8%, transparent);
+    color: var(--dashboard-text);
+  }
+
+  .iam-composer-mic {
+    background: transparent;
   }
 }
 
