@@ -251,7 +251,7 @@ export const AgentChatThreadHeader: FC<Props> = ({
                     className={MENU_ITEM}
                   >
                     <FolderKanban size={13} />
-                    Move to project
+                    Add to project
                   </button>
                   {projectOpen ? (
                     <div className="absolute right-full top-0 z-[10000] mr-1 w-[200px] max-h-[220px] overflow-y-auto rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] py-1 shadow-xl">
