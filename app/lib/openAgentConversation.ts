@@ -33,8 +33,6 @@ export type OpenAgentThreadDetail = {
   projectName?: string;
   title?: string;
   firstMessage?: string;
-  memory?: string;
-  instructions?: string;
   files?: File[];
   force?: boolean;
 };
