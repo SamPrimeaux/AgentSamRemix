@@ -42,6 +42,7 @@ export function AgentComposerMicButton({
   onVoiceTurn,
   disabled,
   compactActiveOnly = false,
+  eventBridgeOnly = false,
 }: AgentComposerMicButtonProps) {
   const [prefs, setPrefs] = useState<VoicePrefs>(() =>
     typeof window !== 'undefined' ? loadVoicePrefs() : { voiceId: 'alloy', personaId: 'operator' },
