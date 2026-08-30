@@ -738,7 +738,7 @@ export function ChatAssistantView({ v }: { v: any }) {
                     setIsModeOpen(false);
                     setAttachMenuOpen(false);
                   }}
-                  className={`${composerPillClass} max-w-[10rem] ${isNarrow && isLoading ? 'hidden' : ''}`}
+                  className={`${composerPillClass} max-w-[10rem] ${isNarrow ? 'hidden' : ''}`}
                   title={
                     isAutoModelSelection(selectedModelKey)
                       ? 'Model: Auto (Thompson routing)'
