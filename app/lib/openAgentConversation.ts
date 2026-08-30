@@ -139,8 +139,6 @@ export function openAgentThreadFullScreen(detail: OpenAgentThreadDetail): void {
         conversationId: conversationId || undefined,
         title: detail.title?.trim() || undefined,
         firstMessage: String(detail.firstMessage || '').trim() || undefined,
-        memory: detail.memory,
-        instructions: detail.instructions,
         force: detail.force !== false,
       },
     }),
