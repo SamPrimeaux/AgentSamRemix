@@ -62,6 +62,7 @@ function rankKnowledgeHit(hit, query) {
  *   maxItems?: number,
  *   includeRecentExperience?: boolean,
  *   includeGlobalPolicies?: boolean,
+ *   includeProjectState?: boolean,
  * }} opts
  */
 export async function retrieveKnowledge(env, db, opts = {}) {
