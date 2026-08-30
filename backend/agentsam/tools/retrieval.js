@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { tool } from 'ai';
 import { retrieveKnowledge } from '../../rag/index.js';
 import { createRetrievalRuntimeServices } from '../../rag/index.js';
+import { resolveActiveCorpusForRepo } from '../../rag/retrieval/corpus-registry.js';
 
 export function createCodebaseRetrieveTool(env, resolveScope, resolveServices = null) {
   return tool({
