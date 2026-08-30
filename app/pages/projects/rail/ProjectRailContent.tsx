@@ -767,11 +767,11 @@ export function ProjectRailOverlays(props: ProjectRailContentProps): React.JSX.E
       <RailEditorModal
         open={railEditor === 'memory'}
         isMobile={isMobile}
-        title="Set project memory"
-        mobileTitle="Memory"
-        subtitle="Key context Agent Sam should always know about this project. Only you can see this on the project page."
+        title="Edit saved project context"
+        mobileTitle="Saved context"
+        subtitle="Optional human context for facts, decisions, constraints, or blockers that live sources cannot reliably infer. Project scope alone does not inject it."
         saving={memBusy}
-        saveLabel="Save memory"
+        saveLabel="Save context"
         onClose={onCloseRailEditor}
         onSave={() => void onSaveMemoryFromModal()}
       >
