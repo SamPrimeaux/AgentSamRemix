@@ -24,6 +24,7 @@ export const USAGE = `usage: bin/agentsam <verb> [subcommand] [options]
 Verbs:
   acp         serve              local stdio ACP bridge to the Agent Sam API
   deploy      full|fast|worker   tsc/build/wrangler deploy — uses bin/deploy
+  eval        retrieval          evaluate registered retrieval corpora via service principal
   sdk         status             show SDK dependency + portable bin/lib handoffs
   website     sync|watch|status|verify|rollback   hash-driven WEBSITE_ASSETS releases
 
