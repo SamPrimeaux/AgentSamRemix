@@ -542,66 +542,10 @@ export async function handleAgentArtifactsApi(request, url, env) {
         return o;
       });
 
-      // Merge active image-gen drafts that are not yet registered as artifacts
-      // (pre-bridge gens + any register miss) so they appear under Work → Artifacts.
-      let merged = artifacts;
-      let mergedTotal = total;
-      try {
-        if (scope.userId && offset === 0 && (!filters.type || filters.type === 'image')) {
-          const { results: draftRows } = await env.DB.prepare(
-            `SELECT id, user_id, tenant_id, workspace_id, status, r2_key, r2_bucket, preview_url,
-                    purpose, prompt, provider, model, width, height, created_at, updated_at, expires_at
-             FROM image_generation_drafts
-             WHERE user_id = ?
-               AND status = 'draft'
-               AND expires_at > unixepoch()
-               AND preview_url IS NOT NULL
-               AND TRIM(preview_url) != ''
-             ORDER BY created_at DESC
-             LIMIT 40`,
-          )
-            .bind(String(scope.userId))
-            .all();
-          if (draftRows?.length) {
-            const { mapImageDraftToArtifactRow, imageDraftArtifactId } = await import(
-              '../core/image-draft-artifact.js'
-            );
-            const existingIds = new Set(merged.map((a) => String(a.id)));
-            const existingGen = new Set();
-            for (const a of merged) {
-              const meta = a.metadata_json;
-              const gid =
-                meta && typeof meta === 'object' && meta.generation_id != null
-                  ? String(meta.generation_id)
-                  : '';
-              if (gid) existingGen.add(gid);
-              const aid = String(a.id || '');
-              if (aid.startsWith('art_img_')) existingGen.add(`igen_${aid.slice('art_img_'.length)}`);
-            }
-            const extras = [];
-            for (const d of draftRows) {
-              const gid = String(d.id || '');
-              const aid = imageDraftArtifactId(gid);
-              if (existingIds.has(String(aid)) || existingGen.has(gid)) continue;
-              if (filters.q) {
-                const q = String(filters.q).toLowerCase();
-                const hay = `${d.prompt || ''} ${d.purpose || ''}`.toLowerCase();
-                if (!hay.includes(q)) continue;
-              }
-              if (filters.status && filters.status !== 'draft') continue;
-              if (filters.source && filters.source !== 'image_generation') continue;
-              const row = mapImageDraftToArtifactRow(d);
-              extras.push({ ...mapArtifactRow(row), linked_skills: [] });
-            }
-            if (extras.length) {
-              merged = [...extras, ...merged].slice(0, limit);
-              mergedTotal = total + extras.length;
-            }
-          }
-        }
-      } catch (e) {
-        console.warn('[agent-artifacts] image_draft_merge_failed', e?.message ?? e);
-      }
+      // Artifacts are intentionally durable outputs. Generated-image drafts are
+      // ephemeral evidence/creation state and belong to Images until explicitly saved.
+      const merged = artifacts;
+      const mergedTotal = total;
 
       return jsonResponse({
         ok: true,
