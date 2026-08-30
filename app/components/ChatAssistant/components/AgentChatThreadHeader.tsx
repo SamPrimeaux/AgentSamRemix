@@ -187,10 +187,7 @@ export const AgentChatThreadHeader: FC<Props> = ({
 
   const assignProject = (projectId: string | null) =>
     void run(async () => {
-      const patch: Record<string, unknown> = {};
-      if (workspaceId?.trim()) patch.workspace_id = workspaceId.trim();
-      patch.project_id = projectId;
-      await patchAgentSession(convId, patch);
+      await patchAgentSession(convId, { project_id: projectId });
       notifyAgentChatSessionsRefresh(convId);
     });
 
