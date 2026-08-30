@@ -369,26 +369,22 @@ export function DashboardSidebar({
       </div>
 
       {expanded ? (
-        <>
-          <div className="px-2 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-widest text-muted opacity-70">
-            Chats
-          </div>
-          <div className="flex-1 min-h-0 max-h-[42vh] overflow-hidden flex flex-col">
-            <AgentChatSessionList
-              variant="sidebar"
-              expanded={expanded}
-              activeConversationId={activeConversationId}
-              onDeletedActive={onDeleteActiveChat}
-              onSelect={(id) => {
-                onSelectChat?.(id);
-                onItemActivate?.();
-              }}
-            />
-          </div>
-        </>
+        <div className="pt-3">
+          <AgentChatSessionList
+            variant="sidebar"
+            expanded={expanded}
+            activeConversationId={activeConversationId}
+            onDeletedActive={onDeleteActiveChat}
+            onSelect={(id) => {
+              onSelectChat?.(id);
+              onItemActivate?.();
+            }}
+          />
+        </div>
       ) : null}
+      </div>
 
-      <div className="mt-auto pt-2 border-t border-[var(--dashboard-border)] shrink-0">
+      <div className="pt-2 border-t border-[var(--dashboard-border)] shrink-0">
         <div
           className={`w-full flex items-center rounded-lg ${
             expanded ? 'gap-2 px-2 py-2 justify-between' : 'flex-col gap-1.5 py-2 justify-center'
