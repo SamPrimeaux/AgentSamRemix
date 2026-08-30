@@ -194,7 +194,7 @@ export async function executeAgentChatSpine(env, request, ctx, pre) {
       activeFileEnvelope,
       body,
       projectRef: sessionProjectRef,
-      projectExplicit: projectContextExplicit || projectContextClear,
+      projectExplicit: projectScopeExplicit || projectContextClear,
     });
     scheduleWorkspaceConversationPin(env, ctx, {
       conversationId: sessionId,
