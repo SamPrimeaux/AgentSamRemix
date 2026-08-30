@@ -195,7 +195,7 @@ npm run build
 
 The dashboard build emits `app/dist`. Cloudflare Workers Assets transports the compiled JS/CSS/PWA files, but it has **no runtime binding name**. Worker-side HTML authority is the connected `WEBSITE_ASSETS` R2 bucket. `config/website-assets.json` declares the six logical shells. Five are direct authored HTML; only generated `app/dist/index.html` is build-coupled.
 
-`WEBSITE_ASSETS` uses immutable SHA-256 payload objects plus immutable release manifests. `current.json` is the only mutable promotion pointer. Unchanged payload hashes are reused across releases instead of uploaded again. The Worker resolves logical keys through `current.json` and returns the SHA-256 as the HTML ETag.
+`WEBSITE_ASSETS` uses immutable SHA-256 payload objects plus immutable release manifests. `current.json` is the only mutable promotion pointer. Unchanged payload hashes are reused across releases instead of uploaded again. The Worker resolves logical keys through `current.json` and exposes the content identity as `X-IAM-Content-SHA256`; it also emits a strong SHA-256 `ETag` on the Worker response, but edge HTML transforms may remove that standard validator before it reaches the browser.
 
 The PWA root assets include `/sw.js`, `/manifest.webmanifest`, `/offline.html`, and `/pwa-build-meta.json`.
 

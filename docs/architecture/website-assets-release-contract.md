@@ -22,7 +22,7 @@ There is exactly one mutable authority pointer:
 current.json
 ```
 
-`current.json` contains the active logical-key map and the immutable manifest key. Promotion is one R2 write after all referenced payloads have been hash-verified. Rollback is another `current.json` promotion; payloads are not rewritten.
+`current.json` contains the active logical-key map and the immutable manifest key. Promotion is one R2 write after all referenced payloads have been hash-verified. Rollback is another `current.json` promotion; payloads are not rewritten. The Worker exposes `X-IAM-Website-Release` and `X-IAM-Content-SHA256` on shell responses. A strong SHA-256 `ETag` is emitted as a best-effort HTTP validator, but Cloudflare HTML transformations may strip it at the edge.
 
 ## Logical keys
 

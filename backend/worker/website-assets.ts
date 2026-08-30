@@ -104,6 +104,7 @@ function responseHeaders(
   headers.set('Content-Type', record.content_type || 'application/octet-stream');
   headers.set('Cache-Control', record.cache_control || 'public, max-age=0, must-revalidate');
   headers.set('ETag', etagFor(record));
+  headers.set('X-IAM-Content-SHA256', record.sha256);
   headers.set('X-IAM-Website-Release', release);
   return headers;
 }
@@ -142,6 +143,7 @@ export async function fetchWebsiteAsset(
         headers: {
           ETag: etag,
           'Cache-Control': record.cache_control || 'public, max-age=0, must-revalidate',
+          'X-IAM-Content-SHA256': record.sha256,
           'X-IAM-Website-Release': pointer.release,
         },
       });
