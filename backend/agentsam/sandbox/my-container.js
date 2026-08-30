@@ -382,12 +382,22 @@ export async function tryContainerExec(env, opts) {
     }
 
     const data = await res.json().catch(() => ({}));
+    const responseOk =
+      typeof data?.ok === 'boolean'
+        ? data.ok && res.ok
+        : res.ok;
+    const responseError =
+      data?.error ||
+      (!res.ok ? `container_http_${res.status}` : responseOk ? null : 'container_exec_failed');
+
     return {
       lane: 'container',
       image: CONTAINER_IMAGE_TAG,
       pool_id: resolveContainerPoolId(env),
       http_status: res.status,
       ...data,
+      ok: responseOk,
+      error: responseError,
     };
   } catch (e) {
     const msg = String(e?.message || e);
