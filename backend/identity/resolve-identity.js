@@ -102,7 +102,7 @@ export async function resolveAuth(request, env, opts = {}) {
     } else {
       const delegatedUserId = resolveDelegatedMachineUser(request, env);
       if (delegatedUserId) {
-        authType = 'bridge_delegated';
+        authType = 'bridge';
         userId = delegatedUserId;
       }
     }
