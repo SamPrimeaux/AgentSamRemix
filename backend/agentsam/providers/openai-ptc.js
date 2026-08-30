@@ -130,14 +130,13 @@ export function toOpenAIResponsesTools(tools, opts = {}) {
         type: 'function',
         name,
         description: String(shape?.description || ''),
-        parameters:
-          shape?.parameters || shape?.input_schema || tool?.input_schema || {
-            type: 'object',
-            properties: {},
-          },
+        parameters: normalizeJsonSchema(
+          shape?.parameters || shape?.input_schema || tool?.input_schema,
+          { type: 'object', properties: {} },
+        ),
         allowed_callers: allowedCallers,
-        ...(shape?.output_schema || tool?.output_schema
-          ? { output_schema: shape?.output_schema || tool?.output_schema }
+        ...(normalizeJsonSchema(shape?.output_schema || tool?.output_schema)
+          ? { output_schema: normalizeJsonSchema(shape?.output_schema || tool?.output_schema) }
           : {}),
         ...(shape?.defer_loading === true || tool?.defer_loading === true
           ? { defer_loading: true }
