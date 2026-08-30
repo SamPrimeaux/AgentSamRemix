@@ -16,6 +16,7 @@ import {
   Pencil,
   Plus,
   Pin,
+  SquarePen,
   Trash2,
 } from 'lucide-react';
 import type { AgentSessionRow } from '../../../agentSessionsCatalog';
