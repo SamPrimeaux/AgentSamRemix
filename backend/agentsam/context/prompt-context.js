@@ -35,7 +35,7 @@ export async function fetchActiveProjectContextBlocks(env, opts = {}) {
   const limit = Math.min(Math.max(1, Number(opts.limit) || 3), 5);
   const projectRef = trim(opts.projectId || opts.projectRef || opts.project_id || '');
   const projectKeyOpt = trim(opts.projectKey || opts.project_key || '');
-  const primaryKey = workspacePrimaryProjectKey(ws);
+  if (!projectRef && !projectKeyOpt) return [];
 
   try {
     const cols = await pragmaTableInfo(env.DB, 'agentsam_project_context');
