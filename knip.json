@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/knip@5/schema.json",
+  "entry": ["app/index.tsx", "backend/src/index.ts"],
+  "project": ["app/**/*.{ts,tsx}", "backend/**/*.ts", "src/**/*.{ts,tsx,js}", "shared/**/*.ts", "packages/*/src/**/*.ts", "bin/**/*.ts"],
+  "ignore": [
+    "**/*.test.*", "**/*.spec.*", "test/**", "tests/**",
+    "docs/**", "plans/**", "migrations/**", "imports/**",
+    "config/**", "scripts/**", "app/dist/**"
+  ]
+}
