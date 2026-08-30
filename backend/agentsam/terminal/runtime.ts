@@ -182,7 +182,7 @@ export async function executeTerminalLane(
   if (input.lane === 'environment') {
     const result = await executeInEnvironment(env, {
       userId: input.userId,
-      workspaceId: input.workspaceId,
+      workspaceId: executionWorkspaceId,
       tenantId: input.tenantId,
       command,
       cwd,
@@ -196,7 +196,7 @@ export async function executeTerminalLane(
     cwd,
     connection,
     userId: input.userId,
-    workspaceId: input.workspaceId,
+    workspaceId: executionWorkspaceId,
     tenantId: input.tenantId,
   });
   return { ...result, lane: input.lane, connection: publicConnection(connection), cwd };
