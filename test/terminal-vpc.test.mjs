@@ -49,3 +49,9 @@ test('remote one-shot execution prefers direct VPC instead of adding an ExecOS h
   const execosCall = source.indexOf("const result = await callExecOS(env, '/run'");
   assert.ok(vpcFirst > 0 && execosCall > vpcFirst);
 });
+
+test('new Remix workspace terminal preferences start on platform_vm', () => {
+  const source = read('app/src/lib/terminalWorkspacePrefs.ts');
+  assert.match(source, /return \{ targetType: 'platform_vm', splashDismissed: true \}/);
+  assert.match(source, /explicit saved Local\/Sandbox choice is still preserved/);
+});
