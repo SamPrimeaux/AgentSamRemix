@@ -26,6 +26,8 @@ type AgentComposerMicButtonProps = {
   disabled?: boolean;
   /** Mobile keeps the engine mounted but only shows a stop affordance while voice/dictation is active. */
   compactActiveOnly?: boolean;
+  /** Keep voice/dictation engines mounted for external mobile buttons without rendering duplicate controls. */
+  eventBridgeOnly?: boolean;
 };
 
 /**
