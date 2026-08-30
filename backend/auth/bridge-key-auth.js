@@ -89,18 +89,23 @@ export function verifyBridgeKey(request, env) {
  *
  * @param {Request} request
  * @param {any} env
- * @returns {{ type: 'bridge', principalId: string, principalType: 'service', capabilities: string[], delegatedUserId: string|null }|null}
+ * @returns {{ type: 'bridge', principalId: string, principalType: 'service', capabilities: string[] }|null}
  */
 export function resolveMachineProof(request, env) {
   if (!verifyBridgeKey(request, env)) return null;
-  const delegated = trim(request?.headers?.get?.('X-User-Id'));
   return {
     type: 'bridge',
     principalId: AGENTSAM_PLATFORM_PRINCIPAL.id,
     principalType: AGENTSAM_PLATFORM_PRINCIPAL.type,
     capabilities: [...AGENTSAM_PLATFORM_PRINCIPAL.capabilities],
-    delegatedUserId: /^au_[A-Za-z0-9_]+$/.test(delegated) ? delegated : null,
   };
+}
+
+/** Explicit legacy delegation adapter for user-owned routes only. */
+export function resolveDelegatedMachineUser(request, env) {
+  if (!resolveMachineProof(request, env)) return null;
+  const delegated = trim(request?.headers?.get?.('X-User-Id'));
+  return /^au_[A-Za-z0-9_]+$/.test(delegated) ? delegated : null;
 }
 
 /**
