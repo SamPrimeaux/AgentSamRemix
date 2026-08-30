@@ -418,6 +418,7 @@ export function ChatAssistantView({ v }: { v: any }) {
         !atmosphericHomeMode &&
         !entryPortalStartup &&
         !desktopStartupCenterMode &&
+        !isNarrow &&
         !planSuggestDismissed &&
         mode !== 'plan' &&
         suggestPlanMode(input) &&
