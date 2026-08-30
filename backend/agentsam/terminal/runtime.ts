@@ -126,7 +126,7 @@ export async function executeTerminalLane(
     command: string;
     cwd?: string | null;
     userId: string;
-    workspaceId: string;
+    workspaceId?: string | null;
     tenantId?: string | null;
     connectionId?: string | null;
   },
