@@ -870,8 +870,8 @@ export function ChatAssistantView({ v }: { v: any }) {
               >
                 {isLoading ? (
                   <>
-                    <X size={12} className="text-red-600" />
-                    {messageQueue.length > 0 && (
+                    <Square size={12} fill="currentColor" strokeWidth={2} />
+                    {!isNarrow && messageQueue.length > 0 && (
                       <span className="absolute -top-1.5 -right-1.5 flex items-center justify-center min-w-[14px] h-[14px] px-0.5 rounded-full bg-red-500 text-white text-[9px] font-bold border border-[var(--dashboard-panel)]">
                         {messageQueue.length}
                       </span>
@@ -879,6 +879,10 @@ export function ChatAssistantView({ v }: { v: any }) {
                   </>
                 ) : pendingToolApproval ? (
                   <ShieldCheck size={14} className="text-[var(--dashboard-canvas)]" />
+                ) : canSend ? (
+                  <ArrowUp size={16} strokeWidth={2.5} />
+                ) : isNarrow ? (
+                  <AudioLines size={18} strokeWidth={2} />
                 ) : (
                   <ArrowUp size={14} strokeWidth={2.5} />
                 )}
