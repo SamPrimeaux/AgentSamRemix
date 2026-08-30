@@ -21,6 +21,11 @@ These references define the prioritized mobile UX for AgentSamRemix. The impleme
 - Local / VM / Sandbox (and future Environment) remain explicit execution lanes with no silent lane failover.
 - Repository, branch, and other context use compact chips near the composer rather than permanent heavy chrome.
 - Composer remains available and respects mobile safe-area / keyboard behavior.
+- The active-conversation composer follows the ChatGPT iOS interaction model closely: one calm rounded floating input, `+` at the lower-left, text input as the dominant element, microphone at the lower-right, and one primary circular action at the far-right that changes between Voice/Send/Stop based on state.
+- Do not permanently expose Agent mode, RuntimeProfile, workspace, repo, execution lane, tool profile, or context selectors in the mobile composer. Model choice is conversation configuration, not permanent composer chrome; expose it through conversation/options or an explicit secondary sheet.
+- `+` is the single entry to turn-scoped additions: upload/photo, generated-image prompt, web/deep search, connectors, and other explicit sources. Voice/persona settings belong in a secondary sheet/settings; the composer keeps only the primary microphone/voice affordance.
+- Explicitly attached sources/files may appear as removable compact chips/previews above the text field. They are ephemeral turn inputs by default and must not become Library/Artifacts merely because they passed through chat.
+- The composer uses neutral conversation styling rather than mode-colored borders/glows. Send is enabled only when there is sendable text/input; while Agent Sam is working the primary action becomes Stop without changing the rest of the composer layout.
 - File edits, diffs, browser sessions, approvals, tests, and environment lifecycle are backed by real runtime events.
 
 The five visual files are intentionally treated as design fixtures, not application runtime assets.
