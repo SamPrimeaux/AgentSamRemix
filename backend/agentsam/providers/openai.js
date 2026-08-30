@@ -394,7 +394,10 @@ export async function dispatchOpenAIResponsesComplete(env, params) {
   const { response, error } = await openAiFetch(env, prepared, '/responses', buildOpenAIResponsesBody(prepared, false));
   if (error) throw new Error(`OpenAI Responses completion unavailable: ${error.status}`);
   const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(`OpenAI Responses error ${response.status}: ${JSON.stringify(data).slice(0, 500)}`);
+  if (!response.ok) {
+    const payload = openAiUpstreamError(response.status, data, openAiModel(prepared));
+    throw Object.assign(new Error(payload.error), payload);
+  }
   const text = typeof data.output_text === 'string' ? data.output_text : '';
   return { ...data, text, output_text: data.output_text ?? text, choices: [{ message: { content: text } }] };
 }
