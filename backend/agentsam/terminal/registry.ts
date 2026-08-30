@@ -147,12 +147,36 @@ export async function resolveUserRuntimeScope(env: Env, userId: string) {
     default_workspace_id: string | null;
   }>();
   if (!row) return null;
-  const workspaceId = trim(row.active_workspace_id || row.default_workspace_id);
-  if (!workspaceId) return null;
   return {
     userId: row.id,
     tenantId: trim(row.active_tenant_id || row.tenant_id) || null,
-    workspaceId,
+    // Compatibility hint only. Runtime authorization is user-owned.
+    workspaceId: trim(row.active_workspace_id || row.default_workspace_id) || null,
+  };
+}
+
+export async function resolveConversationRuntimeScope(env: Env, conversationId: string) {
+  const id = trim(conversationId);
+  if (!id) return null;
+  const row = await env.DB.prepare(`
+    SELECT conversation_id, user_id, tenant_id, workspace_id
+    FROM agentsam_chat_sessions
+    WHERE conversation_id = ?
+    LIMIT 1
+  `).bind(id).first<{
+    conversation_id: string;
+    user_id: string;
+    tenant_id: string;
+    workspace_id: string | null;
+  }>();
+  if (!row?.user_id) return null;
+  return {
+    conversationId: row.conversation_id,
+    userId: trim(row.user_id),
+    tenantId: trim(row.tenant_id) || null,
+    // Existing rows may carry a workspace label; tools may use it as a target
+    // preference, but it is not identity or authorization.
+    workspaceId: trim(row.workspace_id) || null,
   };
 }
 
