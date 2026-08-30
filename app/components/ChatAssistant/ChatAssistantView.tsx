@@ -11,13 +11,16 @@ import { ChatAssistantChrome } from './ChatAssistantChrome';
 import { suggestPlanMode } from '../../lib/plan-mode-utils';
 import {
   ArrowUp,
+  AudioLines,
   ChevronDown,
   FileText,
   Github,
+  Mic,
   MousePointer2,
   Plus,
   ShieldCheck,
   Sparkles,
+  Square,
   X,
 } from 'lucide-react';
 import { AgentChatFilesPanel } from './components/AgentChatFilesPanel';
