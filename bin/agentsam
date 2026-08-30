@@ -1,33 +1,74 @@
 #!/usr/bin/env node
 /**
- * AgentSamRemix operator CLI — parsing + dispatch only.
- * Commands live in bin/commands/ — the SSOT for
- * operator commands in this repo; domain implementations remain under backend/. See
- * docs/platform/identity-substrate-2026-08.md for why.
+ * AgentSamRemix host extension for the canonical Agent Sam SDK CLI.
  *
- * Pattern mirrors inneranimalmedia's tools/agentsam/cli.mjs deliberately.
- * NOTE: named `agentsam`, same as inneranimalmedia's own bin/agentsam —
- * if both repos are ever on PATH together this collides by name, not
- * just path. Flagging, not resolving here.
+ * Portable commands execute the installed @inneranimalmedia/agentsam-sdk binary.
+ * Remix owns only repository/runtime-specific operator verbs under bin/commands/.
  */
+import { spawn } from 'node:child_process';
+import { readFileSync } from 'node:fs';
+import { createRequire } from 'node:module';
+import { dirname, resolve } from 'node:path';
+
 import { COMMANDS, usage, resolveVerb } from './commands/index.mjs';
+
+const require = createRequire(import.meta.url);
+const SDK_PACKAGE = '@inneranimalmedia/agentsam-sdk';
+const SDK_VERBS = new Set(['context', 'init', 'start-local', 'tunnel', 'identity', 'shell']);
+
+function resolveSdkCli() {
+  const packagePath = require.resolve(`${SDK_PACKAGE}/package.json`);
+  const packageJson = JSON.parse(readFileSync(packagePath, 'utf8'));
+  const relativeCli = typeof packageJson.bin === 'string'
+    ? packageJson.bin
+    : packageJson.bin?.agentsam;
+  if (!relativeCli) throw new Error('agentsam_sdk_cli_missing');
+  return resolve(dirname(packagePath), relativeCli);
+}
+
+function runSdkCli(argv) {
+  return new Promise((resolvePromise, reject) => {
+    const child = spawn(process.execPath, [resolveSdkCli(), ...argv], {
+      cwd: process.cwd(),
+      env: process.env,
+      stdio: 'inherit',
+    });
+    child.once('error', reject);
+    child.once('exit', (code, signal) => {
+      if (signal) {
+        reject(new Error(`agentsam_sdk_cli_signal:${signal}`));
+        return;
+      }
+      process.exitCode = Number(code) || 0;
+      resolvePromise();
+    });
+  });
+}
 
 function main(argv) {
   if (!argv.length) {
     usage();
-    process.exit(2);
+    process.exitCode = 2;
+    return;
+  }
+  if (argv[0] === '--version' || argv[0] === '-v') {
+    return runSdkCli(argv);
   }
   if (argv[0] === 'help' || argv[0] === '--help' || argv[0] === '-h') {
     usage();
-    process.exit(0);
+    return;
   }
+
   const [verb, ...rest] = argv;
+  if (SDK_VERBS.has(verb)) return runSdkCli(argv);
+
   const key = resolveVerb(verb);
   const cmd = COMMANDS[key];
   if (!cmd) {
     console.error(`unknown verb: ${verb}`);
     usage();
-    process.exit(2);
+    process.exitCode = 2;
+    return;
   }
   return cmd(rest);
 }
