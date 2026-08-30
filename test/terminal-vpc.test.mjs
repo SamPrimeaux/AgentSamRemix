@@ -2,6 +2,9 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
+import { tryContainerExec } from '../backend/agentsam/sandbox/my-container.js';
+import { userMayUsePrivilegedTerminal } from '../backend/identity/workspace/grants.js';
+import { clearIamTunnelOwnerConfigCache } from '../backend/identity/workspace/tunnel-owner.js';
 
 const root = path.resolve(import.meta.dirname, '..');
 const read = (rel) => fs.readFileSync(path.join(root, rel), 'utf8');
