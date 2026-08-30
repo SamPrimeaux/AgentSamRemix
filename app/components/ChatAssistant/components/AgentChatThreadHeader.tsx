@@ -72,7 +72,6 @@ export const AgentChatThreadHeader: FC<Props> = ({
   mobileThreadChrome = false,
   onView,
 }) => {
-  const { workspaceId } = useWorkspace();
   const location = useLocation();
   const convId = String(conversationId || '').trim();
   const unboundPath = isUnboundAgentChatPath(location.pathname, location.search);
