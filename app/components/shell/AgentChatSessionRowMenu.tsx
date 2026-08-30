@@ -179,8 +179,8 @@ export const AgentChatSessionRowMenu: FC<Props> = ({
             onClick={toggleStar}
             className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[11px] hover:bg-[var(--bg-hover)] disabled:opacity-50"
           >
-            <Star size={13} fill={session.is_starred ? 'currentColor' : 'none'} className={session.is_starred ? 'text-[var(--solar-yellow)]' : ''} />
-            {session.is_starred ? 'Unstar' : 'Star'}
+            <Pin size={13} fill={session.is_starred ? 'currentColor' : 'none'} className={session.is_starred ? 'text-[var(--solar-yellow)]' : ''} />
+            {session.is_starred ? 'Unpin' : 'Pin'}
           </button>
           <button
             type="button"
