@@ -1,49 +1,36 @@
-/** Blank AGENTSAM-style scaffold when a project has no saved memory yet. */
+/**
+ * Minimal manual escape hatch for project context.
+ * Machine-readable state (repo paths, routes, tables, Workers, buckets, bindings)
+ * must come from its live authority instead of being copied into this document.
+ */
 export function defaultProjectMemoryDraft(projectName?: string | null, projectId?: string | null): string {
   const name = (projectName || 'Project').trim() || 'Project';
-  const idLine = projectId?.trim() ? `Project ID: ${projectId.trim()}` : 'Project ID:';
-  return `# AGENTSAM.md — ${name}
+  void projectId;
+  return `# Project context — ${name}
 
-> Agent Sam project memory — fill in for this build. Only visible on the project page.
+> Optional human context. Keep only meaning that live project/repo/infrastructure sources cannot reliably infer.
 
-## Identity
-
-\`\`\`
-Client / product:
-Public domain:
-Worker:
-Workspace:
-${idLine}
-GitHub repo:
-Local path:
-\`\`\`
-
-## What this project is
-
-(one paragraph)
-
-## Stack (bindings)
-
-- Worker:
-- D1:
-- R2:
-- KV:
-
-## Non-negotiables
+## Intent
 
 -
 
-## Deploy
+## Decisions
 
-\`\`\`
+-
 
-\`\`\`
+## Constraints
 
-## Open gaps
+-
+
+## Current blockers
+
+-
+
+## Notes
 
 -
 `;
 }
 
 export const PROJECT_MEMORY_PLACEHOLDER =
-  'Fill in identity, stack, deploy path, and non-negotiables (AGENTSAM.md style)…';
+  'Add non-inferable project context: intent, decisions, constraints, blockers, or notes…';
