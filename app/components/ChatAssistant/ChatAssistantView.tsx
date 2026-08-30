@@ -754,7 +754,7 @@ export function ChatAssistantView({ v }: { v: any }) {
                 </button>
               </div>
               <div className="iam-composer-toolbar__right flex items-center gap-1.5 shrink-0 min-w-0">
-                {showMobileRepoConnector ? (
+                {!isNarrow && showMobileRepoConnector ? (
                   <button
                     type="button"
                     onClick={() => openContextHub('github')}
