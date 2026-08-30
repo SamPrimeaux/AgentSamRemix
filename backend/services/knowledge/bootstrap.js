@@ -98,26 +98,31 @@ export async function buildKnowledgeBootstrap(env, opts = {}) {
     } else packet.facts.push(item);
   }
 
-  const projectBlocks = await fetchActiveProjectContextBlocks(env, {
-    workspaceId,
-    tenantId,
-    projectId: opts.projectId,
-    projectRef: opts.projectId,
-    limit: 2,
-  });
-  for (const block of projectBlocks) {
-    const item = {
-      id: block.id,
-      key: `state:project:${trim(opts.projectId) || 'workspace'}:context`,
-      type: 'state',
-      title: 'Project context',
-      summary: block.text?.slice(0, 600),
-      provenance: 'agentsam_project_context',
-      relevance: 0.85,
-    };
-    if (!packet.current_state.some((x) => x.id === block.id)) {
-      packet.current_state.push(item);
-      packet.refs.push(knowledgeRefFromMemoryRow(item, 0.85));
+  // Saved project context is prompt material, not ambient scope. A project id may
+  // still scope normal semantic retrieval above, but this curated project-context
+  // document enters the packet only when the user explicitly selected it.
+  if (opts.projectContextExplicit === true && trim(opts.projectId)) {
+    const projectBlocks = await fetchActiveProjectContextBlocks(env, {
+      workspaceId,
+      tenantId,
+      projectId: opts.projectId,
+      projectRef: opts.projectId,
+      limit: 2,
+    });
+    for (const block of projectBlocks) {
+      const item = {
+        id: block.id,
+        key: `state:project:${trim(opts.projectId)}:context`,
+        type: 'state',
+        title: 'Project context',
+        summary: block.text?.slice(0, 600),
+        provenance: 'agentsam_project_context',
+        relevance: 0.85,
+      };
+      if (!packet.current_state.some((x) => x.id === block.id)) {
+        packet.current_state.push(item);
+        packet.refs.push(knowledgeRefFromMemoryRow(item, 0.85));
+      }
     }
   }
 
