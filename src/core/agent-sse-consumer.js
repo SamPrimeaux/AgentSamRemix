@@ -557,6 +557,17 @@ export async function consumeOpenAIResponsesSse(readable, emit, opts = {}) {
       return true;
     }
     if (t === 'response.failed' || t === 'response.incomplete' || t === 'response.cancelled') {
+      const resp = obj.response;
+      if (resp?.id) responseId = String(resp.id);
+      if (Array.isArray(resp?.output)) {
+        outputItems = resp.output;
+        resp.output.forEach((it, i) => {
+          if (it?.type === 'function_call') captureFunctionCallItem(it, i);
+          else if (it?.type === 'apply_patch_call') captureApplyPatchCallItem(it, i);
+          else if (it?.type === 'shell_call') emitHostedShellCall(it);
+          else if (it?.type === 'shell_call_output') emitHostedShellOutput(it);
+        });
+      }
       streamFinish = t.slice('response.'.length);
       terminalEvent = true;
       return true;

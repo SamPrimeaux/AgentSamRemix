@@ -17,6 +17,7 @@ import { runToolHostPreflight } from './preflight.js';
 import { executeToolHostCall } from './execute.js';
 import { finalizeToolHostCall } from './finalize.js';
 import { allocateDecisionTurnUsageShares } from '../../../../src/core/decision-turn-tool-attribution.js';
+import { isProgrammaticFunctionCall } from '../../providers/openai-ptc.js';
 
 export {
   validateToolCall,
@@ -375,8 +376,12 @@ export async function dispatchToolCallsViaHost(
     Array.isArray(clientToolCalls) &&
     clientToolCalls.length > 1 &&
     clientToolCalls.every(isParallelizableFsRead);
+  const batchProgrammaticCalls =
+    Array.isArray(clientToolCalls) &&
+    clientToolCalls.length > 1 &&
+    clientToolCalls.every(isProgrammaticFunctionCall);
 
-  const batches = batchFsReads
+  const batches = batchFsReads || batchProgrammaticCalls
     ? [clientToolCalls]
     : (Array.isArray(clientToolCalls) ? clientToolCalls : []).map((c) => [c]);
 

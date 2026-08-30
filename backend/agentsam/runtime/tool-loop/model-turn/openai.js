@@ -14,6 +14,7 @@ import {
   consumeSseText,
   readOpenAiTransportMeta,
 } from './stream.js';
+import { openAIOutputNeedsContinuation } from '../../../providers/openai-ptc.js';
 
 function applyNormalizedOpenAI(parsed, L, state) {
   const {
@@ -131,6 +132,7 @@ async function consumeResponses(stream, L, state, transportMeta) {
     if (Array.isArray(parsed.outputItems) && parsed.outputItems.length) {
       state.openaiResponsesAccumulatedInput.push(...parsed.outputItems);
     }
+    state.openaiNeedsContinuation = openAIOutputNeedsContinuation(parsed.outputItems);
     for (const item of parsed.outputItems || []) {
       if (item?.type !== 'function_call') continue;
       const callerType = String(item?.caller?.type || '').toLowerCase();
@@ -164,6 +166,7 @@ async function consumeResponses(stream, L, state, transportMeta) {
       openai_ptc: true,
       store: false,
       replay_items: state.openaiResponsesAccumulatedInput.length,
+      needs_continuation: state.openaiNeedsContinuation === true,
     });
   } else if (parsed.responseId) {
     state.openaiPreviousResponseId = parsed.responseId;

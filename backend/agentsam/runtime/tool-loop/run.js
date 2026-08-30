@@ -236,7 +236,22 @@ export async function runAgentToolLoop(env, ctx, emit, params) {
         turnHostedShellEvents = [],
         assistantContent = [],
         clientToolCalls = [],
+        openaiNeedsContinuation = false,
       } = modelTurn;
+
+      if (
+        openaiNeedsContinuation &&
+        !clientToolCalls.length &&
+        !pendingApplyPatchCalls.length
+      ) {
+        emit('provider_continuation', {
+          provider: 'openai_responses',
+          reason: 'program_output_without_final_message',
+          turn: loopBag.turnCount,
+          agent_run_id: chatAgentRunId != null ? String(chatAgentRunId) : null,
+        });
+        continue;
+      }
 
       if (!clientToolCalls.length && !pendingApplyPatchCalls.length) {
         const textOnly = processTextOnlyModelTurn({

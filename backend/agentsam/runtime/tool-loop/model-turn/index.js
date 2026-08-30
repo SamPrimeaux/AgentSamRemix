@@ -49,6 +49,7 @@ export async function runAgentModelTurn(L) {
     openaiPtcActive: mutable.openaiPtcActive,
     openaiResponsesAccumulatedInput:
       mutable.openaiResponsesAccumulatedInput,
+    openaiNeedsContinuation: false,
   };
   const streamUsage = createStreamTurnUsage(L.totalUsage);
 
@@ -153,6 +154,7 @@ export async function runAgentModelTurn(L) {
     assistantReasoningContent: state.assistantReasoningContent,
     clientToolCalls,
     stopReason: state.stopReason,
+    openaiNeedsContinuation: state.openaiNeedsContinuation === true,
     decisionTurnUsage: decisionTurnUsage(L.totalUsage, usageAtTurnStart),
   };
 }
