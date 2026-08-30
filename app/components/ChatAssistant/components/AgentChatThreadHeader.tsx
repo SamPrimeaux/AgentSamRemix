@@ -232,6 +232,16 @@ export const AgentChatThreadHeader: FC<Props> = ({
                   <Pencil size={13} />
                   Rename
                 </button>
+                <button
+                  type="button"
+                  role="menuitem"
+                  disabled={busy}
+                  onClick={toggleStar}
+                  className={MENU_ITEM}
+                >
+                  <Pin size={13} fill={session?.is_starred ? 'currentColor' : 'none'} />
+                  {session?.is_starred ? 'Unpin' : 'Pin'}
+                </button>
                 <div className="relative">
                   <button
                     type="button"
