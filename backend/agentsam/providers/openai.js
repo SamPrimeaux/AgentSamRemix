@@ -374,7 +374,10 @@ export async function dispatchOpenAIResponsesStream(env, request, params) {
   const prepared = await prepareOpenAiResponsesParams(env, params);
   const { response, error } = await openAiFetch(env, prepared, '/responses', buildOpenAIResponsesBody(prepared, true));
   if (error) return error;
-  if (!response.ok) return jsonResponse({ error: 'OpenAI Responses API error', status: response.status, detail: (await response.text()).slice(0, 500) }, response.status);
+  if (!response.ok) {
+    const payload = openAiUpstreamError(response.status, await response.text(), openAiModel(prepared));
+    return jsonResponse(payload, response.status);
+  }
   return openAiSseResponse(response.body, { 'X-IAM-OpenAI-Transport': 'http' });
 }
 
