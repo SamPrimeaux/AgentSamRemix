@@ -24,12 +24,12 @@ import { MeetShellPanel } from '../MeetShellPanel';
 import { ExtensionsPanel } from '../ExtensionsPanel';
 import { WorkspaceDashboard } from '../WorkspaceDashboard';
 import { WorkspaceDashboardV2 } from '../WorkspaceDashboardV2';
-import { DashboardAppRoutes } from '../../app/DashboardAppRoutes';
+import { DashboardAppRoutes } from '../../DashboardAppRoutes';
 import {
   MonacoEditorView, BrowserView, AgentSamFilesystem, GitHubExplorer, GoogleDriveExplorer,
   SourcePanel, MCPPanel, XTermShell, ActivityPanelFallback,
   DashboardRoutesFallback,
-} from '../../app/lazyDashboardPages';
+} from '../../lazyDashboardPages';
 import { SetiFileIcon } from '../../src/components/SetiFileIcon';
 import {
   Files, Search, GitBranch, Settings, PanelLeftClose, PanelRightClose, Terminal as TermIcon,

@@ -6,7 +6,7 @@ import { PublicAuthRoutes } from './components/shell/PublicAuthRoutes';
  * Keep the document entrypoint intentionally boring:
  * public auth routes do not mount the dashboard runtime or its providers.
  */
-const DashboardApp = lazy(() => import('./app/DashboardApp'));
+const DashboardApp = lazy(() => import('./DashboardApp'));
 
 const App: React.FC = () => {
   const { pathname } = useLocation();

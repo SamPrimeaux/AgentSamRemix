@@ -1,8 +1,8 @@
 /** Dashboard page <Routes> tree peeled from App.tsx (Wave 2 E7 partial). */
 import React from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { AGENT_HOME_PATH } from '../lib/agentRoutes';
-import { MeetProvider, type MeetCtxValue } from '../src/MeetContext';
+import { AGENT_HOME_PATH } from './lib/agentRoutes';
+import { MeetProvider, type MeetCtxValue } from './src/MeetContext';
 import {
   OverviewPage,
   DashboardHome,
