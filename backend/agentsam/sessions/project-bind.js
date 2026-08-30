@@ -55,9 +55,9 @@ export async function lookupChatProjectId(env, projectRef, workspaceId = null) {
 }
 
 /**
- * Resolve the project that may contribute prompt context for one conversation.
- * Sticky when D1 already has a known `projects.id`. Explicit selection/clear can
- * replace or remove an existing bind.
+ * Resolve the project used to scope one conversation's tools/resources.
+ * Sticky when D1 already has a known `projects.id`. Explicit scope selection/clear
+ * can replace or remove an existing bind. This function does not authorize prompt context.
  *
  * Only `not_found` may clear a sticky binding. `lookup_failed` preserves it.
  *
