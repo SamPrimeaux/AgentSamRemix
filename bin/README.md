@@ -8,11 +8,17 @@ Primary entrypoint:
 
 ```text
 bin/agentsam
-├── acp serve
-├── deploy full|fast|worker
-├── sdk status
-└── website sync|watch|status|verify|rollback
+├── context|init|start-local|tunnel|identity|shell  → installed SDK CLI
+├── acp serve                                      → Remix host command
+├── deploy full|fast|worker                        → Remix host command
+├── eval retrieval                                 → Remix host command
+├── sdk status                                     → SDK integration status
+└── website sync|watch|status|verify|rollback      → Remix host command
 ```
+
+Portable verbs and `--version` resolve the executable declared by the installed
+`@inneranimalmedia/agentsam-sdk` package. Remix does not copy their command
+implementations. Host-specific verbs remain here because they operate this repository.
 
 Supporting executable implementations currently live in `bin/deploy` and
 `bin/website-assets.mjs`; command dispatch modules live in `bin/commands/`.
