@@ -102,15 +102,8 @@ export type StartProjectAgentChatDetail = {
   stayOnPage?: boolean;
 };
 
-export function buildProjectChatFirstMessage(
-  raw: string,
-  memory?: string,
-  instructions?: string,
-): string {
-  // Memory/instructions are loaded server-side from project_id (system context).
-  // Never concatenate into the user-visible chat bubble.
-  void memory;
-  void instructions;
+export function buildProjectChatFirstMessage(raw: string): string {
+  // Project scope never changes the user-visible message and never implies context injection.
   return String(raw || '').trim();
 }
 
