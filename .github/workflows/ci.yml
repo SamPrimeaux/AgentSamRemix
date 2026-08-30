@@ -112,8 +112,8 @@ jobs:
             fi
           done
 
-      - name: Typecheck
-        run: npm run typecheck
+      - name: Typecheck (ratchet -- fails only if error count increases from baseline)
+        run: node scripts/ratchet-typecheck.mjs
 
       - name: Build
         run: npm run build

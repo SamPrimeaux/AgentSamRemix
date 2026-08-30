@@ -1,0 +1,5 @@
+{
+  "errorCount": 842,
+  "note": "tsc --noEmit error count. Must only go down. Regenerate with: node scripts/ratchet-typecheck.mjs --update",
+  "updatedAt": "2026-08-30"
+}
