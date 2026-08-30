@@ -80,8 +80,6 @@ export function useProjectComposerBridge({
       projectId: projectChatId,
       projectName: project.name,
       firstMessage: userVisible,
-      memory,
-      instructions,
       files: composerAttachments,
     });
     setDraft('');
