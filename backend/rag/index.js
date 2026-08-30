@@ -5,17 +5,17 @@ export {
   normalizeLaneName,
   resolveRagLane,
   resolveVectorizeBindingForTable,
-} from './lane-registry.js';
+} from './lanes/registry.js';
 export {
   ensureSupabaseWorkspaceId,
   isSupabaseWorkspaceUuid,
   resolveSupabaseWorkspaceId,
-} from './workspace-resolver.js';
+} from './scope/workspace.js';
 export {
   assertEmbeddingDimensions,
   embedTextForLane,
   resolveEmbeddingSpec,
-} from './embedding-router.js';
+} from './embeddings/lane-router.js';
 export {
   contentHash,
   sanitizeMetadata,
@@ -27,11 +27,34 @@ export {
   queryVectorizeLane,
   queryRouteRagLanes,
   retrieveContextPack,
-} from './retriever.js';
+} from './retrieval/lanes.js';
 export {
   SEMANTIC_LANE_KEYS,
   SEMANTIC_LANE_REGISTRY,
   dispatchSemanticRetrieval,
   embeddingSpecForSemanticLane,
   semanticQueryHash,
-} from './semantic-retrieval.js';
+} from './retrieval/semantic.js';
+
+export {
+  retrieveKnowledge,
+  RETRIEVAL_POLICY_VERSION,
+  analyzeRetrievalQuery,
+  createDenseSearchService,
+  expandAstGraph,
+  reciprocalRankFusion,
+  selectDiverseCandidates,
+  redundantTokenRatio,
+  packEvidence,
+  rankingEntropy,
+  scoreMargin,
+  percentile,
+  marginalGainPerMillisecond,
+  recallAtK,
+  precisionAtK,
+  meanReciprocalRank,
+  ndcgAtK,
+  contextEfficiency,
+  citationMetrics,
+} from './retrieval/index.js';
+export { createRetrievalRuntimeServices } from './retrieval/runtime-services.js';

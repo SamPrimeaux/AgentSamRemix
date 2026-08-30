@@ -11,7 +11,7 @@ import {
   contentHash,
   resolveRagLane,
   resolveSupabaseWorkspaceId,
-} from '../../../backend/agentsam/rag/index.js';
+} from '../../../backend/rag/index.js';
 import { validateIngestSegmentInput } from './validate-ingest-segment.js';
 import {
   bumpKnowledgeCounters,

@@ -425,7 +425,7 @@ export async function logSemanticSearch(env, args) {
 
   let workspaceUuid = null;
   try {
-    const { resolveSupabaseWorkspaceId } = await import('../../../agentsam/rag/index.js');
+    const { resolveSupabaseWorkspaceId } = await import('../../../rag/index.js');
     workspaceUuid = await resolveSupabaseWorkspaceId(env, workspaceIdD1);
   } catch {
     workspaceUuid = null;
@@ -619,7 +619,7 @@ export async function handleRagApi(request, url, env, ctx) {
 
 /* handleRagIngest / handleRagSearchRoute / handleRagSync removed — /api/rag/* returns 410.
  * Docs write path: knowledge/ingest-segment.js → agentsam_documents_oai3large_1536
- * Docs/search path: backend/agentsam/rag/semantic-retrieval.js
+ * Docs/search path: backend/rag/retrieval/semantic.js
  */
 
 

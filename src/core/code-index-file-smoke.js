@@ -43,7 +43,7 @@ export async function queueCodeIndexFileSmoke(env, opts = {}) {
     return { ok: false, error: 'smoke_file_path_invalid' };
   }
 
-  const { resolveSupabaseWorkspaceId, ensureSupabaseWorkspaceId } = await import('../../backend/agentsam/rag/index.js');
+  const { resolveSupabaseWorkspaceId, ensureSupabaseWorkspaceId } = await import('../../backend/rag/index.js');
   let workspaceUuid = await resolveSupabaseWorkspaceId(env, workspaceId).catch(() => null);
   if (!workspaceUuid) {
     try {

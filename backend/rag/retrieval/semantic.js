@@ -1,6 +1,6 @@
-import { queryPgvectorLane, queryVectorizeLane } from './retriever.js';
-import { laneNamesForRoute, resolveRagLane } from './lane-registry.js';
-import { contentHash } from './vector-utils.js';
+import { queryPgvectorLane, queryVectorizeLane } from './lanes.js';
+import { laneNamesForRoute, resolveRagLane } from '../lanes/registry.js';
+import { contentHash } from '../vector-utils.js';
 
 export const SEMANTIC_LANE_KEYS = Object.freeze([
   'code',

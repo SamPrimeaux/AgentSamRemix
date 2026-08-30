@@ -9,7 +9,7 @@ import {
   readProjectGithubRepoFromRow,
   normalizeGithubRepoFullName,
 } from '../../../backend/agentsam/codebase/project-github-repo.js';
-import { resolveSupabaseWorkspaceId } from '../../../backend/agentsam/rag/index.js';
+import { resolveSupabaseWorkspaceId } from '../../../backend/rag/index.js';
 import { PRODUCT_SOURCE_TYPE_SQL_IN } from '../../../backend/agentsam/codebase/codebase-full-index.js';
 import { parseMetadataObject, assertProjectAccess } from './helpers.js';
 

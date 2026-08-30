@@ -5,7 +5,7 @@
 
 import { dispatchComplete } from '../../backend/agentsam/runtime/provider-dispatch.js';
 import { resolveModelForTask } from './resolveModel.js';
-import { retrieveContextPack } from '../../backend/agentsam/rag/index.js';
+import { retrieveContextPack } from '../../backend/rag/index.js';
 import { searchCodebase } from './codebase-search.js';
 import { pragmaTableInfo } from '../../backend/services/retention.js';
 

@@ -4,7 +4,7 @@
  * Lane names are stable API aliases. Physical tables, dimensions, models, and
  * bindings come from D1 registries at runtime.
  */
-import { resolveCodeIndexLaneConfig } from '../codebase/code-index-lane-resolve.js';
+import { resolveCodeIndexLaneConfig } from '../../agentsam/codebase/code-index-lane-resolve.js';
 
 const PURPOSE_BY_LANE = Object.freeze({
   memory: 'memory',

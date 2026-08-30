@@ -5,7 +5,7 @@
  * single-item paths use this adapter so codebase orchestration stays under
  * backend ownership.
  */
-import { embedTextGemini } from '../../embeddings/google-gemini-embed.js';
+import { embedTextGemini } from '../../rag/embeddings/google-gemini.js';
 
 /**
  * @param {any} env

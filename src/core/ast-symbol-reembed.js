@@ -4,7 +4,7 @@
  */
 import { createAgentsamEmbedding } from './agentsam-vectorize.js';
 import { runHyperdriveQuery, isHyperdriveUsable } from '../../backend/services/database/hyperdrive.js';
-import { resolveSupabaseWorkspaceId } from '../../backend/agentsam/rag/index.js';
+import { resolveSupabaseWorkspaceId } from '../../backend/rag/index.js';
 import { resolveUsageEventCostUsd } from '../../backend/telemetry/pricing.js';
 import {
   resolveCodeIndexLaneConfig,

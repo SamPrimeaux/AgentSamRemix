@@ -4,7 +4,7 @@
  */
 
 import { enqueueVectorSyncOutbox } from '../agentsam-vector-sync-outbox.js';
-import { resolveRagLane, resolveSupabaseWorkspaceId } from '../../../backend/agentsam/rag/index.js';
+import { resolveRagLane, resolveSupabaseWorkspaceId } from '../../../backend/rag/index.js';
 
 function nowUnix() {
   return Math.floor(Date.now() / 1000);

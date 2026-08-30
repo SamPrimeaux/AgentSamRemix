@@ -3,7 +3,7 @@
  * Supplement-only retrieval was retired with agent-chat-lane-context (shouldSupplementDeepArchive → always false).
  */
 import { createAgentsamEmbedding } from './agentsam-vectorize.js';
-import { contentHash, resolveSupabaseWorkspaceId, resolveRagLane } from '../../backend/agentsam/rag/index.js';
+import { contentHash, resolveSupabaseWorkspaceId, resolveRagLane } from '../../backend/rag/index.js';
 import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
 
 export const DEEP_ARCHIVE_AGE_DAYS = 90;

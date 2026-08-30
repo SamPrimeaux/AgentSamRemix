@@ -19,7 +19,7 @@ import {
 } from '../../../backend/agentsam/codebase/project-github-repo.js';
 import { resolveWorkspaceBindings, normalizeWorkspaceBindings, healProjectWorkspaceId } from '../../../backend/identity/workspace/agentsam-workspace.js';
 import { scheduleSyncProjectToSupabase } from '../../core/agentsam-projects-supabase-sync.js';
-import { resolveSupabaseWorkspaceId } from '../../../backend/agentsam/rag/index.js';
+import { resolveSupabaseWorkspaceId } from '../../../backend/rag/index.js';
 import {
   parseMetadataObject,
   assertProjectAccess,

@@ -14,7 +14,7 @@ import {
   MULTIMODAL_EMBED_DIMS,
 } from './multimodal-embedding.js';
 import { embeddingPolicy } from './embedding-routes.js';
-import { contentHash, resolveSupabaseWorkspaceId } from '../../backend/agentsam/rag/index.js';
+import { contentHash, resolveSupabaseWorkspaceId } from '../../backend/rag/index.js';
 import { runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
 
 export const MOVIEMODE_PGVECTOR_TABLE = 'agentsam_media_gemini2_1536';

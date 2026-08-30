@@ -4,9 +4,9 @@
  * The lane registry supplies provider/model/dimensions. This module only
  * validates the result and invokes the provider adapter.
  */
-import { resolveGoogleAiApiKey } from '../../embeddings/google-gemini-embed.js';
+import { resolveGoogleAiApiKey } from './google-gemini.js';
 import { GeminiEmbedding2Provider } from '../../services/memory/providers/gemini-embedding-2.js';
-import { resolveRagLane } from './lane-registry.js';
+import { resolveRagLane } from '../lanes/registry.js';
 
 export async function resolveEmbeddingSpec(env, laneName, options = {}) {
   const lane = await resolveRagLane(env, laneName);

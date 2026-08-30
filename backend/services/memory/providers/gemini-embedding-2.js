@@ -9,7 +9,7 @@ const DEFAULT_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 /**
  * Gemini Embedding 2 provider.
  *
- * Request shape matches backend/embeddings/google-gemini-embed.js so a
+ * Request shape matches backend/rag/embeddings/google-gemini.js so a
  * later factor-in can swap this class for embedTextGemini without a
  * payload rewrite. Tests inject fetchImpl and never hit the network.
  */

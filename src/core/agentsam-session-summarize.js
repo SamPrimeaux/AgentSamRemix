@@ -5,7 +5,7 @@
 import { dispatchComplete } from '../../backend/agentsam/runtime/provider-dispatch.js';
 import { getChatMessages } from '../../backend/agentsam/sessions/chat-do-client.js';
 import { upsertPrivateAgentsamMemory } from '../../backend/http/agentsam/routes/private-memory.js';
-import { writeMemoryLane, resolveSupabaseWorkspaceId } from '../../backend/agentsam/rag/index.js';
+import { writeMemoryLane, resolveSupabaseWorkspaceId } from '../../backend/rag/index.js';
 import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
 
 export const SESSION_SUMMARY_MODEL = 'gpt-5.6-luna';

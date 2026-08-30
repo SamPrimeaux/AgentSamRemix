@@ -5,7 +5,7 @@
 import { createAgentsamEmbedding } from './agentsam-vectorize.js';
 import { assertAgentsamEmbeddingDimensions } from './agentsam-vectorize-index.js';
 import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
-import { resolveSupabaseWorkspaceId } from '../../backend/agentsam/rag/index.js';
+import { resolveSupabaseWorkspaceId } from '../../backend/rag/index.js';
 import {
   resolveCodeIndexLaneConfig,
   requireCodeIndexLaneConfig,

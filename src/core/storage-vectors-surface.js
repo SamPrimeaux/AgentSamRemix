@@ -1,7 +1,7 @@
 /**
  * Storage → Vectors API surface: platform operator CF/pgvector registry vs tenant workspace lanes.
  */
-import { resolveSupabaseWorkspaceId } from '../../backend/agentsam/rag/index.js';
+import { resolveSupabaseWorkspaceId } from '../../backend/rag/index.js';
 import { runHyperdriveQuery, isHyperdriveUsable } from '../../backend/services/database/hyperdrive.js';
 import { resolveCronTenantId } from '../../backend/jobs/cron-tenant.js';
 import { CODE_INDEX_LANE_FIXTURE_TABLES } from '../../backend/agentsam/codebase/code-index-lane-resolve.js';

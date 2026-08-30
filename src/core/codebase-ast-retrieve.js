@@ -584,7 +584,7 @@ export async function retrieveCodebaseAstContext(env, query, opts = {}) {
   let workspaceUuid = opts.workspaceUuid || null;
   if (!workspaceUuid && d1WorkspaceId) {
     try {
-      const { resolveSupabaseWorkspaceId } = await import('../../backend/agentsam/rag/index.js');
+      const { resolveSupabaseWorkspaceId } = await import('../../backend/rag/index.js');
       workspaceUuid = await resolveSupabaseWorkspaceId(env, d1WorkspaceId);
     } catch {
       /* resolution failure is handled below */

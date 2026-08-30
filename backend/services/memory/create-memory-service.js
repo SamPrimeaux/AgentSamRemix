@@ -1,4 +1,4 @@
-import { resolveGoogleAiApiKey } from '../../embeddings/google-gemini-embed.js';
+import { resolveGoogleAiApiKey } from '../../rag/embeddings/google-gemini.js';
 import { MemoryService } from './memory-service.js';
 import { PostgresMemoryStore } from './adapters/postgres-memory-store.js';
 import { GeminiEmbedding2Provider } from './providers/gemini-embedding-2.js';

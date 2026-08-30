@@ -1,5 +1,5 @@
 import { runHyperdriveQuery } from '../database/hyperdrive.js';
-import { resolveGoogleAiApiKey } from '../../embeddings/google-gemini-embed.js';
+import { resolveGoogleAiApiKey } from '../../rag/embeddings/google-gemini.js';
 import { adaptSqlExecutor, createMemoryService } from './create-memory-service.js';
 
 /**

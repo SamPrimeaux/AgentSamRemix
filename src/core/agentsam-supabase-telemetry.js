@@ -3,7 +3,7 @@
  * Run/tool/error ledgers stay on D1 — do not dual-write them here.
  */
 import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
-import { resolveSupabaseWorkspaceId } from '../../backend/agentsam/rag/index.js';
+import { resolveSupabaseWorkspaceId } from '../../backend/rag/index.js';
 
 function trim(v) {
   return v == null ? '' : String(v).trim();

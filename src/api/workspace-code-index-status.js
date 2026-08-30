@@ -1,6 +1,6 @@
 /** Workspace code-index truth for Projects and Settings. */
 import { isHyperdriveUsable } from '../../backend/services/database/hyperdrive.js';
-import { resolveSupabaseWorkspaceId } from '../../backend/agentsam/rag/index.js';
+import { resolveSupabaseWorkspaceId } from '../../backend/rag/index.js';
 import {
   FULL_INDEX_PIPELINE,
   PRODUCT_SOURCE_TYPE_SQL_IN,

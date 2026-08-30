@@ -13,7 +13,7 @@ import { completeCronRun, failCronRun, startCronRun } from './cron-run-ledger.js
 import { resolveCronTenantId, resolveCronWorkspaceId } from './cron-tenant.js';
 import { snapshotGmailInboxForUser } from '../../src/core/gmail-inbox-snapshot.js';
 import { chunkMarkdown } from './chunk-markdown.js';
-import { writeMemoryLane } from '../agentsam/rag/index.js';
+import { writeMemoryLane } from '../rag/index.js';
 import {
   alertDailyPlan,
   DailyPlanError,

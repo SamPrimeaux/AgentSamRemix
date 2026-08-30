@@ -2,11 +2,11 @@
  * RAG write adapters. Persistence remains owned by the memory and knowledge
  * services; this module only translates lane-facing input.
  */
-import { createMemoryServiceFromEnv } from '../../services/memory/index.js';
+import { createMemoryServiceFromEnv } from '../services/memory/index.js';
 import {
   ensureSupabaseWorkspaceId,
   isSupabaseWorkspaceUuid,
-} from './workspace-resolver.js';
+} from './scope/workspace.js';
 
 export async function writeMemoryLane(env, params = {}, options = {}) {
   const d1WorkspaceId = String(params.workspace_id ?? params.workspace_id_d1 ?? '').trim();

@@ -41,7 +41,7 @@
       "id": "retrieval-orchestrator",
       "query": "Where does hybrid code retrieval combine AST, lexical, dense ANN, graph expansion, RRF, reranking, diversity and token packing?",
       "expectedPaths": [
-        "backend/knowledge/retrieval/retrieve.js"
+        "backend/rag/retrieval/retrieve.js"
       ]
     },
     {

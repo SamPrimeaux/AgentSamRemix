@@ -1,13 +1,13 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { reciprocalRankFusion } from '../backend/knowledge/retrieval/fusion.js';
-import { selectDiverseCandidates } from '../backend/knowledge/retrieval/diversity.js';
-import { packEvidence } from '../backend/knowledge/retrieval/budget.js';
-import { rankingEntropy, scoreMargin } from '../backend/knowledge/retrieval/math.js';
-import { analyzeRetrievalQuery } from '../backend/knowledge/retrieval/policy.js';
-import { searchDenseAnn } from '../backend/knowledge/retrieval/dense.js';
-import { createDenseSearchService } from '../backend/knowledge/retrieval/dense-service.js';
-import { recallAtK, precisionAtK, meanReciprocalRank, ndcgAtK } from '../backend/knowledge/retrieval/evaluate.js';
+import { reciprocalRankFusion } from '../backend/rag/retrieval/fusion.js';
+import { selectDiverseCandidates } from '../backend/rag/retrieval/diversity.js';
+import { packEvidence } from '../backend/rag/retrieval/budget.js';
+import { rankingEntropy, scoreMargin } from '../backend/rag/retrieval/math.js';
+import { analyzeRetrievalQuery } from '../backend/rag/retrieval/policy.js';
+import { searchDenseAnn } from '../backend/rag/retrieval/dense.js';
+import { createDenseSearchService } from '../backend/rag/retrieval/dense-service.js';
+import { recallAtK, precisionAtK, meanReciprocalRank, ndcgAtK } from '../backend/rag/retrieval/evaluate.js';
 
 test('RRF rewards evidence returned by multiple retrievers', () => {
   const fused = reciprocalRankFusion([

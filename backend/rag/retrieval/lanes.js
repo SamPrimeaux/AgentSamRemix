@@ -2,10 +2,10 @@
  * Workspace-scoped pgvector retrieval for semantic, non-code lanes.
  */
 import { runHyperdriveQuery } from '../../services/database/hyperdrive.js';
-import { embedTextForLane } from './embedding-router.js';
-import { resolveRagLane } from './lane-registry.js';
-import { resolveSupabaseWorkspaceId } from './workspace-resolver.js';
-import { vectorLiteral } from './vector-utils.js';
+import { embedTextForLane } from '../embeddings/lane-router.js';
+import { resolveRagLane } from '../lanes/registry.js';
+import { resolveSupabaseWorkspaceId } from '../scope/workspace.js';
+import { vectorLiteral } from '../vector-utils.js';
 
 const IDENTIFIER_RE = /^[a-z_][a-z0-9_]*$/i;
 

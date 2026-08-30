@@ -3,7 +3,7 @@
  */
 import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
 import { createAgentsamEmbedding } from './agentsam-vectorize.js';
-import { resolveVectorizeBindingForTable } from '../../backend/agentsam/rag/index.js';
+import { resolveVectorizeBindingForTable } from '../../backend/rag/index.js';
 
 /**
  * @param {any} env

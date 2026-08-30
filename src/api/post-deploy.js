@@ -15,7 +15,7 @@
 import { jsonResponse } from '../core/responses.js';
 import { verifyBridgeKey } from '../../backend/auth/bridge-key-auth.js';
 import { fireAgentHooks } from '../../backend/agentsam/hooks/dispatcher.js';
-import { resolveSupabaseWorkspaceId } from '../../backend/agentsam/rag/index.js';
+import { resolveSupabaseWorkspaceId } from '../../backend/rag/index.js';
 import { upsertDeployMemoryFacts } from '../core/deploy-memory-fact.js';
 
 function isPostDeployAuthorized(request, env) {

@@ -185,7 +185,7 @@ export async function executeCatalogData(ctx) {
         catalogOperationIsSemanticSearch(dispatchOperation) ||
         String(execConfig.dispatcher || '').toLowerCase().includes('semantic')
       ) {
-        const { dispatchSemanticRetrieval } = await import('../../backend/agentsam/rag/semantic-retrieval.js');
+        const { dispatchSemanticRetrieval } = await import('../../backend/rag/retrieval/semantic.js');
         const query = String(
           sbParams.query || sbParams.q || sbParams.message || runContext.userMessage || '',
         ).trim();
@@ -441,7 +441,7 @@ export async function executeCatalogData(ctx) {
         break;
       }
       if (dispatcher === 'semantic_retrieval') {
-        const { dispatchSemanticRetrieval } = await import('../../backend/agentsam/rag/semantic-retrieval.js');
+        const { dispatchSemanticRetrieval } = await import('../../backend/rag/retrieval/semantic.js');
         const lane = String(
           config.semantic_lane || config.execution_lane || toolKey || '',
         ).trim();
@@ -528,7 +528,7 @@ export async function executeCatalogData(ctx) {
       }
       if (dispatcher === 'legacy_unified_rag' || config.legacy_unified_rag === true) {
         // Retired public.* unified RAG — same job as docs/client-project semantic lanes.
-        const { dispatchSemanticRetrieval } = await import('../../backend/agentsam/rag/semantic-retrieval.js');
+        const { dispatchSemanticRetrieval } = await import('../../backend/rag/retrieval/semantic.js');
         const query = String(params.query || params.q || '').trim();
         if (!query) {
           result = { ok: false, error: 'legacy_unified_rag requires query' };

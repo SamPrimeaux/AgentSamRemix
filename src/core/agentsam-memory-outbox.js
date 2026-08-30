@@ -11,7 +11,7 @@ import {
 } from './agentsam-memory-contract.js';
 import { createAgentsamEmbedding } from './agentsam-vectorize.js';
 import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
-import { ensureSupabaseWorkspaceId } from '../../backend/agentsam/rag/index.js';
+import { ensureSupabaseWorkspaceId } from '../../backend/rag/index.js';
 import { resolveMemoryEmbeddingLaneConfig } from './memory-embedding-lane-resolve.js';
 
 /** Hard cap — permanent failures (canonical_row_missing) dead-letter immediately. */

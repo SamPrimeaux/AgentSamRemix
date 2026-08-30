@@ -1,5 +1,5 @@
-import { retrieveKnowledge } from '../../knowledge/retrieval/index.js';
-import { createRetrievalRuntimeServices } from '../../knowledge/retrieval/runtime-services.js';
+import { retrieveKnowledge } from '../../rag/index.js';
+import { createRetrievalRuntimeServices } from '../../rag/index.js';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {

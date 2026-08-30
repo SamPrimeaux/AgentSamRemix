@@ -7,4 +7,4 @@ export {
   dispatchSemanticRetrieval,
   embeddingSpecForSemanticLane,
   semanticQueryHash,
-} from '../../../agentsam/rag/semantic-retrieval.js';
+} from '../../../rag/retrieval/semantic.js';

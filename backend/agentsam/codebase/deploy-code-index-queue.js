@@ -344,7 +344,7 @@ export async function queueFullCodeIndexRun(env, opts = {}) {
 
   try {
     const { ensureSupabaseWorkspaceId, resolveSupabaseWorkspaceId } = await import(
-      '../rag/index.js'
+      '../../rag/index.js'
     );
     let workspaceUuid = await resolveSupabaseWorkspaceId(env, workspaceId).catch(() => null);
     if (!workspaceUuid) {

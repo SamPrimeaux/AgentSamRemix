@@ -3,7 +3,7 @@
  * Grounding uses pdf_pages from frontmatter when present.
  */
 
-import { contentHash } from '../../../backend/agentsam/rag/index.js';
+import { contentHash } from '../../../backend/rag/index.js';
 
 export const DOCS_PROJECTION_KEY = 'docs:oai3large:1536:v1';
 export const DOCS_EMBEDDING_ROUTE_VERSION = 'text-embedding-3-large:1536';

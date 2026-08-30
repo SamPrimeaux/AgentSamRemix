@@ -14,7 +14,7 @@
  * SSOT: docs/platform/memory-embedding-gemini-lane-2026-08.md
  * Never mix vector spaces in one Vectorize index — see EMBEDDING_POLICY below.
  */
-import { resolveApiKey } from '../../src/core/vault.js';
+import { resolveApiKey } from '../../../src/core/vault.js';
 
 export const GEMINI_EMBED_MODEL = 'gemini-embedding-2';
 export const GEMINI_EMBED_DIMENSIONS = 1536;

@@ -1,7 +1,7 @@
 /**
  * Code indexer — product full/incremental pipeline host (crawl → stages → verify).
  */
-import { ensureSupabaseWorkspaceId } from '../rag/index.js';
+import { ensureSupabaseWorkspaceId } from '../../rag/index.js';
 import {
   FULL_INDEX_PIPELINE,
   INCREMENTAL_INDEX_MODE,

@@ -68,7 +68,7 @@ async function ensurePgWorkspace(env, { uuid = null, d1WorkspaceId, displayName 
   const preferred = isSupabaseWorkspaceUuid(uuid) ? String(uuid).trim() : '';
   const metadata = JSON.stringify({
     d1_workspace_id: d1WorkspaceId,
-    provisioned_by: 'backend/agentsam/rag/workspace-resolver',
+    provisioned_by: 'backend/rag/scope/workspace',
   });
 
   if (preferred) {

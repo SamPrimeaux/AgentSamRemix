@@ -95,7 +95,7 @@ async function searchDocumentsVector(env, query, limit, opts = {}) {
   const seen = new Set();
 
   try {
-    const { dispatchSemanticRetrieval } = await import('../../backend/agentsam/rag/semantic-retrieval.js');
+    const { dispatchSemanticRetrieval } = await import('../../backend/rag/retrieval/semantic.js');
     const parts = await Promise.all(
       lanes.map((lane) =>
         dispatchSemanticRetrieval(env, {

@@ -75,6 +75,15 @@ jobs:
             exit 1
           fi
 
+      - name: Single RAG authority invariant
+        run: |
+          for retired in backend/knowledge backend/agentsam/rag backend/embeddings; do
+            if [ -e "$retired" ]; then
+              echo "RAG runtime authority is backend/rag/. Retired owner returned: $retired"
+              exit 1
+            fi
+          done
+
       - name: Typecheck
         run: npm run typecheck
 
