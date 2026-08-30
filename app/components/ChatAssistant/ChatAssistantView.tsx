@@ -857,7 +857,15 @@ export function ChatAssistantView({ v }: { v: any }) {
                   pendingToolApproval && !isLoading ? 'agent-send-approval ring-1 ring-[var(--solar-yellow)]/45' : ''
                 }`}
                 title={
-                  isLoading ? 'Stop' : pendingToolApproval ? 'Approval required — confirm below' : 'Send'
+                  isLoading
+                    ? 'Stop'
+                    : pendingToolApproval
+                      ? 'Approval required — confirm below'
+                      : canSend
+                        ? 'Send'
+                        : isNarrow
+                          ? 'Start voice'
+                          : 'Send'
                 }
               >
                 {isLoading ? (
