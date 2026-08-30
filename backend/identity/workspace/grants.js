@@ -126,7 +126,11 @@ export async function userIdIsIamTunnelOwner(env, userId) {
 export async function userMayUsePrivilegedTerminal(env, authUser, workspaceId) {
   const uid = authUserId(authUser);
   const wid = trim(workspaceId);
-  if (!uid || !wid) return false;
+  if (!uid) return false;
+
+  // The VM belongs to an authenticated actor, not to a workspace. OAuth/MCP
+  // callers may legitimately have no active workspace; the connection owner
+  // and global governance grants still remain authoritative in that case.
   if (await userIdIsIamTunnelOwner(env, uid)) return true;
   return userHasGovernanceGrant(env, uid, wid, ['OWNER_ADMIN']);
 }
