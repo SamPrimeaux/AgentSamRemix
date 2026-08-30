@@ -79,19 +79,19 @@ export async function resolveTerminalConnection(
   env: Env,
   input: {
     userId: string;
-    workspaceId: string;
+    workspaceId?: string | null;
     lane: ExecLane;
     connectionId?: string | null;
   },
 ): Promise<TerminalConnection | null> {
   const userId = trim(input.userId);
   const workspaceId = trim(input.workspaceId);
-  if (!userId || !workspaceId) return null;
+  if (!userId) return null;
 
   const targetType = LANE_TARGET_TYPE[input.lane];
   const explicitId = trim(input.connectionId);
   const builtin = input.lane === 'remote'
-    ? builtinVpcConnection(env, { userId, workspaceId })
+    ? builtinVpcConnection(env, { userId, workspaceId: workspaceId || null })
     : null;
 
   if (explicitId === BUILTIN_VPC_CONNECTION_ID) return builtin;
@@ -103,9 +103,9 @@ export async function resolveTerminalConnection(
                is_default,target_priority,cwd_strategy,remote_exec_user,username,
                privileged_target_id,metadata_json
         FROM terminal_connections
-        WHERE id = ? AND user_id = ? AND workspace_id = ? AND target_type = ? AND is_active = 1
+        WHERE id = ? AND user_id = ? AND target_type = ? AND is_active = 1
         LIMIT 1
-      `).bind(explicitId, userId, workspaceId, targetType).first<TerminalConnection>();
+      `).bind(explicitId, userId, targetType).first<TerminalConnection>();
     }
 
     const registered = await env.DB.prepare(`
@@ -113,15 +113,17 @@ export async function resolveTerminalConnection(
              is_default,target_priority,cwd_strategy,remote_exec_user,username,
              privileged_target_id,metadata_json
       FROM terminal_connections
-      WHERE user_id = ? AND workspace_id = ? AND target_type = ? AND is_active = 1
-      ORDER BY is_default DESC, target_priority ASC, updated_at DESC
+      WHERE user_id = ? AND target_type = ? AND is_active = 1
+      ORDER BY
+        CASE WHEN ? != '' AND workspace_id = ? THEN 0 ELSE 1 END,
+        is_default DESC, target_priority ASC, updated_at DESC
       LIMIT 1
-    `).bind(userId, workspaceId, targetType).first<TerminalConnection>();
+    `).bind(userId, targetType, workspaceId, workspaceId).first<TerminalConnection>();
     if (registered) return registered;
   } catch (error) {
-    // A built-in Cloudflare binding must remain usable while old connection
-    // registry tables are absent or being migrated. Explicit IDs still fail
-    // closed below rather than silently switching machines.
+    // User ownership is authoritative. Workspace is only a preference hint for
+    // choosing among this user's registered targets. Built-in VPC remains usable
+    // while registry tables are absent or being migrated.
     if (explicitId) return null;
     console.warn('[terminal] connection registry unavailable', error);
   }
