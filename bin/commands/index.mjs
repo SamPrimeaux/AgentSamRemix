@@ -33,6 +33,9 @@ Examples:
   bin/agentsam deploy full
   bin/agentsam deploy fast
   bin/agentsam deploy worker
+  bin/agentsam eval retrieval --repo SamPrimeaux/AgentSamRemix
+  bin/agentsam eval retrieval
+  bin/agentsam eval retrieval --all
   bin/agentsam sdk status
   bin/agentsam website sync
   bin/agentsam website watch
