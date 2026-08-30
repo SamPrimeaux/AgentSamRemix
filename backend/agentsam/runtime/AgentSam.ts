@@ -75,7 +75,7 @@ export class AgentSam extends Think<Env> {
     });
 
     const environmentDestroy = tool({
-      description: 'Destroy and release the current disposable GCP Environment for this user/workspace. Use after the environment is no longer needed or when the user asks for a clean reset.',
+      description: 'Destroy and release the current disposable GCP Environment owned by this user. Use after the environment is no longer needed or when the user asks for a clean reset.',
       inputSchema: z.object({}),
       execute: async () => {
         const scope = await this.runtimeScope();
