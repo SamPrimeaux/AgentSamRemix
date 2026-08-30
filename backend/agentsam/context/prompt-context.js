@@ -1,5 +1,5 @@
 /**
- * Workspace project context + rules injection helpers for buildSystemPrompt.
+ * Explicit saved-project-context loader for Agent Sam prompt/context assembly.
  */
 import { pragmaTableInfo } from '../../services/retention.js';
 
@@ -50,7 +50,7 @@ export async function fetchActiveProjectContextBlocks(env, opts = {}) {
       `workspace_id = ?`,
       `COALESCE(project_type, '') NOT IN ('bootstrap_cache')`,
       `COALESCE(project_key, '') NOT IN ('agent_bootstrap')`,
-      // Federated launcher hubs — never ambient in chat without an explicit project.
+      // Federated launcher hubs are not valid prompt context without an exact project ref.
       `id NOT LIKE 'ctx_cms_hub_%'`,
     ];
     const binds = [ws];
@@ -95,4 +95,3 @@ export async function fetchActiveProjectContextBlocks(env, opts = {}) {
     return [];
   }
 }
-
