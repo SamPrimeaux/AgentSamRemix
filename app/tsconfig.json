@@ -22,8 +22,8 @@
       "@/*": [
         "./*"
       ],
-      "@iam/agentsam/*": [
-        "../agentsam/*"
+      "@iam/frontend/*": [
+        "./frontend/*"
       ]
     },
     "allowImportingTsExtensions": true,
@@ -31,9 +31,7 @@
   },
   "include": [
     "./**/*.ts",
-    "./**/*.tsx",
-    "../agentsam/**/*.ts",
-    "../agentsam/**/*.tsx"
+    "./**/*.tsx"
   ],
   "exclude": [
     "node_modules",

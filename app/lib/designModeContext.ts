@@ -1,1 +1,1 @@
-export * from '@iam/agentsam/frontend/workbench/browser/designModeContext.ts';
+export * from '@iam/frontend/workbench/browser/designModeContext.ts';

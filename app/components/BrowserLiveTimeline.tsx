@@ -3,4 +3,4 @@ export {
   labelBrowserLiveEvent,
   type BrowserLiveTimelineEvent,
   type BrowserLiveTimelineProps,
-} from '@iam/agentsam/frontend/workbench/browser/BrowserLiveTimeline.tsx';
+} from '@iam/frontend/workbench/browser/BrowserLiveTimeline.tsx';

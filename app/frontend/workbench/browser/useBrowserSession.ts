@@ -214,8 +214,7 @@ export function useBrowserSession(opts: UseBrowserSessionOptions) {
             n,
             trustWorkspaceId,
             bsid,
-            browserSessionId,
-      agentRunId,
+            agentRunId,
             sid,
           );
           if (data.error || !data.devtools_frontend_url) {
@@ -533,9 +532,9 @@ export function useBrowserSession(opts: UseBrowserSessionOptions) {
         const data = await createBrowserRunLiveSession(
           n,
           trustWorkspaceId,
-          browserRunSessionRef.current,
           browserSessionId,
-      agentRunId,
+          agentRunId,
+          browserRunSessionRef.current,
         );
         if (data.error || !data.devtools_frontend_url) {
           setNavigateError(data.error || 'Browser Run session did not return a live view URL');

@@ -15,7 +15,7 @@ import { ApprovalGateModal } from './workbench/ApprovalGateModal';
 import { CodeModeRunner } from './workbench/CodeModeRunner';
 import { CodeWorkspace } from './workspace/CodeWorkspace';
 
-import { BrowserWorkbench } from '../workbench/browser/BrowserWorkbench';
+import { BrowserWorkbench } from '@iam/frontend/workbench/browser';
 
 import {
   MODEL_TIER_CONFIGS,

@@ -310,7 +310,10 @@ export async function resolveBootstrapWorkspaceContext(env, request, userId, cac
     return cache.__bootstrapCtx;
   }
 
-  const authUser = request ? await getAuthUser(request, env).catch(() => null) : null;
+  const primedAuthUser = cache && typeof cache === 'object' ? cache.__authUser : null;
+  const authUser =
+    primedAuthUser ||
+    (request ? await getAuthUser(request, env).catch(() => null) : null);
 
   let syntheticAuth = authUser;
   if (!syntheticAuth && uid && env?.DB) {

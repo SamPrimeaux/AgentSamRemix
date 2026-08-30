@@ -30,6 +30,9 @@ type WsMessage = {
   tool_name?: string;
   url?: string;
   title?: string;
+  verified?: boolean;
+  session_id?: string;
+  browser_session_id?: string;
 };
 
 export type UseAgentLiveBrowserWsOptions = {

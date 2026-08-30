@@ -26,7 +26,7 @@ export function AuthSignInPage() {
     ) {
       return n;
     }
-    return '/dashboard/overview';
+    return '/dashboard/home';
   }, [next]);
 
   async function onSubmit(e: React.FormEvent) {
@@ -46,7 +46,7 @@ export function AuthSignInPage() {
       }
       const redirect = typeof data.redirect === 'string' && data.redirect.startsWith('/')
         ? data.redirect
-        : '/dashboard/overview';
+        : '/dashboard/home';
       navigate(redirect, { replace: true });
     } finally {
       setSubmitting(false);

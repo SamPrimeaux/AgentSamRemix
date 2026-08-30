@@ -1,7 +1,6 @@
 /** Dashboard page <Routes> tree peeled from App.tsx (Wave 2 E7 partial). */
 import React from 'react';
 import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
-import { AGENT_HOME_PATH } from './lib/agentRoutes';
 import { MeetProvider, type MeetCtxValue } from './src/MeetContext';
 import {
   OverviewPage,
@@ -82,7 +81,7 @@ export function DashboardAppRoutes(props: DashboardAppRoutesProps) {
 
   return (
 <Routes>
-  <Route path="/dashboard" element={<Navigate to={AGENT_HOME_PATH} replace />} />
+  <Route path="/dashboard" element={<Navigate to="/dashboard/home" replace />} />
   <Route path="/dashboard/calendar" element={<Navigate to="/dashboard/collaborate" replace />} />
   <Route path="/dashboard/home" element={<DashboardHome />} />
   <Route path="/dashboard/overview" element={<OverviewPage />} />

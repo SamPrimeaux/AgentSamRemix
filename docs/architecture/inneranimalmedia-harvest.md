@@ -40,7 +40,7 @@ Never copy a donor folder wholesale when it would create a second identity resol
 
 | Capability | IAM donor | Remix destination | Status | Decision |
 | --- | --- | --- | --- | --- |
-| Browser Run live view | `app/agentsam/frontend/workbench/browser/**` + `backend/browser/**` | `app/frontend/browser/**` + Think `AgentSam` BrowserConnector | **LANDED in PR #6** | Keep the useful live-view UX, but **do not** reproduce IAM's second `BROWSER_SESSION`/job/trust router. Think AgentSam remains the sole Browser Run session authority. |
+| Browser Run live view | `app/frontend/workbench/browser/**` + `backend/browser/**` | `app/frontend/workbench/browser/**` + Think `AgentSam` BrowserConnector | **LANDED in PR #6** | Keep the useful live-view UX, but **do not** reproduce IAM's second `BROWSER_SESSION`/job/trust router. Think AgentSam remains the sole Browser Run session authority. |
 | Terminal setup browser client | dashboard PTY setup helper | `app/frontend/services/terminal/` | **LANDED in PR #6** | Browser-client behavior belongs under frontend; the former nested dashboard source root is retired. |
 | Public/auth surfaces | `app/frontend/auth/**` | `app/frontend/auth/**` | **GREEN** | Same ownership model; audit identity endpoints before copying presentation changes. |
 | Keys & Secrets settings | IAM settings UI + credentials domain | `app/frontend/components/settings/` + `app/backend/credentials/` + `app/backend/http/settings/` | **LANDED in PR #7** | `user_secrets` is the persisted BYOK authority and existing vault crypto is the encryption authority. Internal PTY/tunnel rows are outside the Settings domain. Gemini-only and parallel secret stores are retired. |

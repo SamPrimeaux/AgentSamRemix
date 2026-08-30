@@ -471,7 +471,7 @@ export default defineConfig(({ mode }) => {
       dedupe: ["react", "react-dom", "remotion", "@remotion/player"],
       alias: {
         "@": path.resolve(__dirname, "."),
-        "@iam/agentsam": path.resolve(repoRoot, "app/agentsam"),
+        "@iam/frontend": path.resolve(repoRoot, "app/frontend"),
         "lucide-react": path.resolve(repoRoot, "node_modules/lucide-react"),
         "three/addons": path.resolve(
           repoRoot,

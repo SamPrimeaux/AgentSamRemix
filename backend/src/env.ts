@@ -25,6 +25,8 @@ export interface Env {
   IAM_CLIENT_ID?: string;
   IAM_CLIENT_SECRET?: string;
   IAM_OAUTH_ISSUER?: string;
+  IAM_ORIGIN?: string;
+  WORKER_BASE_URL?: string;
 
   VAULT_MASTER_KEY?: string;
   VAULT_KEY?: string;

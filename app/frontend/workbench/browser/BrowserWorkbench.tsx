@@ -1,6 +1,6 @@
 /** @license SPDX-License-Identifier: Apache-2.0 */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import type { AgentWorkspaceContextPacket } from '../../../../src/ideWorkspace.ts';
+import type { AgentWorkspaceContextPacket } from '../../../src/ideWorkspace.ts';
 import { BrowserPane, type BrowserPreviewPayload } from './BrowserPane.tsx';
 import { mintBrowserSessionLease } from './browserApi.ts';
 

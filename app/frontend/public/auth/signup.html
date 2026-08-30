@@ -582,7 +582,7 @@
                 }
                 btn.textContent = 'Success';
                 btn.style.background = '#10B981';
-                var redirectUrl = data.redirect || '/dashboard/overview';
+                var redirectUrl = data.redirect || '/dashboard/home';
                 if (typeof window.runGlobeExitTransition === 'function') {
                     window.runGlobeExitTransition(redirectUrl);
                 } else {
@@ -814,8 +814,8 @@
 (function() {
     var params = new URLSearchParams(window.location.search);
     if (params.get('globe_exit') !== '1') return;
-    var next = params.get('next') || '/dashboard/overview';
-    if (!next.startsWith('/') || next.startsWith('//')) next = '/dashboard/overview';
+    var next = params.get('next') || '/dashboard/home';
+    if (!next.startsWith('/') || next.startsWith('//')) next = '/dashboard/home';
     document.body.classList.add('oauth-globe-exit');
     var tries = 0;
     var maxFrames = 180;

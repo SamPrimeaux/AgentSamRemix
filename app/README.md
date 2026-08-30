@@ -14,7 +14,19 @@ The server-side APIs and execution logic live in the repository's `backend/` and
 
 ### Source-root invariant
 
-`app/` is the Vite/browser application root. `DashboardApp.tsx`, `DashboardAppRoutes.tsx`, and `lazyDashboardPages.tsx` live directly under `app/`. Do not recreate `app/app/` or `app/dashboard/`. `app/frontend/public/auth/` is intentional public-auth content and is not a dashboard application root.
+`app/` is the application-composition root. `DashboardApp.tsx`, `DashboardAppRoutes.tsx`, and `lazyDashboardPages.tsx` live directly under `app/`. Do not recreate `app/app/` or `app/dashboard/`.
+
+Ownership is intentionally split as:
+
+```text
+app/           application composition
+app/frontend/  browser implementation
+backend/       server implementation
+```
+
+Filesystem paths describe ownership; aliases describe public module boundaries. Browser code that is intended for cross-app consumption must expose a stable `@iam/frontend/*` boundary rather than create another product-wrapped frontend root. The browser workbench is canonical at `app/frontend/workbench/browser/` and is consumed as `@iam/frontend/workbench/browser`. Do not recreate `app/agentsam/frontend/` or `app/workbench/browser/`.
+
+`app/frontend/public/auth/` is intentional public-auth content within the browser boundary; it is not another application root.
 
 ## How the app starts
 
@@ -142,7 +154,7 @@ The route form is `/dashboard/settings/:sectionSlug`.
 
 ### Compatibility redirects
 
-- `/dashboard` → `/dashboard/agent`
+- `/dashboard` → `/dashboard/home`
 - `/dashboard/calendar` → `/dashboard/collaborate`
 - `/dashboard/library` → `/dashboard/artifacts`
 - `/dashboard/launch-desk` → `/dashboard/collaborate`
@@ -191,6 +203,8 @@ Use the repository deployment lane from the repository root:
 - GCP/phone/remote operator: `bash scripts/ship-remote.sh`
 
 Do not treat a Worker-only deploy as proof that dashboard assets shipped. The dashboard bundle, PWA assets, Worker, and their build SHA must agree.
+
+The current production Worker authority is `https://agentsamremix.inneranimalmedia.com`. `workers_dev` and preview URLs are disabled in `wrangler.jsonc`; future promotion to `inneranimalmedia.com` should be a host/config cutover, not another application restructure.
 
 ## Ownership: dashboard versus runtime
 

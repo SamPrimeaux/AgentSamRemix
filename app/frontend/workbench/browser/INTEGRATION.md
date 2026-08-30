@@ -1,14 +1,14 @@
 # Agent Sam browser workbench — domain handoff
 
-**Branch:** `feat/browser-session-hook` (Phase C peel + Phase D/E remaster)  
-**Manifest:** `peel-manifest.js`  
+**Branch:** `feat/browser-session-hook` (Phase C peel + Phase D/E remaster)
+**Manifest:** `peel-manifest.js`
 **Classification map:** `docs/platform/dashboard-components-classification-2026-08.md`
 
 ---
 
 ## Hard law
 
-1. **Product code lives here** — `app/agentsam/frontend/workbench/browser/`.  
+1. **Product code lives here** — `app/frontend/workbench/browser/`.
    `app/components/BrowserView.tsx` is a **mount shim only** (~10 lines).
 
 2. **Never** `app/components/browser/` — no second product tree in dashboard.
@@ -18,7 +18,7 @@
 4. **Import boundary**
 
    ```text
-   dashboard shell  →  @iam/agentsam/frontend/workbench/browser
+   dashboard shell  →  @iam/frontend/workbench/browser
    inside browser/  →  sibling modules (no barrel hub)
    backend/browser/ → server domain (frontend fetch/WS only — never import)
    ```

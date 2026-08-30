@@ -3,14 +3,23 @@
   "name": "agentsamremix",
   "main": "backend/src/index.ts",
   "compatibility_date": "2026-08-29",
+  "workers_dev": false,
   "preview_urls": false,
+  "routes": [
+    {
+      "pattern": "agentsamremix.inneranimalmedia.com",
+      "custom_domain": true
+    }
+  ],
   "keep_vars": true,
   "vars": {
     "IAM_CLIENT_ID": "iam_identity_47843d145d72455e83b6",
     "ACP_CLIENT_ID": "iam_dcr_d80b0615148b49de814f",
     "GOOGLE_AI_PROJECT_NUMBER": "427617292678",
     "GOOGLE_AI_PROJECT_NAME": "projects/427617292678",
-    "GOOGLE_AI_PROJECT_DISPLAY_NAME": "AgentSamRemix"
+    "GOOGLE_AI_PROJECT_DISPLAY_NAME": "AgentSamRemix",
+    "IAM_ORIGIN": "https://agentsamremix.inneranimalmedia.com",
+    "WORKER_BASE_URL": "https://agentsamremix.inneranimalmedia.com"
   },
   "ai": {
     "binding": "AGENTSAM_WAI"
