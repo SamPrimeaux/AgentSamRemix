@@ -131,6 +131,33 @@ export default defineConfig(({ mode }) => {
     },
     plugins: [
       react(),
+      {
+        name: "copy-canonical-auth-surfaces",
+        apply: "build",
+        writeBundle(options) {
+          const outDir = options.dir || path.resolve(__dirname, "dist");
+          const authSourceDir = path.resolve(__dirname, "frontend/public/auth");
+          const authOutDir = path.join(outDir, "auth");
+          const sharedOutDir = path.join(outDir, "shared");
+          const authFiles = ["login.html", "signup.html", "reset.html"];
+
+          fs.mkdirSync(authOutDir, { recursive: true });
+          for (const fileName of authFiles) {
+            const source = path.join(authSourceDir, fileName);
+            if (!fs.existsSync(source)) {
+              throw new Error(`Canonical auth surface missing: ${source}`);
+            }
+            fs.copyFileSync(source, path.join(authOutDir, fileName));
+          }
+
+          const brandingSource = path.resolve(__dirname, "shared/company-branding.js");
+          if (!fs.existsSync(brandingSource)) {
+            throw new Error(`Canonical auth branding helper missing: ${brandingSource}`);
+          }
+          fs.mkdirSync(sharedOutDir, { recursive: true });
+          fs.copyFileSync(brandingSource, path.join(sharedOutDir, "company-branding.js"));
+        },
+      },
       VitePWA({
         registerType: "prompt",
         injectRegister: false,

@@ -163,7 +163,7 @@ When the URL is not under `/dashboard`, `App.tsx` renders `PublicAuthRoutes`:
 - `/api/auth/oauth/consent`
 - `/oauth/mcp/consent`
 
-The Worker also serves the static auth pages at `/auth/login`, `/auth/signup`, and `/auth/reset` from R2. The browser route list is the recovery/fallback surface; the Worker remains the HTTP authority.
+The authored auth pages live under `app/frontend/public/auth/`. The Vite build copies those canonical HTML files into `app/dist/auth/` (plus `app/shared/company-branding.js` into `app/dist/shared/`), and the identity Worker serves them at `/auth/login`, `/auth/signup`, and `/auth/reset`. The React auth route list is a recovery/fallback surface only; it is not the production presentation authority.
 
 ## Build and deployment
 
