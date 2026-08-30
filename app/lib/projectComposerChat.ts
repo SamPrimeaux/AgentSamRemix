@@ -76,6 +76,7 @@ export async function sendProjectComposerChat(opts: SendProjectChatOpts): Promis
   form.append('message', messageForApi);
   form.append('conversationId', conversationId);
   form.append('project_id', projectId);
+  form.append('project_scope_explicit', '1');
   form.append('project_context_source', 'project_composer');
   form.append('runtime_lane', CHAT_RUNTIME_LANE_FULL_COMPILE);
   form.append('mode', 'agent');
