@@ -11,19 +11,19 @@ INSERT INTO agentsam_model_catalog (
 ) VALUES
   (
     'gpt-5.6-sol', 'gpt-5.6-sol', 'GPT-5.6 Sol', 'openai',
-    'openai_responses', 'heavy', 1050000, 128000, 'medium', 'reasoning.effort',
+    'openai_responses', 'heavy', 1050000, 128000, 'medium', 'reasoning_effort',
     '["none","low","medium","high","xhigh","max"]',
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 'reasoning', 1, 1, unixepoch()
   ),
   (
     'gpt-5.6-terra', 'gpt-5.6-terra', 'GPT-5.6 Terra', 'openai',
-    'openai_responses', 'standard', 1050000, 128000, 'medium', 'reasoning.effort',
+    'openai_responses', 'standard', 1050000, 128000, 'medium', 'reasoning_effort',
     '["none","low","medium","high","xhigh","max"]',
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 'standard', 1, 1, unixepoch()
   ),
   (
     'gpt-5.6-luna', 'gpt-5.6-luna', 'GPT-5.6 Luna', 'openai',
-    'openai_responses', 'lite', 1050000, 128000, 'medium', 'reasoning.effort',
+    'openai_responses', 'lite', 1050000, 128000, 'medium', 'reasoning_effort',
     '["none","low","medium","high","xhigh","max"]',
     1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 'fast', 1, 1, unixepoch()
   )
