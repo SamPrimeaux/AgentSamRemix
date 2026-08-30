@@ -18,6 +18,7 @@
     "GOOGLE_AI_PROJECT_NUMBER": "427617292678",
     "GOOGLE_AI_PROJECT_NAME": "projects/427617292678",
     "GOOGLE_AI_PROJECT_DISPLAY_NAME": "AgentSamRemix",
+    "AGENTSAM_MODEL": "@cf/moonshotai/kimi-k2.7-code",
     "IAM_ORIGIN": "https://agentsamremix.inneranimalmedia.com",
     "WORKER_BASE_URL": "https://agentsamremix.inneranimalmedia.com"
   },
