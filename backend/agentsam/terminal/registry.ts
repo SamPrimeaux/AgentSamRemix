@@ -49,12 +49,12 @@ export function defaultCwdForConnection(connection: TerminalConnection): string 
 
 export function builtinVpcConnection(
   env: Env,
-  input: { userId: string; workspaceId: string },
+  input: { userId: string; workspaceId?: string | null },
 ): TerminalConnection | null {
   if (!env.PTY_SERVICE?.fetch) return null;
   const userId = trim(input.userId);
-  const workspaceId = trim(input.workspaceId);
-  if (!userId || !workspaceId) return null;
+  const workspaceId = trim(input.workspaceId) || `user:${userId}`;
+  if (!userId) return null;
   return {
     id: BUILTIN_VPC_CONNECTION_ID,
     user_id: userId,
