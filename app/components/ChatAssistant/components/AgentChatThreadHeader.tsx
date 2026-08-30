@@ -290,6 +290,42 @@ export const AgentChatThreadHeader: FC<Props> = ({
         )
       : null;
 
+  if (mobileThreadChrome) {
+    return (
+      <div
+        className="pointer-events-none fixed z-[140]"
+        style={{
+          top: 'calc(env(safe-area-inset-top, 0px) + 4px)',
+          right: 'max(12px, env(safe-area-inset-right, 0px))',
+        }}
+      >
+        <div className="pointer-events-auto inline-flex h-12 items-center gap-0.5 rounded-full border border-white/10 bg-[color-mix(in_srgb,var(--dashboard-panel)_90%,transparent)] px-1.5 shadow-[0_4px_18px_rgba(0,0,0,0.28)] backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={onNewChat}
+            className="flex h-10 w-10 items-center justify-center rounded-full text-[var(--dashboard-text)] hover:bg-[var(--bg-hover)]"
+            title="New chat"
+            aria-label="New chat"
+          >
+            <SquarePen size={20} strokeWidth={2} />
+          </button>
+          <button
+            type="button"
+            ref={menuBtnRef}
+            onClick={() => setMenuOpen((v) => !v)}
+            className="flex h-10 min-w-10 items-center justify-center rounded-full px-2 text-[var(--dashboard-text)] hover:bg-[var(--bg-hover)]"
+            aria-label="Chat options"
+            aria-expanded={menuOpen}
+            aria-haspopup="menu"
+          >
+            <MoreHorizontal size={21} strokeWidth={2} />
+          </button>
+          {menu}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className={`flex items-center gap-1.5 sm:gap-2 min-w-0 ${
