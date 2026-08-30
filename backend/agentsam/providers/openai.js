@@ -216,7 +216,10 @@ export async function dispatchOpenAIStream(env, request, params) {
   void request;
   const { response, error } = await openAiFetch(env, params, '/chat/completions', openAiChatBody(params, true));
   if (error) return error;
-  if (!response.ok) return jsonResponse({ error: 'OpenAI API error', status: response.status, detail: (await response.text()).slice(0, 500) }, response.status);
+  if (!response.ok) {
+    const payload = openAiUpstreamError(response.status, await response.text(), openAiModel(params));
+    return jsonResponse(payload, response.status);
+  }
   return openAiSseResponse(response.body);
 }
 
