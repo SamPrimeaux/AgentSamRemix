@@ -112,7 +112,10 @@ export async function retrieveKnowledge(env, db, opts = {}) {
       `policy:agent-routing:thompson-single-writer`,
       `state:workspace:${workspaceId}:current`,
     ];
-    if (opts.projectId) {
+    // Project scope narrows semantic retrieval above, but it must not force a
+    // project-state memory into every turn. Only an explicit context selection
+    // may opt into this exact project-state slot.
+    if (opts.projectId && opts.includeProjectState === true) {
       policyKeys.push(`state:project:${trim(opts.projectId)}:current`);
     }
     for (const key of policyKeys) {
