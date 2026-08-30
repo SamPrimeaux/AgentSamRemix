@@ -66,7 +66,7 @@ describe('backend/agentsam/sessions/project-bind', () => {
   it('explicit selection can replace existing conversation project', async () => {
     const out = await resolveConversationProjectRef(
       envWithSession({ project_id: 'proj_a' }, { proj_b: { id: 'proj_b' } }),
-      { ...base, requestedProjectRef: 'proj_b', explicit: true },
+      { ...base, requestedProjectRef: 'proj_b', scopeExplicit: true },
     );
     assert.equal(out.projectRef, 'proj_b');
     assert.equal(out.source, 'explicit_request');
@@ -75,7 +75,7 @@ describe('backend/agentsam/sessions/project-bind', () => {
   it('explicit clear removes existing conversation project', async () => {
     const out = await resolveConversationProjectRef(
       envWithSession({ project_id: 'proj_a' }, { proj_a: { id: 'proj_a' } }),
-      { ...base, requestedProjectRef: 'proj_a', explicit: true, clear: true },
+      { ...base, requestedProjectRef: 'proj_a', scopeExplicit: true, clear: true },
     );
     assert.equal(out.projectRef, null);
     assert.equal(out.source, 'explicit_clear');
