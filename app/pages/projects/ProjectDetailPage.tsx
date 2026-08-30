@@ -322,8 +322,6 @@ export default function ProjectDetailPage() {
             sessionUserId={sessionUserId}
             project={project}
             projectChatId={d.projectChatId}
-            memory={d.memory}
-            instructions={d.instructions}
             loadChats={d.loadChats}
           />
 
