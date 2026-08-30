@@ -777,6 +777,18 @@ export function ChatAssistantView({ v }: { v: any }) {
                   compactActiveOnly={isNarrow}
                   eventBridgeOnly={isNarrow}
                 />
+                {isNarrow ? (
+                  <button
+                    type="button"
+                    className="iam-composer-mic flex-shrink-0 inline-flex items-center justify-center text-[var(--dashboard-text)] transition-colors"
+                    title="Talk to type"
+                    aria-label="Talk to type"
+                    disabled={isLoading}
+                    onClick={() => window.dispatchEvent(new CustomEvent('iam:composer-dictation-toggle'))}
+                  >
+                    <Mic size={19} strokeWidth={2} />
+                  </button>
+                ) : null}
                 <button
                   type="button"
                   ref={attachButtonRef}
