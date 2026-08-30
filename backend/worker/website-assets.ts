@@ -1,20 +1,30 @@
 /**
  * WEBSITE_ASSETS (R2) browser-shell responder.
  *
- * The compiled JS/CSS bundle can still be delivered by Cloudflare Workers Assets,
- * but HTML authority and Worker-side fallbacks live in the real R2 bucket. Keep
- * this adapter narrow: resolve authored shell objects, never application behavior.
+ * Payloads are immutable content-addressed objects. `current.json` is the one
+ * mutable promotion pointer and contains the logical-key -> immutable-object map.
+ * This keeps HTML releases atomic while allowing unchanged payloads to be reused
+ * across releases without re-uploading bytes.
  */
 
-const CONTENT_TYPES: Record<string, string> = {
-  '.css': 'text/css; charset=utf-8',
-  '.html': 'text/html; charset=utf-8',
-  '.js': 'text/javascript; charset=utf-8',
-  '.json': 'application/json; charset=utf-8',
-  '.map': 'application/json; charset=utf-8',
-  '.svg': 'image/svg+xml',
-  '.txt': 'text/plain; charset=utf-8',
-  '.webmanifest': 'application/manifest+json; charset=utf-8',
+type WebsiteAssetRecord = {
+  key: string;
+  sha256: string;
+  bytes: number;
+  content_type: string;
+  cache_control: string;
+};
+
+type WebsiteAssetPointer = {
+  schema: 'iam.website-assets.current.v1';
+  version: 1;
+  release: string;
+  manifest: string;
+  promoted_at: string;
+  commit?: string | null;
+  dirty?: boolean;
+  previous_release?: string | null;
+  objects: Record<string, WebsiteAssetRecord>;
 };
 
 function extensionOf(key: string): string {
@@ -51,19 +61,50 @@ function requestCandidates(pathname: string, spaFallback: boolean): string[] {
   return [...new Set(candidates)];
 }
 
-function responseHeaders(object: R2ObjectBody, key: string): Headers {
+async function readPointer(bucket: R2Bucket): Promise<WebsiteAssetPointer | null> {
+  const object = await bucket.get('current.json');
+  if (!object) return null;
+  try {
+    const parsed = JSON.parse(await object.text()) as WebsiteAssetPointer;
+    if (
+      parsed?.schema !== 'iam.website-assets.current.v1' ||
+      parsed?.version !== 1 ||
+      !parsed.release ||
+      !parsed.objects ||
+      typeof parsed.objects !== 'object'
+    ) {
+      return null;
+    }
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function etagFor(record: WebsiteAssetRecord): string {
+  return `"sha256-${record.sha256}"`;
+}
+
+function requestHasEtag(request: Request, etag: string): boolean {
+  const value = request.headers.get('If-None-Match');
+  if (!value) return false;
+  return value
+    .split(',')
+    .map((part) => part.trim())
+    .some((part) => part === etag || part === '*');
+}
+
+function responseHeaders(
+  object: R2ObjectBody,
+  record: WebsiteAssetRecord,
+  release: string,
+): Headers {
   const headers = new Headers();
   object.writeHttpMetadata(headers);
-  if (!headers.has('Content-Type')) {
-    headers.set('Content-Type', CONTENT_TYPES[extensionOf(key)] || 'application/octet-stream');
-  }
-  if (object.httpEtag) headers.set('ETag', object.httpEtag);
-  if (!headers.has('Cache-Control')) {
-    headers.set(
-      'Cache-Control',
-      key.endsWith('.html') ? 'public, max-age=0, must-revalidate' : 'public, max-age=300',
-    );
-  }
+  headers.set('Content-Type', record.content_type || 'application/octet-stream');
+  headers.set('Cache-Control', record.cache_control || 'public, max-age=0, must-revalidate');
+  headers.set('ETag', etagFor(record));
+  headers.set('X-IAM-Website-Release', release);
   return headers;
 }
 
@@ -77,23 +118,59 @@ export async function fetchWebsiteAsset(
     return new Response('method_not_allowed', { status: 405 });
   }
 
+  const pointer = await readPointer(bucket);
+  if (!pointer) {
+    return new Response('website_release_unavailable', {
+      status: 503,
+      headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store' },
+    });
+  }
+
   const url = new URL(request.url);
   const candidates = options.key
     ? [cleanKey(options.key)].filter((key): key is string => Boolean(key))
     : requestCandidates(url.pathname, options.spaFallback === true);
 
-  for (const key of candidates) {
-    const object = await bucket.get(key);
-    if (!object) continue;
+  for (const logicalKey of candidates) {
+    const record = pointer.objects[logicalKey];
+    if (!record) continue;
+
+    const etag = etagFor(record);
+    if (requestHasEtag(request, etag)) {
+      return new Response(null, {
+        status: 304,
+        headers: {
+          ETag: etag,
+          'Cache-Control': record.cache_control || 'public, max-age=0, must-revalidate',
+          'X-IAM-Website-Release': pointer.release,
+        },
+      });
+    }
+
+    const object = await bucket.get(record.key);
+    if (!object) {
+      return new Response('website_release_object_missing', {
+        status: 502,
+        headers: {
+          'Content-Type': 'text/plain; charset=utf-8',
+          'Cache-Control': 'no-store',
+          'X-IAM-Website-Release': pointer.release,
+        },
+      });
+    }
     return new Response(request.method === 'HEAD' ? null : object.body, {
       status: 200,
-      headers: responseHeaders(object, key),
+      headers: responseHeaders(object, record, pointer.release),
     });
   }
 
   return new Response('not_found', {
     status: 404,
-    headers: { 'Content-Type': 'text/plain; charset=utf-8' },
+    headers: {
+      'Content-Type': 'text/plain; charset=utf-8',
+      'Cache-Control': 'no-store',
+      'X-IAM-Website-Release': pointer.release,
+    },
   });
 }
 

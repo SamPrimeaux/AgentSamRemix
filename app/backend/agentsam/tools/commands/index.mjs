@@ -1,4 +1,5 @@
 import { deployCmd } from './deploy/index.mjs';
+import { websiteCmd } from './website/index.mjs';
 
 /**
  * Canonical verbs -> handlers. Minimal on purpose — grow deliberately,
@@ -7,6 +8,7 @@ import { deployCmd } from './deploy/index.mjs';
  */
 export const COMMANDS = {
   deploy: deployCmd,
+  website: websiteCmd,
 };
 
 export const VERB_ALIASES = {};
@@ -15,11 +17,15 @@ export const USAGE = `usage: bin/agentsam <verb> [subcommand] [options]
 
 Verbs:
   deploy      full|fast|worker   tsc/build/wrangler deploy — wraps scripts/agentsam-remix
+  website     sync|watch|status|verify|rollback   hash-driven WEBSITE_ASSETS releases
 
 Examples:
   bin/agentsam deploy full
   bin/agentsam deploy fast
-  bin/agentsam deploy worker`;
+  bin/agentsam deploy worker
+  bin/agentsam website sync
+  bin/agentsam website watch
+  bin/agentsam website status`;
 
 export function usage() {
   console.error(USAGE);

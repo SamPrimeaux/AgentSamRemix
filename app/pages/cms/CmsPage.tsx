@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 
 type CmsPageProps = { workspaceId?: string };
 
-const CMS_SHELL_PATH = '/website-assets/cms/studio-cms-shell.html';
+const CMS_SHELL_PATH = '/website-assets/cms/studio.html';
 
 /**
  * Parked CMS host. The CMS authoring implementation remains in app/pages/cms for

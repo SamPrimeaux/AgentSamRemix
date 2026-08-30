@@ -1,0 +1,62 @@
+{
+  "version": 1,
+  "bucket": "agentsam-os-blueprint-content",
+  "assets": [
+    {
+      "id": "root",
+      "logical_key": "index.html",
+      "source": "app/dist/index.html",
+      "mode": "build",
+      "content_type": "text/html; charset=utf-8",
+      "cache_control": "public, max-age=0, must-revalidate"
+    },
+    {
+      "id": "home",
+      "logical_key": "site/home.html",
+      "source": "app/frontend/public/site/home.html",
+      "mode": "direct",
+      "content_type": "text/html; charset=utf-8",
+      "cache_control": "public, max-age=0, must-revalidate"
+    },
+    {
+      "id": "auth_login",
+      "logical_key": "auth/login.html",
+      "source": "app/frontend/public/auth/login.html",
+      "mode": "direct",
+      "content_type": "text/html; charset=utf-8",
+      "cache_control": "public, max-age=0, must-revalidate"
+    },
+    {
+      "id": "auth_signup",
+      "logical_key": "auth/signup.html",
+      "source": "app/frontend/public/auth/signup.html",
+      "mode": "direct",
+      "content_type": "text/html; charset=utf-8",
+      "cache_control": "public, max-age=0, must-revalidate"
+    },
+    {
+      "id": "auth_reset",
+      "logical_key": "auth/reset.html",
+      "source": "app/frontend/public/auth/reset.html",
+      "mode": "direct",
+      "content_type": "text/html; charset=utf-8",
+      "cache_control": "public, max-age=0, must-revalidate"
+    },
+    {
+      "id": "cms",
+      "logical_key": "cms/studio.html",
+      "source": "app/frontend/public/cms/studio-cms-shell.html",
+      "mode": "direct",
+      "content_type": "text/html; charset=utf-8",
+      "cache_control": "public, max-age=0, must-revalidate"
+    }
+  ],
+  "legacy_mutable_keys": [
+    "index.html",
+    "agentsam-home.html",
+    "auth/login.html",
+    "auth/signup.html",
+    "auth/reset.html",
+    "cms/studio-cms-shell.html"
+  ]
+}

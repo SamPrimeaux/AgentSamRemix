@@ -38,6 +38,9 @@ jobs:
       - name: Retrieval eval harness syntax
         run: node --check scripts/eval-retrieval-v1.mjs
 
+      - name: WEBSITE_ASSETS authority invariant
+        run: npm run guard:website-assets
+
       - name: Frontend root invariant
         run: |
           for forbidden in app/dashboard app/app; do

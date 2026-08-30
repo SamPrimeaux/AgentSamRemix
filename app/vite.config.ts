@@ -132,38 +132,17 @@ export default defineConfig(({ mode }) => {
     plugins: [
       react(),
       {
-        name: "copy-canonical-auth-surfaces",
+        name: "copy-auth-branding-helper",
         apply: "build",
         writeBundle(options) {
           const outDir = options.dir || path.resolve(__dirname, "dist");
-          const authSourceDir = path.resolve(__dirname, "frontend/public/auth");
-          const authOutDir = path.join(outDir, "auth");
           const sharedOutDir = path.join(outDir, "shared");
-          const authFiles = ["login.html", "signup.html", "reset.html"];
-
-          fs.mkdirSync(authOutDir, { recursive: true });
-          for (const fileName of authFiles) {
-            const source = path.join(authSourceDir, fileName);
-            if (!fs.existsSync(source)) {
-              throw new Error(`Canonical auth surface missing: ${source}`);
-            }
-            fs.copyFileSync(source, path.join(authOutDir, fileName));
-          }
-
           const brandingSource = path.resolve(__dirname, "shared/company-branding.js");
           if (!fs.existsSync(brandingSource)) {
             throw new Error(`Canonical auth branding helper missing: ${brandingSource}`);
           }
           fs.mkdirSync(sharedOutDir, { recursive: true });
           fs.copyFileSync(brandingSource, path.join(sharedOutDir, "company-branding.js"));
-
-          const cmsShellSource = path.resolve(__dirname, "frontend/public/cms/studio-cms-shell.html");
-          const cmsOutDir = path.join(outDir, "cms");
-          if (!fs.existsSync(cmsShellSource)) {
-            throw new Error(`Canonical CMS shell missing: ${cmsShellSource}`);
-          }
-          fs.mkdirSync(cmsOutDir, { recursive: true });
-          fs.copyFileSync(cmsShellSource, path.join(cmsOutDir, "studio-cms-shell.html"));
         },
       },
       VitePWA({

@@ -22,7 +22,7 @@ usage: bin/agentsam deploy <full|fast|worker>
 
   full    tsc --noEmit -> vite build -> WEBSITE_ASSETS -> wrangler deploy
   fast    vite build -> WEBSITE_ASSETS -> wrangler deploy (skips typecheck)
-  worker  WEBSITE_ASSETS -> wrangler deploy (uses existing app/dist)
+  worker  wrangler deploy only (no Vite, no WEBSITE_ASSETS sync)
 EOF
   exit 2
 }
@@ -91,7 +91,6 @@ case "$SUBMODE" in
       echo "✗ app/dist missing — run 'deploy fast' or 'deploy full' at least once first" >&2
       exit 1
     fi
-    do_publish_website_assets
     do_wrangler_deploy
     ;;
   *)

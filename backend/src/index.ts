@@ -109,7 +109,7 @@ export default {
     const identityEnv = { ...env, ASSETS: websiteAssetsFetcher(env.WEBSITE_ASSETS) };
 
     if (url.pathname === "/" && request.method === "GET") {
-      return fetchWebsiteAsset(env.WEBSITE_ASSETS, request, { key: "agentsam-home.html" });
+      return fetchWebsiteAsset(env.WEBSITE_ASSETS, request, { key: "site/home.html" });
     }
 
     if (url.pathname === "/workbench" || url.pathname === "/agent/workbench") {

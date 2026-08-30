@@ -12,7 +12,8 @@
     "test:settings": "node --test test/settings-control-plane.test.mjs",
     "test:retrieval": "node --test test/retrieval-v1.test.mjs",
     "eval:retrieval": "node scripts/eval-retrieval-v1.mjs",
-    "deploy": "npm run build && wrangler deploy"
+    "deploy": "npm run build && wrangler deploy",
+    "guard:website-assets": "node scripts/guard-website-assets.mjs"
   },
   "dependencies": {
     "@agentclientprotocol/sdk": "^1.3.0",

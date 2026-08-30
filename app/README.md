@@ -48,7 +48,8 @@ Important files:
 - `app/lazyDashboardPages.tsx` — route-level lazy loading.
 - `components/shell/PublicAuthRoutes.tsx` — auth and onboarding routes rendered by the same bundle.
 - `vite.config.ts` — production dashboard/PWA build configuration.
-- `frontend/public/cms/studio-cms-shell.html` — canonical parked CMS presentation shell, published to `WEBSITE_ASSETS`.
+- `frontend/public/cms/studio-cms-shell.html` — canonical parked CMS presentation source, published as logical `cms/studio.html` through `WEBSITE_ASSETS`.
+- `frontend/public/site/home.html` — canonical root presentation source; it is not copied through Vite.
 - `pages/cms/CmsPage.tsx` — small lazy host for that shell while CMS authoring is on the backburner.
 
 ## Live dashboard route map
@@ -179,7 +180,7 @@ When the URL is not under `/dashboard`, `App.tsx` renders `PublicAuthRoutes`:
 - `/api/auth/oauth/consent`
 - `/oauth/mcp/consent`
 
-The authored auth pages live under `app/frontend/public/auth/`. Vite copies them into `app/dist/auth/`, and `bin/publish-website-assets` publishes them to the connected `WEBSITE_ASSETS` R2 bucket. The identity Worker receives a narrow fetcher facade over that R2 bucket and serves those shells at `/auth/login`, `/auth/signup`, and `/auth/reset`. The React auth route list is a recovery/fallback surface only; it is not the production presentation authority.
+The authored auth pages live under `app/frontend/public/auth/` and publish **directly from source** to the connected `WEBSITE_ASSETS` R2 bucket; Vite is not part of an auth/CMS HTML-only update. The identity Worker receives a narrow fetcher facade over the promoted R2 release and serves those shells at `/auth/login`, `/auth/signup`, and `/auth/reset`. The React auth route list is a recovery/fallback surface only; it is not the production presentation authority.
 
 ## Build and deployment
 
@@ -192,13 +193,19 @@ npm run dev
 npm run build
 ```
 
-The dashboard build emits `app/dist`. Cloudflare Workers Assets transports the compiled JS/CSS/PWA files, but it has **no runtime binding name**. Worker-side HTML authority is the connected `WEBSITE_ASSETS` R2 bucket. `bin/publish-website-assets` publishes `index.html`, the Agent Sam home shell, canonical auth shells, and the parked CMS shell there before deployment.
+The dashboard build emits `app/dist`. Cloudflare Workers Assets transports the compiled JS/CSS/PWA files, but it has **no runtime binding name**. Worker-side HTML authority is the connected `WEBSITE_ASSETS` R2 bucket. `config/website-assets.json` declares the six logical shells. Five are direct authored HTML; only generated `app/dist/index.html` is build-coupled.
+
+`WEBSITE_ASSETS` uses immutable SHA-256 payload objects plus immutable release manifests. `current.json` is the only mutable promotion pointer. Unchanged payload hashes are reused across releases instead of uploaded again. The Worker resolves logical keys through `current.json` and returns the SHA-256 as the HTML ETag.
 
 The PWA root assets include `/sw.js`, `/manifest.webmanifest`, `/offline.html`, and `/pwa-build-meta.json`.
 
 Use the repository deployment lane from the repository root:
 
-- Mac: `bin/agentsam deploy fast` or `bin/agentsam deploy full`
+- Direct HTML only: `bin/agentsam website sync` (no Vite, no Worker deploy)
+- Live HTML editing: `bin/agentsam website watch`
+- Inspect release: `bin/agentsam website status` / `bin/agentsam website verify --strict`
+- Frontend + Worker: `bin/agentsam deploy fast` or `bin/agentsam deploy full`
+- Worker only: `bin/agentsam deploy worker` (no WEBSITE_ASSETS publish)
 - GCP/phone/remote operator: `bash scripts/ship-remote.sh`
 
 Do not treat a Worker-only deploy as proof that browser presentation shipped. The Workers Assets bundle, `WEBSITE_ASSETS` HTML objects, PWA assets, Worker, and their build SHA must agree. The canonical deploy command publishes the R2 shells before `wrangler deploy`.
