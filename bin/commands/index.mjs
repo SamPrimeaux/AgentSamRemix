@@ -21,14 +21,25 @@ export const VERB_ALIASES = {};
 
 export const USAGE = `usage: bin/agentsam <verb> [subcommand] [options]
 
-Verbs:
-  acp         serve              local stdio ACP bridge to the Agent Sam API
-  deploy      full|fast|worker   tsc/build/wrangler deploy — uses bin/deploy
-  eval        retrieval          evaluate registered retrieval corpora via service principal
-  sdk         status             show SDK dependency + portable bin/lib handoffs
-  website     sync|watch|status|verify|rollback   hash-driven WEBSITE_ASSETS releases
+SDK verbs (delegated to @inneranimalmedia/agentsam-sdk):
+  context                         Git repository and bridge context
+  init                            local-first project scaffold
+  start-local                     local PTY server
+  tunnel                          expose the local PTY
+  identity    preview|init        portable identity setup
+  shell                           shell and slash-command information
+
+AgentSamRemix host verbs:
+  acp         serve               local stdio ACP bridge to the Agent Sam API
+  deploy      full|fast|worker    build and deploy this Worker
+  eval        retrieval           evaluate registered retrieval corpora via service principal
+  sdk         status              show installed SDK and completed handoffs
+  website     sync|watch|status|verify|rollback   WEBSITE_ASSETS releases
 
 Examples:
+  bin/agentsam --version
+  bin/agentsam context --json
+  bin/agentsam identity preview --open
   bin/agentsam acp serve
   bin/agentsam deploy full
   bin/agentsam deploy fast
