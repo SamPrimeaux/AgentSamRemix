@@ -100,10 +100,10 @@ export async function resolveAuth(request, env, opts = {}) {
       tenantId = trimSessionField(mcp.tenantId) || null;
       workspaceId = trimSessionField(mcp.workspaceId) || null;
     } else {
-      const bridge = resolveMachineProof(request, env);
-      if (bridge?.delegatedUserId) {
-        authType = bridge.type;
-        userId = bridge.delegatedUserId;
+      const delegatedUserId = resolveDelegatedMachineUser(request, env);
+      if (delegatedUserId) {
+        authType = 'bridge_delegated';
+        userId = delegatedUserId;
       }
     }
   }
