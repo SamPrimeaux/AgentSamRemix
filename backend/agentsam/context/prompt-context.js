@@ -13,23 +13,10 @@ function trim(v) {
 }
 
 /**
- * Derive primary project_key from workspace id (ws_foo → foo).
- * @param {string} workspaceId
- */
-export function workspacePrimaryProjectKey(workspaceId) {
-  const ws = trim(workspaceId);
-  if (!ws) return '';
-  if (ws.startsWith('ws_')) return ws.slice(3);
-  return ws;
-}
-
-/**
- * Ambient Active Projects must not dump every federated CMS hub (Companions, Fuel, …)
- * into a fresh IAM chat — that made Agent Sam claim "you're working with CompanionsCPAS".
+ * Load curated context for one explicitly identified project.
  *
- * Rules:
- * - Explicit projectRef/projectKey → only that project.
- * - Otherwise → workspace-primary key only; never ctx_cms_hub_* client hubs.
+ * Project scope is not prompt material. Callers must provide projectRef/projectKey;
+ * this helper never derives a workspace-primary or dashboard-active fallback.
  *
  * @param {any} env
  * @param {{
