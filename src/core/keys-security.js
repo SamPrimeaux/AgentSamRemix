@@ -414,7 +414,7 @@ async function notifyShieldChannels(env, channels, { tenantId, subject, text, fr
           console.warn('[keys-security] imessage notify skipped', 'user_id_required');
           continue;
         }
-        const { enqueueImessage, resolveImessageHandle } = await import('./imessage-relay.js');
+        const { enqueueImessage, resolveImessageHandle } = await import('../../backend/integrations/imessage-relay.js');
         const toHandle = await resolveImessageHandle(env, { tenantId: tid, params: {} });
         if (!toHandle) {
           console.warn('[keys-security] imessage notify skipped', 'imessage_handle_required');
