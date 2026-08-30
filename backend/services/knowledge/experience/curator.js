@@ -5,7 +5,6 @@
 import { executeAgentsamMemoryCommit } from '../../../../src/core/agentsam-memory-commit.js';
 import { proposeMemoryKey, normalizeMemoryCommitType } from '../../../../src/core/agentsam-memory-contract.js';
 import { failureCategoryMovesBandit, normalizeFailureCategory } from '../../../../src/core/reward-failure-category.js';
-import { workspacePrimaryProjectKey } from '../../../agentsam/context/prompt-context.js';
 
 function trim(v) {
   return v == null ? '' : String(v).trim();
