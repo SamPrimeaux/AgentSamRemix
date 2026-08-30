@@ -596,14 +596,14 @@ export function ProjectRailSections(props: ProjectRailContentProps): React.JSX.E
       </RailSection>
 
       <RailSection
-        title="Memory"
+        title="Saved context"
         defaultOpen={railDefaultOpen}
-        badge={<span className="cpd-rail-badge">Only you</span>}
+        badge={<span className="cpd-rail-badge">Manual</span>}
         action={
           <button
             type="button"
             className="cpd-icon-btn"
-            title="Edit memory"
+            title="Edit saved context"
             onClick={() => onOpenRailEditor('memory')}
           >
             <Pencil size={13} strokeWidth={1.5} />
@@ -611,7 +611,7 @@ export function ProjectRailSections(props: ProjectRailContentProps): React.JSX.E
         }
       >
         <RailPreviewCard
-          emptyLabel="Key context Agent Sam should always know about this project…"
+          emptyLabel="Optional project context — attach when useful, never injected just because this project is open."
           preview={memory}
           saved={memSaved}
           onOpen={() => onOpenRailEditor('memory')}
