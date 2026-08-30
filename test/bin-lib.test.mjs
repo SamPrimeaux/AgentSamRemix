@@ -56,10 +56,9 @@ test('bridge client posts JSON through the shared service principal', async () =
   assert.deepEqual(JSON.parse(captured.init.body), { repoFullName: 'SamPrimeaux/AgentSamRemix' });
 });
 
-test('every bin/lib module has an SDK ownership classification and handoff', () => {
+test('portable bin helpers are SDK-backed with no outstanding candidates', () => {
   const report = inspectSdkBoundary();
   assert.deepEqual(report.issues, []);
   assert.equal(report.ok, true);
-  assert.ok(report.candidates.some((row) => row.file === 'git-context.mjs'));
-  assert.ok(report.candidates.some((row) => row.file === 'bridge-client.mjs'));
+  assert.deepEqual(report.candidates, []);
 });
