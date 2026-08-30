@@ -152,10 +152,17 @@ export async function executeTerminalLane(
   }
 
   const cwd = trim(input.cwd) || defaultCwdForConnection(connection);
+  const executionWorkspaceId =
+    trim(connection.workspace_id) || trim(input.workspaceId) || `user:${input.userId}`;
   await rememberExecLane(env, input.userId, input.workspaceId, input.lane).catch(() => {});
 
   if (input.lane === 'sandbox') {
-    const result = await executeInSandbox(env, { ...input, command, cwd });
+    const result = await executeInSandbox(env, {
+      ...input,
+      workspaceId: executionWorkspaceId,
+      command,
+      cwd,
+    });
     return { ...result, lane: input.lane, connection: publicConnection(connection) };
   }
 
