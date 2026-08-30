@@ -104,6 +104,33 @@ describe('OpenAI Responses programmatic tool calling', () => {
     assert.equal(body.store, false);
   });
 
+  it('normalizes JSON-string schemas from the D1 tool catalog', () => {
+    const tools = toOpenAIResponsesTools([{
+      name: 'agentsam_d1_query',
+      input_schema: '{"type":"object","properties":{"sql":{"type":"string"}}}',
+      output_schema: '{"type":"object","properties":{"results":{"type":"array"}}}',
+      caller_policy: '["direct","programmatic"]',
+    }], { openaiPtcEnabled: true });
+
+    assert.equal(tools[0].parameters.type, 'object');
+    assert.equal(tools[0].parameters.properties.sql.type, 'string');
+    assert.equal(tools[0].output_schema.properties.results.type, 'array');
+  });
+
+  it('classifies project model-access errors without leaking opaque upstream JSON', () => {
+    const error = openAiUpstreamError(403, JSON.stringify({
+      error: { message: 'Project does not have access', code: 'model_not_found' },
+    }), 'gpt-5.6-terra');
+    assert.deepEqual(error, {
+      error: 'The configured OpenAI project does not have access to this model.',
+      code: 'OPENAI_MODEL_ACCESS_DENIED',
+      status: 403,
+      model: 'gpt-5.6-terra',
+      upstream_code: 'model_not_found',
+      action: 'Use an API key from a project with model access, or enable the model for the current project.',
+    });
+  });
+
   it('does not advertise programmatic callers when PTC is off', () => {
     const tools = toOpenAIResponsesTools([readTool], { openaiPtcEnabled: false });
     assert.deepEqual(tools[0].allowed_callers, ['direct']);
