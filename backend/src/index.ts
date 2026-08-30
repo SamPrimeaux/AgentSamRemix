@@ -40,6 +40,10 @@ import { handleBrowserLiveViewHttpRequest } from "../http/browser/live-view.js";
 import { handleSettingsRequest } from "../http/settings/index.js";
 import type { Env } from "./env";
 import { handleAgentRequest } from "../http/agentsam/index.js";
+import {
+  agentSamConversationIdFromPath,
+  userOwnsAgentSamConversation,
+} from "../agentsam/runtime/http-auth";
 import { fetchWebsiteAsset, websiteAssetsFetcher } from "../worker/website-assets";
 
 export { AgentSam } from "../agentsam/runtime/AgentSam";
