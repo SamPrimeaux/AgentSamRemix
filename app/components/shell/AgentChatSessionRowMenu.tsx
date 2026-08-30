@@ -14,7 +14,7 @@ import {
   MoreHorizontal,
   Pencil,
   Search,
-  Star,
+  Pin,
   Trash2,
 } from 'lucide-react';
 import type { AgentSessionRow } from '../../agentSessionsCatalog';
