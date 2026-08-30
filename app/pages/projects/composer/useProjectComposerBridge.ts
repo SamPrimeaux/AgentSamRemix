@@ -15,8 +15,6 @@ export interface UseProjectComposerBridgeParams {
   sessionUserId: string | null | undefined;
   project: Project | null;
   projectChatId: string;
-  memory: string;
-  instructions: string;
   loadChats: () => Promise<void> | void;
 }
 
