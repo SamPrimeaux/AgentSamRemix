@@ -204,9 +204,19 @@ export async function executeTerminalLane(
 
 export async function destroyTerminalEnvironment(
   env: Env,
-  scope: { userId: string; workspaceId: string; tenantId?: string | null },
+  scope: { userId: string; workspaceId?: string | null; tenantId?: string | null },
 ) {
-  return destroyEnvironment(env, scope);
+  const connection = await resolveTerminalConnection(env, {
+    userId: scope.userId,
+    workspaceId: scope.workspaceId,
+    lane: 'environment',
+  });
+  return destroyEnvironment(env, {
+    userId: scope.userId,
+    workspaceId:
+      trim(connection?.workspace_id) || trim(scope.workspaceId) || `user:${scope.userId}`,
+    tenantId: scope.tenantId,
+  });
 }
 
 export async function scopeFromAgentName(env: Env, agentName: string) {
