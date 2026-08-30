@@ -306,7 +306,24 @@ export default {
 
     if (url.pathname.startsWith("/agents/")) {
       if (!authenticated) return json({ error: "session_required" }, 401);
-      const response = await routeAgentRequest(request, env);
+      const userId = trim(requestIdentity?.user?.id);
+      if (!userId) return json({ error: "auth_user_id_required" }, 401);
+
+      // The browser may address only the AgentSam Durable Object whose instance
+      // name is an agentsam_chat_sessions.conversation_id owned by this user.
+      // Do this D1 check before routeAgentRequest wakes or connects to the DO.
+      const conversationId = agentSamConversationIdFromPath(url.pathname);
+      if (!conversationId) return json({ error: "agent_route_not_found" }, 404);
+      const ownsConversation = await userOwnsAgentSamConversation(
+        env,
+        userId,
+        conversationId,
+      );
+      if (!ownsConversation) return json({ error: "agent_conversation_not_found" }, 404);
+
+      const response = await routeAgentRequest(request, env, {
+        props: { userId, conversationId },
+      });
       return response || json({ error: "agent_route_not_found" }, 404);
     }
 
