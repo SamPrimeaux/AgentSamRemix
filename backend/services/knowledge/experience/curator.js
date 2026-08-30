@@ -30,7 +30,6 @@ export function deriveKnowledgeCandidatesFromExperience(exp) {
   const fc = normalizeFailureCategory(exp.failure_category);
   const err = trim(exp.error_message).toLowerCase();
   const ws = trim(exp.workspace_id);
-  const projectKey = workspacePrimaryProjectKey(ws);
 
   if (fc === 'platform_request_error') {
     return candidates;
