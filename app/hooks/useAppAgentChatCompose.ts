@@ -84,11 +84,7 @@ export function useAppAgentChatCompose(opts: {
       setActiveTab('Workspace');
       setOpenTabs((prev) => (prev.includes('Workspace') ? prev : [...prev, 'Workspace']));
 
-      const message = buildProjectChatFirstMessage(
-        detail?.firstMessage,
-        detail?.memory,
-        detail?.instructions,
-      );
+      const message = buildProjectChatFirstMessage(detail?.firstMessage || '');
 
       if (conversationId) {
         if (projectId) {
