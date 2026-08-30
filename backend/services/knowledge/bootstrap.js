@@ -26,6 +26,7 @@ function bootstrapId(scope) {
  *   workspaceId: string,
  *   userId: string,
  *   projectId?: string,
+ *   projectContextExplicit?: boolean,
  *   task?: string,
  *   client?: string,
  *   tokenBudget?: number,
