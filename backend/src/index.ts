@@ -202,6 +202,53 @@ export default {
         : json({ ok: false, error: "session_required" }, 401);
     }
 
+    // Primary Agent Sam chat transport. The browser never chooses an arbitrary
+    // Durable Object name: an existing conversation must be owned by the signed-in
+    // user, while a new conversation is minted here and registered in D1 first.
+    // Workspace is deliberately absent from both ownership and creation.
+    if (url.pathname === "/api/agent/think") {
+      if (!authenticated) return json({ error: "session_required" }, 401);
+      const userId = trim(requestIdentity?.user?.id);
+      if (!userId) return json({ error: "auth_user_id_required" }, 401);
+
+      let conversationId = trim(url.searchParams.get("conversation_id"));
+      if (conversationId) {
+        const ownsConversation = await userOwnsAgentSamConversation(
+          env,
+          userId,
+          conversationId,
+        );
+        if (!ownsConversation) {
+          return json({ error: "agent_conversation_not_found" }, 404);
+        }
+      } else {
+        const isWebSocket =
+          trim(request.headers.get("Upgrade")).toLowerCase() === "websocket";
+        if (!isWebSocket) {
+          return json({ error: "conversation_id_required" }, 400);
+        }
+        const userScope = await resolveUserRuntimeScope(env, userId);
+        const tenantId =
+          trim(requestIdentity?.tenant?.id) || trim(userScope?.tenantId);
+        if (!tenantId) {
+          return json({ error: "tenant_identity_required" }, 409);
+        }
+        conversationId = crypto.randomUUID();
+        await ensureChatSessionRow(env, {
+          conversationId,
+          tenantId,
+          userId,
+          workspaceId: null,
+          title: "New Conversation",
+        });
+      }
+
+      const agent = await getAgentByName(env.AgentSam, conversationId, {
+        props: { userId, conversationId },
+      });
+      return agent.fetch(request);
+    }
+
     // Browser terminal control plane. Keep this before the generic /api/agent
     // dispatcher so the imported terminal UI cannot be swallowed by a legacy
     // route family that does not own the VPC PTY WebSocket.
