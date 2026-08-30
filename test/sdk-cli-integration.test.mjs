@@ -23,7 +23,8 @@ test('AgentSamRemix delegates portable context to the installed SDK CLI', () => 
     encoding: 'utf8',
   });
   const context = JSON.parse(output);
-  assert.equal(context.repoFullName, 'SamPrimeaux/AgentSamRemix');
-  assert.equal('userId' in context, false);
-  assert.equal('workspaceId' in context, false);
+  assert.equal(context.schemaVersion, 'agentsam-context-v1');
+  assert.equal(context.git.repoFullName, 'SamPrimeaux/AgentSamRemix');
+  assert.equal('userId' in context.git, false);
+  assert.equal('workspaceId' in context.git, false);
 });
