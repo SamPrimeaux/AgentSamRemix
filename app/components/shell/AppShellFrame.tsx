@@ -338,7 +338,7 @@ export function AppShellFrame(_p: AppShellFrameProps) {
           )}
 
           {/* Right layout cluster — product: agent toggle; editor: full IDE tools */}
-          <div className="flex gap-0.5 items-center mr-1 shrink-0 max-phone:ml-auto">
+          <div className={`flex gap-0.5 items-center mr-1 shrink-0 max-phone:ml-auto ${mobileHamburgerConversationBack ? 'max-phone:hidden' : ''}`}>
               {fullIdeTopbar ? (
               <div className="iam-topbar-mobile-only hidden max-phone:block shrink-0">
                 <UnifiedSearchBar
