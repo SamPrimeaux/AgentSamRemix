@@ -284,8 +284,8 @@ export function AppShellFrame(_p: AppShellFrameProps) {
               <div className="hidden max-phone:flex items-center shrink-0">
                 <MobileNavHamburger
                   open={mobileNavOpen}
-                  backMode={mobileHamburgerConversationBack}
-                  onClick={mobileHamburgerConversationBack && narrowBackToAgentHome ? narrowBackToAgentHome : () => setMobileNavOpen((v: boolean) => !v)}
+                  backMode={false}
+                  onClick={() => setMobileNavOpen((v: boolean) => !v)}
                 />
               </div>
               {/* IAM logo — tap to open workspace/store switcher (Shopify-style) */}
