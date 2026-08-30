@@ -169,11 +169,14 @@ export async function handleChatSessionsApi(request, url, env, ctx, routeAuth, i
       const title =
         typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'New Conversation';
 
-      // Workspace is optional conversation metadata, never chat authority.
+      // Workspace is optional conversation metadata, never ambient chat authority.
+      // Only retain it when the caller explicitly selected one for this conversation.
       let wsId =
-        authUser.active_workspace_id != null && String(authUser.active_workspace_id).trim() !== ''
-          ? String(authUser.active_workspace_id).trim()
-          : null;
+        body.workspace_id != null && String(body.workspace_id).trim() !== ''
+          ? String(body.workspace_id).trim()
+          : body.workspaceId != null && String(body.workspaceId).trim() !== ''
+            ? String(body.workspaceId).trim()
+            : null;
       if (wsId) {
         const workspace = await env.DB
           .prepare('SELECT 1 AS ok FROM agentsam_workspace WHERE id = ? LIMIT 1')
