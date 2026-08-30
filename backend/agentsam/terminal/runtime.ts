@@ -57,7 +57,7 @@ export async function rememberExecLane(
 
 export async function terminalRuntimeStatus(
   env: Env,
-  scope: { userId: string; workspaceId: string; tenantId?: string | null },
+  scope: { userId: string; workspaceId?: string | null; tenantId?: string | null },
 ) {
   const [local, remote, sandbox, environment, execos] = await Promise.all([
     resolveTerminalConnection(env, { userId: scope.userId, workspaceId: scope.workspaceId, lane: 'local' }),
@@ -66,13 +66,23 @@ export async function terminalRuntimeStatus(
     resolveTerminalConnection(env, { userId: scope.userId, workspaceId: scope.workspaceId, lane: 'environment' }),
     probeExecOS(env),
   ]);
+  const sandboxWorkspaceId = trim(sandbox?.workspace_id) || trim(scope.workspaceId) || `user:${scope.userId}`;
+  const environmentWorkspaceId = trim(environment?.workspace_id) || trim(scope.workspaceId) || `user:${scope.userId}`;
+  const environmentScope = {
+    userId: scope.userId,
+    workspaceId: environmentWorkspaceId,
+    tenantId: scope.tenantId,
+  };
   const [preferredLane, currentEnvironment] = await Promise.all([
     preferredExecLane(env, scope.userId, scope.workspaceId),
     environment && execos.environmentConfigured
-      ? environmentStatus(env, scope)
+      ? environmentStatus(env, environmentScope)
       : Promise.resolve({ ok: true, active: false, state: 'not_started', environmentId: null }),
   ]);
-  const sb = sandboxStatus(env, scope);
+  const sb = sandboxStatus(env, {
+    userId: scope.userId,
+    workspaceId: sandboxWorkspaceId,
+  });
 
   return {
     ok: Boolean(local || remote || sandbox || environment),
