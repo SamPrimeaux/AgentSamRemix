@@ -840,11 +840,13 @@ export function ChatAssistantView({ v }: { v: any }) {
                     setPresenceState?.('idle');
                     setToolTraceRows?.([]);
                     setWorkflowLedger?.(null);
-                  } else {
+                  } else if (canSend) {
                     handleSend();
+                  } else if (isNarrow) {
+                    window.dispatchEvent(new CustomEvent('iam:composer-voice-toggle'));
                   }
                 }}
-                disabled={!isLoading && !canSend}
+                disabled={!isNarrow && !isLoading && !canSend}
                 className={`iam-composer-send flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full text-[0.6875rem] font-bold transition-all relative ${
                   canSend || isLoading
                     ? 'bg-[var(--accent,var(--accent-secondary,var(--solar-cyan)))] text-[var(--dashboard-canvas)] shadow-[0_0_16px_var(--accent-glow,color-mix(in_srgb,var(--accent-secondary,var(--solar-cyan))_25%,transparent))] hover:bg-[var(--accent-hover,var(--accent-secondary,var(--solar-cyan)))] hover:brightness-110'
