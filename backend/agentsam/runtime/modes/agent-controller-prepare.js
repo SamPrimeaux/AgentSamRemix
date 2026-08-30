@@ -401,6 +401,7 @@ export async function prepareAgentControllerTurn(env, ctx, emit, bound, input) {
         workspaceId,
         userId,
         projectId: scopedProjectRef || undefined,
+        projectContextExplicit,
         task: message?.slice(0, 500) || undefined,
         agentRunId: chatAgentRunId || undefined,
         tokenBudget: minimalAsk ? 1500 : 4000,
