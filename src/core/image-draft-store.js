@@ -600,19 +600,6 @@ export async function saveImageDraft(env, ctx, body) {
     .bind(imageId, committedKey, cmsAssetId, publicUrl, now, generationId, userId)
     .run();
 
-  try {
-    const { promoteImageDraftArtifact } = await import('./image-draft-artifact.js');
-    await promoteImageDraftArtifact(env, {
-      userId,
-      generationId,
-      publicUrl,
-      r2Key: committedKey,
-      name: label,
-    });
-  } catch (e) {
-    console.warn('[image-draft] artifact_promote_failed', e?.message ?? e);
-  }
-
   return {
     ok: true,
     status: 'saved',
