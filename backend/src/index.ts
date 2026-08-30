@@ -40,6 +40,7 @@ import { handleBrowserLiveViewHttpRequest } from "../http/browser/live-view.js";
 import { handleSettingsRequest } from "../http/settings/index.js";
 import type { Env } from "./env";
 import { handleAgentRequest } from "../http/agentsam/index.js";
+import { ensureChatSessionRow } from "../agentsam/sessions/metadata-repository.js";
 import {
   agentSamConversationIdFromPath,
   userOwnsAgentSamConversation,
