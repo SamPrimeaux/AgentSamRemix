@@ -7,9 +7,9 @@ import type { Env } from '../../src/env';
 import {
   destroyTerminalEnvironment,
   executeTerminalLane,
-  scopeFromAgentName,
   terminalRuntimeStatus,
 } from '../terminal/runtime';
+import { resolveConversationRuntimeScope } from '../terminal/registry';
 import { createAgentSamTicketTool } from '../tools/tickets.js';
 import { createCodebaseRetrieveTool } from '../tools/retrieval.js';
 
