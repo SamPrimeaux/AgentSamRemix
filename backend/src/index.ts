@@ -134,6 +134,20 @@ export default {
       });
     }
 
+    if (
+      url.pathname === "/api/agent/retrieval/query" ||
+      url.pathname === "/api/agent/retrieval/eval"
+    ) {
+      const machineProof = resolveMachineProof(request, env);
+      if (machineProof) {
+        const response = await handleRetrievalHttpRequest(request, env, {
+          authType: "service",
+          machineProof,
+        });
+        return response || json({ error: "retrieval_route_not_found" }, 404);
+      }
+    }
+
     const machineLane = laneForLegacyMachinePath(url.pathname);
     if (machineLane && request.method === "POST") {
       if (!verifyBridgeKey(request, env)) return bridgeUnauthorized();
