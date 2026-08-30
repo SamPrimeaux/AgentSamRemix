@@ -306,21 +306,23 @@ async function dispatchHook(env, hook, payload, ctx) {
               : payload.projectId != null
                 ? String(payload.projectId).trim()
                 : '';
-        const blocks = await fetchActiveProjectContextBlocks(env, {
-          workspaceId: ws,
-          tenantId: payload.tenant_id,
-          limit: blockLimit,
-          projectRef: projectRef || null,
-        });
-        if (blocks.length) {
-          parts.push(
-            [
-              projectRef
-                ? '## Active project (session-scoped)'
-                : '## Workspace project context (not a client-site assignment)',
-              blocks.map((b) => b.text).join('\n\n'),
-            ].join('\n'),
-          );
+        if (projectRef) {
+          const blocks = await fetchActiveProjectContextBlocks(env, {
+            workspaceId: ws,
+            tenantId: payload.tenant_id,
+            limit: blockLimit,
+            projectRef,
+          });
+          if (blocks.length) {
+            parts.push(
+              [
+                '## Project context (explicit hook reference)',
+                blocks.map((b) => b.text).join('\n\n'),
+              ].join('\n'),
+            );
+          }
+        } else {
+          console.info('[hook-dispatcher] project_context_skipped', 'missing_explicit_project_ref');
         }
       }
 

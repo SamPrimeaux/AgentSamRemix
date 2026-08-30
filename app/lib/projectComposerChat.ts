@@ -36,7 +36,8 @@ export type SendProjectChatOpts = {
 };
 
 function buildProjectMessage(raw: string, memory: string, instructions: string, isNewThread: boolean): string {
-  // Server injects memory/instructions via project_id → system context.
+  // project_id is scope only. Saved memory/instructions are never hidden-concatenated
+  // by the project composer; explicit context selection is a separate turn input.
   void memory;
   void instructions;
   void isNewThread;
@@ -75,6 +76,7 @@ export async function sendProjectComposerChat(opts: SendProjectChatOpts): Promis
   form.append('message', messageForApi);
   form.append('conversationId', conversationId);
   form.append('project_id', projectId);
+  form.append('project_scope_explicit', '1');
   form.append('project_context_source', 'project_composer');
   form.append('runtime_lane', CHAT_RUNTIME_LANE_FULL_COMPILE);
   form.append('mode', 'agent');

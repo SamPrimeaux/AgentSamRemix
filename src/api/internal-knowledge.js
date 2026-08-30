@@ -66,6 +66,10 @@ export async function handleInternalKnowledge(request, env, mode) {
       workspaceId,
       userId,
       projectId: trim(args.project_id || args.projectId),
+      projectContextExplicit:
+        args.project_context_explicit === true ||
+        args.project_context_explicit === 1 ||
+        args.project_context_explicit === '1',
       task: trim(args.task || args.query),
       tokenBudget: Number(args.token_budget || args.tokenBudget) || 4000,
       agentRunId: trim(args.agent_run_id || args.agentRunId),

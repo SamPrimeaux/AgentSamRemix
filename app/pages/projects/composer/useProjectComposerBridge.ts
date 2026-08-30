@@ -15,8 +15,6 @@ export interface UseProjectComposerBridgeParams {
   sessionUserId: string | null | undefined;
   project: Project | null;
   projectChatId: string;
-  memory: string;
-  instructions: string;
   loadChats: () => Promise<void> | void;
 }
 
@@ -25,8 +23,6 @@ export function useProjectComposerBridge({
   sessionUserId,
   project,
   projectChatId,
-  memory,
-  instructions,
   loadChats,
 }: UseProjectComposerBridgeParams) {
   const [draft, setDraft] = useState('');
@@ -84,8 +80,6 @@ export function useProjectComposerBridge({
       projectId: projectChatId,
       projectName: project.name,
       firstMessage: userVisible,
-      memory,
-      instructions,
       files: composerAttachments,
     });
     setDraft('');

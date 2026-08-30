@@ -307,13 +307,13 @@ export async function prepareAgentControllerTurn(env, ctx, emit, bound, input) {
   const sessionProjectBlock = String(input.sessionProjectContextBlock || '').trim();
   const workspaceProjectBlock = String(input.projectContextBlock || '').trim();
   const projectBlock = sessionProjectBlock || workspaceProjectBlock;
-  const projectContextSource = String(body.project_context_source || '').trim();
+  // A scoped project is not prompt consent. Only the explicit context flag may
+  // authorize saved project context for this turn.
   const projectContextExplicit =
     input.projectContextExplicit === true ||
     body.project_context_explicit === true ||
     body.project_context_explicit === 1 ||
-    body.project_context_explicit === '1' ||
-    projectContextSource === 'project_composer';
+    body.project_context_explicit === '1';
   const scopedProjectRef = Object.prototype.hasOwnProperty.call(input, 'sessionProjectRef')
     ? input.sessionProjectRef
     : body.project_id ?? body.projectId ?? null;
@@ -401,6 +401,7 @@ export async function prepareAgentControllerTurn(env, ctx, emit, bound, input) {
         workspaceId,
         userId,
         projectId: scopedProjectRef || undefined,
+        projectContextExplicit,
         task: message?.slice(0, 500) || undefined,
         agentRunId: chatAgentRunId || undefined,
         tokenBudget: minimalAsk ? 1500 : 4000,

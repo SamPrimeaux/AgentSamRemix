@@ -105,13 +105,16 @@ export async function appendChatSendFormFields(form: FormData, d: any): Promise<
     form.append('provider', selectedModelProvider);
   }
   form.append('conversationId', effectiveConvId);
-  // Explicit bind only: one-shot from Context Hub /agent/new?project_id= (not sessionStorage).
-  // Project-page composer stamps project_id itself via projectComposerChat.
+  // One-shot project scope bind. Scope and prompt material are separate wires:
+  // Context Hub selection explicitly attaches saved project context; project surfaces/URLs do not.
   const pendingBind = takePendingProjectBind();
   if (pendingBind?.kind === 'set' && pendingBind.projectId) {
     form.append('project_id', pendingBind.projectId);
-    form.append('project_context_explicit', '1');
+    form.append('project_scope_explicit', '1');
     form.append('project_context_source', pendingBind.source);
+    if (pendingBind.source === 'context_hub') {
+      form.append('project_context_explicit', '1');
+    }
   } else if (pendingBind?.kind === 'clear') {
     form.append('project_context_clear', '1');
   }

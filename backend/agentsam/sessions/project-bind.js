@@ -55,9 +55,9 @@ export async function lookupChatProjectId(env, projectRef, workspaceId = null) {
 }
 
 /**
- * Resolve the project that may contribute prompt context for one conversation.
- * Sticky when D1 already has a known `projects.id`. Explicit selection/clear can
- * replace or remove an existing bind.
+ * Resolve the project used to scope one conversation's tools/resources.
+ * Sticky when D1 already has a known `projects.id`. Explicit scope selection/clear
+ * can replace or remove an existing bind. This function does not authorize prompt context.
  *
  * Only `not_found` may clear a sticky binding. `lookup_failed` preserves it.
  *
@@ -67,7 +67,7 @@ export async function lookupChatProjectId(env, projectRef, workspaceId = null) {
  *   userId?: string|null,
  *   tenantId?: string|null,
  *   requestedProjectRef?: string|null,
- *   explicit?: boolean,
+ *   scopeExplicit?: boolean,
  *   clear?: boolean,
  * }} input
  */
@@ -76,7 +76,7 @@ export async function resolveConversationProjectRef(env, input) {
   const userId = trim(input?.userId);
   const tenantId = trim(input?.tenantId);
   const requestedProjectRef = trim(input?.requestedProjectRef);
-  const explicit = input?.explicit === true;
+  const scopeExplicit = input?.scopeExplicit === true;
   const clear = input?.clear === true;
 
   if (!env?.DB || !conversationId || !userId || !tenantId) {
@@ -100,7 +100,7 @@ export async function resolveConversationProjectRef(env, input) {
   if (row) {
     const existing = trim(row.project_id) || null;
 
-    if (explicit) {
+    if (scopeExplicit) {
       const nextRef = clear ? null : requestedProjectRef || null;
       if (clear || !nextRef) {
         return {
@@ -178,7 +178,7 @@ export async function resolveConversationProjectRef(env, input) {
     };
   }
 
-  if (clear || !explicit || !requestedProjectRef) {
+  if (clear || !scopeExplicit || !requestedProjectRef) {
     return {
       projectRef: null,
       source: clear ? 'explicit_clear' : 'unbound',

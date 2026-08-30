@@ -10,7 +10,7 @@ import {
 } from '../src/lib/sessionStorageKeys';
 
 export type PendingProjectBind =
-  | { kind: 'set'; projectId: string; source: 'project_surface' | 'agent_new_url' }
+  | { kind: 'set'; projectId: string; source: 'project_surface' | 'agent_new_url' | 'context_hub' }
   | { kind: 'clear' };
 
 let pending: PendingProjectBind | null = null;

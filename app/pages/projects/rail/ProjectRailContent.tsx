@@ -596,14 +596,14 @@ export function ProjectRailSections(props: ProjectRailContentProps): React.JSX.E
       </RailSection>
 
       <RailSection
-        title="Memory"
+        title="Saved context"
         defaultOpen={railDefaultOpen}
-        badge={<span className="cpd-rail-badge">Only you</span>}
+        badge={<span className="cpd-rail-badge">Manual</span>}
         action={
           <button
             type="button"
             className="cpd-icon-btn"
-            title="Edit memory"
+            title="Edit saved context"
             onClick={() => onOpenRailEditor('memory')}
           >
             <Pencil size={13} strokeWidth={1.5} />
@@ -611,7 +611,7 @@ export function ProjectRailSections(props: ProjectRailContentProps): React.JSX.E
         }
       >
         <RailPreviewCard
-          emptyLabel="Key context Agent Sam should always know about this project…"
+          emptyLabel="Optional project context — attach when useful, never injected just because this project is open."
           preview={memory}
           saved={memSaved}
           onOpen={() => onOpenRailEditor('memory')}
@@ -767,11 +767,11 @@ export function ProjectRailOverlays(props: ProjectRailContentProps): React.JSX.E
       <RailEditorModal
         open={railEditor === 'memory'}
         isMobile={isMobile}
-        title="Set project memory"
-        mobileTitle="Memory"
-        subtitle="Key context Agent Sam should always know about this project. Only you can see this on the project page."
+        title="Edit saved project context"
+        mobileTitle="Saved context"
+        subtitle="Optional human context for facts, decisions, constraints, or blockers that live sources cannot reliably infer. Project scope alone does not inject it."
         saving={memBusy}
-        saveLabel="Save memory"
+        saveLabel="Save context"
         onClose={onCloseRailEditor}
         onSave={() => void onSaveMemoryFromModal()}
       >

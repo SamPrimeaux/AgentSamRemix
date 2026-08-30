@@ -1052,7 +1052,7 @@ export function ContextHubDrawer({
                             setPendingProjectBind({
                               kind: 'set',
                               projectId: resolved,
-                              source: 'project_surface',
+                              source: 'context_hub',
                             });
                             setSessionProject(next);
                             onSessionContextChange?.();

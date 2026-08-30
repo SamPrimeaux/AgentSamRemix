@@ -1,5 +1,5 @@
 /**
- * Workspace project context + rules injection helpers for buildSystemPrompt.
+ * Explicit saved-project-context loader for Agent Sam prompt/context assembly.
  */
 import { pragmaTableInfo } from '../../services/retention.js';
 
@@ -13,23 +13,10 @@ function trim(v) {
 }
 
 /**
- * Derive primary project_key from workspace id (ws_foo → foo).
- * @param {string} workspaceId
- */
-export function workspacePrimaryProjectKey(workspaceId) {
-  const ws = trim(workspaceId);
-  if (!ws) return '';
-  if (ws.startsWith('ws_')) return ws.slice(3);
-  return ws;
-}
-
-/**
- * Ambient Active Projects must not dump every federated CMS hub (Companions, Fuel, …)
- * into a fresh IAM chat — that made Agent Sam claim "you're working with CompanionsCPAS".
+ * Load curated context for one explicitly identified project.
  *
- * Rules:
- * - Explicit projectRef/projectKey → only that project.
- * - Otherwise → workspace-primary key only; never ctx_cms_hub_* client hubs.
+ * Project scope is not prompt material. Callers must provide projectRef/projectKey;
+ * this helper never derives a workspace-primary or dashboard-active fallback.
  *
  * @param {any} env
  * @param {{
@@ -48,7 +35,7 @@ export async function fetchActiveProjectContextBlocks(env, opts = {}) {
   const limit = Math.min(Math.max(1, Number(opts.limit) || 3), 5);
   const projectRef = trim(opts.projectId || opts.projectRef || opts.project_id || '');
   const projectKeyOpt = trim(opts.projectKey || opts.project_key || '');
-  const primaryKey = workspacePrimaryProjectKey(ws);
+  if (!projectRef && !projectKeyOpt) return [];
 
   try {
     const cols = await pragmaTableInfo(env.DB, 'agentsam_project_context');
@@ -63,26 +50,20 @@ export async function fetchActiveProjectContextBlocks(env, opts = {}) {
       `workspace_id = ?`,
       `COALESCE(project_type, '') NOT IN ('bootstrap_cache')`,
       `COALESCE(project_key, '') NOT IN ('agent_bootstrap')`,
-      // Federated launcher hubs — never ambient in chat without an explicit project.
+      // Federated launcher hubs are not valid prompt context without an exact project ref.
       `id NOT LIKE 'ctx_cms_hub_%'`,
     ];
     const binds = [ws];
 
-    if (projectRef || projectKeyOpt) {
-      const keys = [];
-      if (projectRef) keys.push(projectRef);
-      if (projectKeyOpt) keys.push(projectKeyOpt);
-      const uniq = [...new Set(keys)];
-      where.push(
-        `(${uniq.map(() => 'project_key = ? OR id = ?').join(' OR ')})`,
-      );
-      for (const k of uniq) {
-        binds.push(k, k);
-      }
-    } else if (primaryKey) {
-      // Fresh chat / no project selected: only the workspace's own spine.
-      where.push(`(project_key = ? OR id = ?)`);
-      binds.push(primaryKey, `ctx_${primaryKey}`);
+    const keys = [];
+    if (projectRef) keys.push(projectRef);
+    if (projectKeyOpt) keys.push(projectKeyOpt);
+    const uniq = [...new Set(keys)];
+    where.push(
+      `(${uniq.map(() => 'project_key = ? OR id = ?').join(' OR ')})`,
+    );
+    for (const k of uniq) {
+      binds.push(k, k);
     }
 
     const { results } = await env.DB.prepare(
@@ -113,45 +94,4 @@ export async function fetchActiveProjectContextBlocks(env, opts = {}) {
     console.warn('[agent-prompt-context] project_context', e?.message ?? e);
     return [];
   }
-}
-
-/**
- * @param {any} env
- * @param {Array<{ id: string, tokenEstimate: number }>} blocks
- */
-export async function bumpProjectContextTokensUsed(env, blocks) {
-  if (!env?.DB || !blocks?.length) return;
-  const cols = await pragmaTableInfo(env.DB, 'agentsam_project_context');
-  const touchCol = cols.has('updated_at')
-    ? 'updated_at = unixepoch()'
-    : cols.has('updated_at_unix')
-      ? 'updated_at_unix = unixepoch()'
-      : null;
-  for (const b of blocks) {
-    const delta = Math.max(0, Math.floor(Number(b.tokenEstimate) || 0));
-    if (!delta || !b.id) continue;
-    const sets = [`tokens_used = MIN(COALESCE(tokens_used, 0) + ?, 1000000)`];
-    if (touchCol) sets.push(touchCol);
-    await env.DB.prepare(
-      `UPDATE agentsam_project_context SET ${sets.join(', ')} WHERE id = ?`,
-    )
-      .bind(delta, b.id)
-      .run()
-      .catch(() => {});
-  }
-}
-
-/**
- * @param {any} env
- * @param {string} systemPrompt
- * @param {{ workspaceId?: string | null, tenantId?: string | null, projectId?: string | null, projectRef?: string | null, projectKey?: string | null }} opts
- */
-export async function appendActiveProjectsToSystemPrompt(env, systemPrompt, opts = {}) {
-  const blocks = await fetchActiveProjectContextBlocks(env, opts);
-  if (!blocks.length) return systemPrompt;
-  const body = blocks.map((b) => b.text).join('\n\n');
-  if (body.trim()) {
-    void bumpProjectContextTokensUsed(env, blocks);
-  }
-  return `${systemPrompt}\n\n## Active Projects\n${body}\n`;
 }

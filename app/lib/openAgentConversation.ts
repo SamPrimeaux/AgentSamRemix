@@ -33,8 +33,6 @@ export type OpenAgentThreadDetail = {
   projectName?: string;
   title?: string;
   firstMessage?: string;
-  memory?: string;
-  instructions?: string;
   files?: File[];
   force?: boolean;
 };
@@ -98,23 +96,14 @@ export type StartProjectAgentChatDetail = {
   projectId: string;
   projectName: string;
   message?: string;
-  memory?: string;
-  instructions?: string;
   /** Optional file attachments from project composer. */
   files?: File[];
   /** When true, open Agent Sam panel on the current page instead of navigating away. @deprecated Always full-screen from project. */
   stayOnPage?: boolean;
 };
 
-export function buildProjectChatFirstMessage(
-  raw: string,
-  memory?: string,
-  instructions?: string,
-): string {
-  // Memory/instructions are loaded server-side from project_id (system context).
-  // Never concatenate into the user-visible chat bubble.
-  void memory;
-  void instructions;
+export function buildProjectChatFirstMessage(raw: string): string {
+  // Project scope never changes the user-visible message and never implies context injection.
   return String(raw || '').trim();
 }
 
@@ -123,8 +112,6 @@ export function startProjectAgentChat(detail: StartProjectAgentChatDetail): void
     projectId: detail.projectId,
     projectName: detail.projectName,
     firstMessage: detail.message,
-    memory: detail.memory,
-    instructions: detail.instructions,
     files: detail.files,
   });
 }
@@ -152,8 +139,6 @@ export function openAgentThreadFullScreen(detail: OpenAgentThreadDetail): void {
         conversationId: conversationId || undefined,
         title: detail.title?.trim() || undefined,
         firstMessage: String(detail.firstMessage || '').trim() || undefined,
-        memory: detail.memory,
-        instructions: detail.instructions,
         force: detail.force !== false,
       },
     }),
