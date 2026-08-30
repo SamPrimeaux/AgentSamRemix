@@ -11,7 +11,11 @@ import {
   createCloudflareD1Adapter,
   createIdentityService,
 } from "@inneranimalmedia/agentsam-sdk/identity/server/worker-router";
-import { verifyBridgeKey, bridgeUnauthorized } from "./auth/bridge-key";
+import {
+  verifyBridgeKey,
+  resolveMachineProof,
+  bridgeUnauthorized,
+} from "./auth/bridge-key";
 import { streamGeminiPage } from "./lib/geminiProxy";
 import { resolveProviderCredential } from "../credentials/provider-credential.js";
 import {
