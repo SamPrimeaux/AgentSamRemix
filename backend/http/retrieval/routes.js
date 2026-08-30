@@ -1,5 +1,7 @@
-import { retrieveKnowledge } from '../../rag/index.js';
-import { createRetrievalRuntimeServices } from '../../rag/index.js';
+import { machineProofHasCapability } from '../../auth/bridge-key-auth.js';
+import { retrieveKnowledge, createRetrievalRuntimeServices } from '../../rag/index.js';
+import { resolveActiveCorpusForRepo } from '../../rag/retrieval/corpus-registry.js';
+import { runRetrievalEvaluation } from '../../rag/retrieval/eval-runner.js';
 
 function json(data, status = 200) {
   return new Response(JSON.stringify(data), {
@@ -15,22 +17,84 @@ function trim(value) {
   return value == null ? '' : String(value).trim();
 }
 
+function isMachineScope(scope) {
+  return scope?.authType === 'service' && scope?.machineProof?.type === 'bridge';
+}
+
+async function resolveRetrievalScope(env, scope, repoFullName) {
+  if (!isMachineScope(scope)) {
+    if (!scope?.userId || !scope?.workspaceId) {
+      return { ok: false, error: 'workspace_scope_required', status: 409 };
+    }
+    return {
+      ok: true,
+      workspaceId: scope.workspaceId,
+      repoFullName,
+      actorScope: scope,
+    };
+  }
+
+  if (!machineProofHasCapability(scope.machineProof, 'retrieval.read')) {
+    return { ok: false, error: 'machine_capability_required', capability: 'retrieval.read', status: 403 };
+  }
+  const registry = await resolveActiveCorpusForRepo(env, repoFullName);
+  if (!registry.ok) return registry;
+  return {
+    ok: true,
+    workspaceId: registry.corpus.workspaceId,
+    repoFullName: registry.corpus.repoFullName,
+    actorScope: {
+      authType: 'service',
+      principalId: scope.machineProof.principalId,
+      repoFullName: registry.corpus.repoFullName,
+    },
+  };
+}
+
 export async function handleRetrievalHttpRequest(request, env, scope, services = null) {
   const url = new URL(request.url);
-  if (url.pathname !== '/api/agent/retrieval/query') return null;
+  const isQuery = url.pathname === '/api/agent/retrieval/query';
+  const isEval = url.pathname === '/api/agent/retrieval/eval';
+  if (!isQuery && !isEval) return null;
   if (request.method !== 'POST') return json({ ok: false, error: 'method_not_allowed' }, 405);
-  if (!scope?.userId || !scope?.workspaceId) return json({ ok: false, error: 'workspace_scope_required' }, 409);
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== 'object') return json({ ok: false, error: 'invalid_json' }, 400);
+
+  if (isEval) {
+    if (!isMachineScope(scope)) return json({ ok: false, error: 'machine_principal_required' }, 401);
+    if (!machineProofHasCapability(scope.machineProof, 'retrieval.evaluate')) {
+      return json({ ok: false, error: 'machine_capability_required', capability: 'retrieval.evaluate' }, 403);
+    }
+    const result = await runRetrievalEvaluation(env, {
+      all: body.all === true,
+      repoFullName: trim(body.repoFullName || body.repo_full_name || body.repo),
+      queries: Array.isArray(body.queries)
+        ? body.queries
+        : trim(body.query)
+          ? [trim(body.query)]
+          : [],
+      runId: trim(body.runId || body.run_id) || null,
+      principalId: scope.machineProof.principalId,
+      candidateK: body.candidateK ?? body.candidate_k,
+      topK: body.topK ?? body.top_k,
+      tokenBudget: body.tokenBudget ?? body.token_budget,
+      forceRerank: body.forceRerank === true || body.force_rerank === true,
+    });
+    return json(result, result.ok ? 200 : Number(result.status) || 500);
+  }
+
   const query = trim(body.query);
   if (!query) return json({ ok: false, error: 'retrieval_query_required' }, 400);
-  const runtimeServices = services || createRetrievalRuntimeServices(env, scope);
+  const requestedRepo = trim(body.repoFullName || body.repo_full_name || body.repo);
+  const resolved = await resolveRetrievalScope(env, scope, requestedRepo);
+  if (!resolved.ok) return json(resolved, Number(resolved.status) || 500);
+  const runtimeServices = services || createRetrievalRuntimeServices(env, resolved.actorScope);
 
   const result = await retrieveKnowledge(env, {
     query,
-    workspaceId: scope.workspaceId,
-    repoFullName: trim(body.repoFullName || body.repo_full_name || body.repo),
+    workspaceId: resolved.workspaceId,
+    repoFullName: resolved.repoFullName,
     sourceType: trim(body.sourceType || body.source_type) || 'code',
     taskType: trim(body.taskType || body.task_type) || 'knowledge_retrieval',
     runId: trim(body.runId || body.run_id) || null,
