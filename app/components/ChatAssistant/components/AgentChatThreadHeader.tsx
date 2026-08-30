@@ -303,23 +303,6 @@ export const AgentChatThreadHeader: FC<Props> = ({
       }`}
     >
       <div className="flex-1 min-w-0 flex items-center gap-1.5">
-        {canMutate ? (
-          <button
-            type="button"
-            disabled={busy}
-            onClick={toggleStar}
-            className="shrink-0 p-1 rounded-md hover:bg-[var(--bg-hover)] text-[var(--dashboard-muted)]"
-            title={session?.is_starred ? 'Unstar chat' : 'Star chat'}
-            aria-label={session?.is_starred ? 'Unstar chat' : 'Star chat'}
-          >
-            <Star
-              size={15}
-              className={session?.is_starred ? 'text-[var(--solar-yellow)]' : ''}
-              fill={session?.is_starred ? 'currentColor' : 'none'}
-            />
-          </button>
-        ) : null}
-
         {editing ? (
           <input
             autoFocus
