@@ -163,7 +163,7 @@ export async function executeAgentChatSpine(env, request, ctx, pre) {
     userId,
     tenantId,
     requestedProjectRef: requestedSessionProjectRef,
-    explicit: projectContextExplicit || projectContextClear,
+    explicit: projectScopeExplicit || projectContextClear,
     clear: projectContextClear,
   });
   const sessionProjectRef = conversationProject.projectRef;
