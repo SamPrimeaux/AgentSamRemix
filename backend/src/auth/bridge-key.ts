@@ -1,30 +1,43 @@
 /**
- * Machine-to-machine auth SSOT: AGENTSAM_BRIDGE_KEY.
+ * Active Worker bridge-auth adapter.
  *
- * `X-Bridge-Key` is the canonical wire header across Agent Sam services.
- * Authorization: Bearer is accepted temporarily for older machine callers,
- * but both spellings verify against the same single secret authority.
- * Human browser authentication is handled by the identity/session layer.
+ * The secret authority and principal contract live in backend/auth so every
+ * Worker/CLI path recognizes the same Agent Sam service principal.
  */
+import {
+  machineProofHasCapability as hasCapability,
+  resolveMachineProof as resolveProof,
+  verifyBridgeKey as verifyKey,
+} from '../../auth/bridge-key-auth.js';
+
 export interface BridgeEnv {
   AGENTSAM_BRIDGE_KEY?: string;
 }
 
-function trim(v: unknown): string {
-  return v == null ? '' : String(v).trim();
-}
-
-function presentedKey(request: Request): string {
-  const bridge = trim(request.headers.get('X-Bridge-Key'));
-  if (bridge) return bridge;
-  const auth = request.headers.get('Authorization') || '';
-  return auth.startsWith('Bearer ') ? trim(auth.slice(7)) : '';
+export interface MachineProof {
+  type: 'bridge';
+  principalId: string;
+  principalType: 'service';
+  capabilities: string[];
+  delegatedUserId: string | null;
 }
 
 export function verifyBridgeKey(request: Request, env: BridgeEnv): boolean {
-  const expected = trim(env.AGENTSAM_BRIDGE_KEY);
-  const presented = presentedKey(request);
-  return Boolean(expected && presented && presented === expected);
+  return verifyKey(request, env);
+}
+
+export function resolveMachineProof(
+  request: Request,
+  env: BridgeEnv,
+): MachineProof | null {
+  return resolveProof(request, env) as MachineProof | null;
+}
+
+export function machineProofHasCapability(
+  proof: MachineProof | null,
+  capability: string,
+): boolean {
+  return hasCapability(proof, capability);
 }
 
 export function bridgeUnauthorized(): Response {
