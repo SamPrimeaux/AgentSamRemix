@@ -32,4 +32,10 @@ function main(argv) {
   return cmd(rest);
 }
 
-main(process.argv.slice(2));
+Promise.resolve(main(process.argv.slice(2))).catch((error) => {
+  console.error(error?.message || String(error));
+  if (error?.payload && process.env.AGENTSAM_DEBUG === '1') {
+    console.error(JSON.stringify(error.payload, null, 2));
+  }
+  process.exitCode = 1;
+});
