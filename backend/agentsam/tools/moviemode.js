@@ -468,7 +468,7 @@ export async function handleAgentsamVideoEmbed(env, params) {
       ok: true,
       asset_id: assetId,
       lane: 'moviemode_media',
-      embed_model: 'gemini-embedding-2',
+      embed_model: index?.model ?? null,
       index,
     };
   } catch (e) {

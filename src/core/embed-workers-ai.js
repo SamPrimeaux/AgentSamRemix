@@ -1,13 +1,12 @@
 /**
  * Text embeddings for docs / memory / skills Vectorize lanes.
  *
- * SSOT (tkt_embed_ssot_openai): OpenAI text-embedding-3-large @ 1536 via
- * createAgentsamEmbedding — never Workers AI bge-m3 on this path.
+ * Historical export name only; actual provider/model is resolved by the `docs` RAG lane.
  *
  * Historical export name `generateWorkersAiEmbedding` is kept so cron/tool
  * imports keep working; the implementation is OpenAI-only.
  */
-import { createAgentsamEmbedding } from './agentsam-vectorize.js';
+import { embedTextForLane } from '../../backend/rag/embeddings/lane-router.js';
 
 /**
  * @param {any} env
@@ -30,7 +29,7 @@ export async function generateSsotTextEmbedding(env, text) {
 
   const vectors = [];
   for (const input of inputs) {
-    const { embedding } = await createAgentsamEmbedding(env, input);
+    const { embedding } = await embedTextForLane(env, 'docs', input);
     if (!Array.isArray(embedding) || !embedding.length) {
       throw new Error('No embeddings returned');
     }

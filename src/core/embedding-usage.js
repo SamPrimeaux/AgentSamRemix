@@ -40,9 +40,13 @@ export async function logEmbeddingUsageEvent(env, params = {}) {
   const model =
     (params.model_key != null && String(params.model_key).trim()) ||
     (params.model != null && String(params.model).trim()) ||
-    'text-embedding-3-large';
+    '';
+  const provider = params.provider != null ? String(params.provider).trim() : '';
+  if (!model || !provider) {
+    console.warn('[logEmbeddingUsageEvent] skipped — model/provider receipt required');
+    return null;
+  }
   const tokens_in = Math.max(0, Math.floor(Number(params.tokens_in) || 0));
-  const provider = (params.provider != null && String(params.provider).trim()) || 'openai';
   const pricingKindRaw =
     params.pricing_kind != null
       ? String(params.pricing_kind).trim()

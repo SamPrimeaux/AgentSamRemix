@@ -6,7 +6,7 @@ import { getAuthUser } from '../../backend/identity/index.js'; import { fetchAut
 import { normalizeSourceFilters } from '../core/unified-source-filters.js';
 import { resolveGitHubToken } from '../../backend/http/agentsam/routes/git-runtime.js';
 import { fetchWorkspaceGithubRepo } from '../../backend/http/agentsam/routes/git-status-runtime.js';
-import { logSemanticSearch } from '../../backend/http/agentsam/routes/memory-legacy.js';
+import { logSemanticSearch } from '../../backend/rag/retrieval/observations.js';
 
 /** @param {any} authUser */
 function resolveSearchAnalyticsWorkspaceId(authUser) {

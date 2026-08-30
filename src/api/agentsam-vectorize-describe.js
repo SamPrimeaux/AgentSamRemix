@@ -3,10 +3,8 @@
  * Returns CF Vectorize index config + optional Supabase pgvector lane catalog (tier routing).
  */
 import { jsonResponse } from '../core/auth.js'; import { verifyBridgeKey } from '../../backend/auth/bridge-key-auth.js';
-import {
-  describeAgentsamVectorizeIndex,
-  resolveAgentsamEmbeddingSpec,
-} from '../core/agentsam-vectorize-index.js';
+import { describeAgentsamVectorizeIndex } from '../core/agentsam-vectorize-index.js';
+import { resolveRagLane } from '../../backend/rag/lanes/registry.js';
 
 function isVectorizeDescribeAuthorized(request, env) {
   if (verifyBridgeKey(request, env)) return true;
@@ -114,16 +112,34 @@ export async function handleAgentsamVectorizeDescribe(request, env) {
 
     if (includeCf) {
       const index = await describeAgentsamVectorizeIndex(env);
-      const embedding = await resolveAgentsamEmbeddingSpec(env);
       out.cloudflare = {
         binding: 'AGENTSAMVECTORIZE',
         index_name: index.indexName,
         dimensions: index.dimensions,
         metric: index.metric,
         describe_source: index.source,
-        embedding_provider: embedding.provider,
-        embedding_model: embedding.model,
       };
+      if (env?.DB) {
+        const routed = {};
+        for (const laneName of ['memory', 'docs', 'schema', 'archive', 'media', 'code']) {
+          try {
+            const lane = await resolveRagLane(env, laneName);
+            routed[laneName] = {
+              provider: lane.provider,
+              model_key: lane.modelKey,
+              dimensions: lane.dimensions,
+              routing_arm_id: lane.routingArmId || null,
+              embedding_space_key: lane.embeddingSpaceKey || null,
+              pgvector_table: lane.qualifiedTable,
+              vectorize_binding: lane.vectorizeBinding?.bindingName || null,
+              vectorize_index: lane.vectorizeBinding?.indexName || null,
+            };
+          } catch (error) {
+            routed[laneName] = { error: String(error?.message || error) };
+          }
+        }
+        out.rag_routes = routed;
+      }
       if (env?.DB && (tier === 'all' || namespace)) {
         let sql = `SELECT id, binding_name, index_name, display_name, dimensions, metric, is_active, is_preferred
                    FROM vectorize_index_registry WHERE COALESCE(is_active, 1) = 1`;

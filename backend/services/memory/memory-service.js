@@ -1,8 +1,4 @@
-import {
-  MEMORY_EMBEDDING_DIMENSIONS,
-  MEMORY_EMBEDDING_MODEL,
-  MEMORY_MAX_LIMIT,
-} from './constants.js';
+import { MEMORY_MAX_LIMIT } from './constants.js';
 import { MemoryEmbedding, assertEmbedding } from './memory-embedding.js';
 import { assertMemoryClient } from './memory-client-contract.js';
 import { assertMemoryStore } from './memory-repository.js';
@@ -23,11 +19,18 @@ export class MemoryService {
   constructor({
     repository,
     embeddingProvider,
+    embeddingModel,
+    embeddingDimensions,
     idFactory = defaultIdFactory,
     now = () => Date.now(),
   }) {
     this.repository = assertMemoryStore(repository);
-    this.embedding = new MemoryEmbedding(embeddingProvider);
+    this.embeddingModel = requireNonEmptyString(embeddingModel, 'embeddingModel');
+    this.embeddingDimensions = Number(embeddingDimensions);
+    if (!Number.isInteger(this.embeddingDimensions) || this.embeddingDimensions <= 0) {
+      throw new TypeError('embeddingDimensions must be a positive integer');
+    }
+    this.embedding = new MemoryEmbedding(embeddingProvider, this.embeddingDimensions);
     this.idFactory = idFactory;
     this.now = now;
     assertMemoryClient(this);
@@ -48,8 +51,8 @@ export class MemoryService {
       ...normalized,
       contentHash,
       embedding,
-      embeddingModel: MEMORY_EMBEDDING_MODEL,
-      embeddingDimensions: MEMORY_EMBEDDING_DIMENSIONS,
+      embeddingModel: this.embeddingModel,
+      embeddingDimensions: this.embeddingDimensions,
     });
   }
 
@@ -101,12 +104,12 @@ export class MemoryService {
       const embedding = await this.embedding.embedDocument(content, {
         title: String(patch.memoryType ?? 'memory'),
       });
-      assertEmbedding(embedding);
+      assertEmbedding(embedding, this.embeddingDimensions);
       safePatch.content = content;
       safePatch.contentHash = await sha256Hex(content);
       safePatch.embedding = embedding;
-      safePatch.embeddingModel = MEMORY_EMBEDDING_MODEL;
-      safePatch.embeddingDimensions = MEMORY_EMBEDDING_DIMENSIONS;
+      safePatch.embeddingModel = this.embeddingModel;
+      safePatch.embeddingDimensions = this.embeddingDimensions;
       safePatch.embeddedAtUnix = nowUnix(this.now());
     }
 

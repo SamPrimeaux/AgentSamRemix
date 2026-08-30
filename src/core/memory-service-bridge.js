@@ -1,6 +1,6 @@
 /**
  * Worker bridge: agentsam_memory commit/outbox ↔ backend/services/memory.
- * Keeps Gemini + pgvector out of dashboard and tool handlers.
+ * Keeps embedding provider + pgvector details out of dashboard and tool handlers.
  */
 import { buildRetrievalText } from './agentsam-memory-contract.js';
 import { createMemoryServiceFromEnv } from '../../backend/services/memory/memory-runtime.js';
@@ -17,7 +17,7 @@ function mapImportance(value) {
 }
 
 /**
- * Write semantic Gemini pgvector row from a D1 commit/outbox row.
+ * Write semantic pgvector row using the D1-selected memory embedding space.
  * @param {Record<string, unknown>} env
  * @param {Record<string, unknown>} row
  * @param {string} [retrievalText]
@@ -34,6 +34,7 @@ export async function upsertSemanticMemoryFromCommit(env, row, retrievalText) {
 
   const service = await createMemoryServiceFromEnv(env, {
     userId: row.user_id,
+    tenantId: row.tenant_id,
     idFactory: () => memoryId,
   });
 
@@ -83,13 +84,14 @@ export async function upsertSemanticMemoryFromCommit(env, row, retrievalText) {
 }
 
 /**
- * Semantic search via MemoryService (Gemini pgvector SSOT).
+ * Semantic search via the D1-selected MemoryService lane.
  * @param {Record<string, unknown>} env
  * @param {{ workspaceId: string, query: string, limit?: number, subjectId?: string|null, minConfidence?: number }} input
  */
 export async function searchSemanticMemory(env, input) {
   const service = await createMemoryServiceFromEnv(env, {
     userId: input.subjectId ?? null,
+    tenantId: input.tenantId ?? null,
   });
   return service.search(input);
 }

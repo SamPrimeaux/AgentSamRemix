@@ -203,8 +203,8 @@ export async function ingestOpenAiBatchEmbedUsageFromWebhook(env, ctx, payload, 
     await writeUsageEvent(
       env,
       {
-        model: 'text-embedding-3-large',
-        model_key: 'text-embedding-3-large',
+        model: 'unknown',
+        model_key: 'unknown',
         provider: 'openai',
         workspace_id: scope.workspaceId,
         tenant_id: scope.tenantId,
@@ -240,21 +240,20 @@ export async function ingestOpenAiBatchEmbedUsageFromWebhook(env, ctx, payload, 
     return { ok: false, reason: 'workspace_scope_unresolved', batch_id: batchId };
   }
 
-  // Price at embedding rates then apply Batch 50% discount.
-  const priced = await resolveUsageEventCostUsd(env.DB, {
-    modelKey: summed.model || 'text-embedding-3-large',
-    provider: 'openai',
-    inputTokens: summed.tokens_in,
-    outputTokens: 0,
-    pricingKind: 'embedding',
-  });
-  const costUsd = (Number(priced.costUsd) || 0) * BATCH_EMBED_DISCOUNT;
+  const observedModel = String(summed.model || '').trim();
+  let costUsd = 0;
+  if (observedModel) {
+    const priced = await resolveUsageEventCostUsd(env.DB, {
+      modelKey: observedModel, provider: 'openai', inputTokens: summed.tokens_in, outputTokens: 0, pricingKind: 'embedding',
+    });
+    costUsd = (Number(priced.costUsd) || 0) * BATCH_EMBED_DISCOUNT;
+  }
 
   const written = await writeUsageEvent(
     env,
     {
-      model: summed.model || 'text-embedding-3-large',
-      model_key: summed.model || 'text-embedding-3-large',
+      model: observedModel || 'unknown',
+      model_key: observedModel || 'unknown',
       provider: 'openai',
       workspace_id: scope.workspaceId,
       tenant_id: scope.tenantId,

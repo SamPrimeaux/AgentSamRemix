@@ -69,7 +69,7 @@ export async function handleVideoEmbedRequest(request, env, { workspaceId }) {
       ok: true,
       asset_id: assetId,
       lane: 'moviemode_media',
-      embed_model: 'gemini-embedding-2',
+      embed_model: indexed?.model ?? null,
       index: indexed,
     });
   } catch (e) {

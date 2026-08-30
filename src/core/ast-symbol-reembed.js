@@ -547,7 +547,7 @@ export async function runAstSymbolReembedJob(env, workspaceId, opts = {}) {
     if (embedded > 0) {
       const priced = await resolveUsageEventCostUsd(env.DB, {
         modelKey: embedSpec.modelKey || embedSpec.model || laneCfg.embed.modelKey,
-        provider: embedSpec.provider || laneCfg.embed.provider || 'google',
+        provider: embedSpec.provider || laneCfg.embed.provider,
         inputTokens: tokensIn,
         outputTokens: 0,
         pricingKind: 'embedding',

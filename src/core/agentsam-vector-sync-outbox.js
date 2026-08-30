@@ -2,7 +2,6 @@
  * Wave 2: enqueue + drain agentsam_vector_sync_outbox (pgvector SSOT → Vectorize).
  */
 import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
-import { createAgentsamEmbedding } from './agentsam-vectorize.js';
 import { resolveVectorizeBindingForTable } from '../../backend/rag/index.js';
 
 /**
@@ -23,7 +22,9 @@ export async function enqueueVectorSyncOutbox(env, row) {
   const sourceTable = String(row?.sourceTable || '').trim();
   const sourceId = String(row?.sourceId || '').trim();
   const vectorIndex = String(row?.vectorIndex || '').trim();
-  if (!sourceTable || !sourceId || !vectorIndex) {
+  const embeddingModel = String(row?.embeddingModel || '').trim();
+  const embeddingDims = Number(row?.embeddingDims);
+  if (!sourceTable || !sourceId || !vectorIndex || !embeddingModel || !Number.isInteger(embeddingDims) || embeddingDims <= 0) {
     return { ok: false, reason: 'missing_fields' };
   }
   const operation = row.operation === 'delete' ? 'delete' : 'upsert';
@@ -51,8 +52,8 @@ export async function enqueueVectorSyncOutbox(env, row) {
       vectorIndex,
       operation,
       row.contentHash != null ? String(row.contentHash) : null,
-      row.embeddingModel || 'text-embedding-3-large',
-      Number(row.embeddingDims) || 1536,
+      embeddingModel,
+      embeddingDims,
     ],
   );
   if (!out.ok) return { ok: false, error: out.error };
@@ -132,17 +133,11 @@ export async function drainVectorSyncOutbox(env, opts = {}) {
           const raw = row.embedding.replace(/^\[|\]$/g, '');
           values = raw.split(',').map((n) => Number(n.trim())).filter((n) => Number.isFinite(n));
         }
-        if (!values?.length && row.content) {
-          const { embedding } = await createAgentsamEmbedding(env, String(row.content), {
-            spec: {
-              provider: 'openai',
-              model: 'text-embedding-3-large',
-              dimensions: Number(item.embedding_dims) || 1536,
-            },
-          });
-          values = embedding;
+        if (!values?.length) throw new Error('source_embedding_missing');
+        const expectedDims = Number(item.embedding_dims);
+        if (Number.isInteger(expectedDims) && expectedDims > 0 && values.length !== expectedDims) {
+          throw new Error(`source_embedding_dimension_mismatch:${values.length}:${expectedDims}`);
         }
-        if (!values?.length) throw new Error('no_embedding');
 
         const meta = {
           source_table: item.source_table,

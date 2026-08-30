@@ -3,16 +3,13 @@
  * Marks ready only when all desired projections verify same memory_id/revision/content_hash.
  */
 import {
-  EMBEDDING_CONTRACT,
   DESIRED_PROJECTIONS,
   buildProjectionKey,
   buildRetrievalText,
   uuidFromProjectionKey,
 } from './agentsam-memory-contract.js';
-import { createAgentsamEmbedding } from './agentsam-vectorize.js';
 import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
-import { ensureSupabaseWorkspaceId } from '../../backend/rag/index.js';
-import { resolveMemoryEmbeddingLaneConfig } from './memory-embedding-lane-resolve.js';
+import { resolveMemoryEmbeddingLaneConfig } from '../../backend/rag/embeddings/memory-route.js';
 
 /** Hard cap — permanent failures (canonical_row_missing) dead-letter immediately. */
 export const MEMORY_OUTBOX_MAX_ATTEMPTS = 8;
@@ -114,9 +111,7 @@ export async function processMemoryOutboxJob(env, db, outboxId, hint = {}) {
       memory_key: row.key,
     });
 
-  // D1 is SSOT for which embed provider/model is live — agentsam_routing_arms
-  // (task_type='memory_embed'), never a hardcoded JS constant. See
-  // src/core/memory-embedding-lane-resolve.js and docs/platform/memory-embedding-gemini-lane-2026-08.md.
+  // D1 routing arm selects the embedding model; the RAG lane registry maps it to storage.
   let embedContract;
   try {
     embedContract = await resolveMemoryEmbeddingLaneConfig(env);
@@ -133,29 +128,6 @@ export async function processMemoryOutboxJob(env, db, outboxId, hint = {}) {
     embedding_version: embedContract.version,
   });
   const remoteUuid = await uuidFromProjectionKey(projectionKey);
-
-  let embedding = null;
-  const needsOpenAiEmbed =
-    desired.includes('pgvector_chunk') && embedContract.provider !== 'google';
-  if (needsOpenAiEmbed) {
-    try {
-      const emb = await createAgentsamEmbedding(env, retrievalText, {
-        spec: {
-          provider: 'openai',
-          model: embedContract.model,
-          dimensions: embedContract.dimensions,
-        },
-      });
-      embedding = emb.embedding;
-    } catch (e) {
-      failed.push('embed');
-      await markPartial(db, job, row, receipts, failed, e?.message || 'embed_failed', now);
-      return { status: 'partial', semantic_ready: false, failed, receipts, error: e?.message };
-    }
-  }
-
-  // pgvector_chunk twin availability is D1-driven (embedContract.pgvectorAvailable).
-  // Provider-specific writers run below in the pgvector_chunk block.
 
   if (desired.includes('managed_pg')) {
     try {
@@ -174,50 +146,30 @@ export async function processMemoryOutboxJob(env, db, outboxId, hint = {}) {
   }
 
   if (desired.includes('pgvector_chunk')) {
-    if (embedContract.provider === 'google') {
-      if (!embedContract.pgvectorAvailable) {
-        receipts.pgvector_chunk = {
-          ok: true,
-          skipped: true,
-          reason: 'gemini_pgvector_lane_not_registered',
-        };
-      } else {
-        try {
-          const { upsertSemanticMemoryFromCommit } = await import('./memory-service-bridge.js');
-          const sem = await upsertSemanticMemoryFromCommit(env, row, retrievalText);
-          receipts.pgvector_chunk = {
-            ok: true,
-            table: embedContract.pgvectorTable || 'agentsam_memory_gemini2_1536',
-            projection_key: projectionKey,
-            remote_id: sem?.id || row.memory_id,
-            verified_at: now,
-          };
-          await writeReceipt(db, row, projectionKey, 'pgvector_chunk', sem?.id || remoteUuid, now);
-        } catch (e) {
-          failed.push('pgvector_chunk');
-          receipts.pgvector_chunk = { ok: false, error: e?.message || String(e) };
-        }
-      }
-    } else if (embedContract.pgvectorAvailable) {
+    if (!embedContract.pgvectorAvailable || !embedContract.pgvectorTable) {
+      failed.push('pgvector_chunk');
+      receipts.pgvector_chunk = {
+        ok: false,
+        error: 'resolved_memory_pgvector_lane_missing',
+      };
+    } else {
       try {
-        await upsertPgvectorChunk(env, row, projectionKey, remoteUuid, embedding, retrievalText, tags);
+        const { upsertSemanticMemoryFromCommit } = await import('./memory-service-bridge.js');
+        const sem = await upsertSemanticMemoryFromCommit(env, row, retrievalText);
         receipts.pgvector_chunk = {
           ok: true,
+          table: embedContract.pgvectorTable,
+          embedding_space_key: embedContract.embeddingSpaceKey || null,
+          routing_arm_id: embedContract.armId || null,
           projection_key: projectionKey,
-          remote_id: remoteUuid,
+          remote_id: sem?.id || row.memory_id,
           verified_at: now,
         };
-        await writeReceipt(db, row, projectionKey, 'pgvector_chunk', remoteUuid, now);
+        await writeReceipt(db, row, projectionKey, 'pgvector_chunk', sem?.id || remoteUuid, now);
       } catch (e) {
         failed.push('pgvector_chunk');
         receipts.pgvector_chunk = { ok: false, error: e?.message || String(e) };
       }
-    } else {
-      receipts.pgvector_chunk = {
-        ok: true,
-        skipped: true,
-        reason: 'no_active_pgvector_twin_for_resolved_model',
-      };
     }
   }
 
@@ -537,112 +489,19 @@ async function upsertManagedPg(env, row, projectionKey, remoteUuid) {
   if (!write?.ok) throw new Error(write?.error || 'managed_pg_upsert_failed');
 }
 
-async function upsertPgvectorChunk(env, row, projectionKey, remoteUuid, embedding, retrievalText, tags) {
-  if (!isHyperdriveUsable(env)) throw new Error('hyperdrive_unavailable');
-  if (!embedding) throw new Error('embedding_required');
-  const d1Ws = trim(row.workspace_id);
-  // Must be a live agentsam.agentsam_workspaces.id — resolve-only left orphan UUIDs
-  // after the 2026-08 cutover and tripped agentsam_memory_workspace_id_fkey.
-  if (!d1Ws) throw new Error('workspace_id_required');
-  const supabaseWs = await ensureSupabaseWorkspaceId(env, d1Ws);
-  const vec = vectorLiteral(embedding);
-  const meta = {
-    memory_id: row.memory_id,
-    revision: Number(row.revision) || 1,
-    content_hash: row.content_hash,
-    tenant_key: row.tenant_id,
-    user_key: row.user_id,
-    workspace_key: d1Ws,
-    memory_type: row.memory_type,
-    status: row.status || 'active',
-    sensitivity: row.sensitivity || 'normal',
-    tags,
-  };
-  await runHyperdriveQuery(
-    env,
-    `DELETE FROM agentsam.agentsam_memory_oai3large_1536 WHERE projection_key = $1`,
-    [projectionKey],
-  );
-  const sql = `
-    INSERT INTO agentsam.agentsam_memory_oai3large_1536 (
-      id, workspace_id, user_id, memory_key, content, title, embedding, source, metadata,
-      vectorize_binding, vectorize_index, vectorize_id, embedded_at, source_type,
-      projection_key, memory_id, revision, chunk_index, chunk_count, content_hash,
-      tenant_key, user_key, workspace_key, memory_type, status, sensitivity,
-      embedding_model, embedding_dimensions, embedding_version,
-      created_at, updated_at
-    ) VALUES (
-      $1::uuid, $2::uuid, NULL, $3, $4, $5, $6::vector, $7, $8::jsonb,
-      'AGENTSAM_VECTORIZE_MEMORY', 'agentsam-memory-oai3large-1536', $1::text, now(), $9,
-      $10, $11, $12, 0, 1, $13,
-      $14, $15, $16, $17, $18, $19,
-      $20, $21, $22,
-      now(), now()
-    )
-  `;
-  const write = await runHyperdriveQuery(env, sql, [
-    remoteUuid,
-    supabaseWs,
-    row.key,
-    retrievalText,
-    row.title || row.key,
-    vec,
-    row.source || 'agentsam_memory_commit',
-    JSON.stringify(meta),
-    row.source_type || 'memory_commit',
-    projectionKey,
-    row.memory_id,
-    Number(row.revision) || 1,
-    row.content_hash,
-    row.tenant_id,
-    row.user_id,
-    d1Ws,
-    row.memory_type,
-    row.status || 'active',
-    row.sensitivity || 'normal',
-    EMBEDDING_CONTRACT.model,
-    EMBEDDING_CONTRACT.dimensions,
-    EMBEDDING_CONTRACT.version,
-  ]);
-  if (!write?.ok) throw new Error(write?.error || 'pgvector_upsert_failed');
-}
-
-async function upsertVectorize(env, row, remoteUuid, embedding, embedContract = EMBEDDING_CONTRACT) {
-  if (!embedding) throw new Error('embedding_required');
-  const bindingName = embedContract?.vectorizeBinding || 'AGENTSAM_VECTORIZE_MEMORY';
-  const binding = env?.[bindingName];
-  if (!binding || typeof binding.upsert !== 'function') {
-    throw new Error(`${bindingName}_unavailable`);
-  }
-  await binding.upsert([
-    {
-      id: remoteUuid,
-      values: embedding,
-      metadata: {
-        memory_id: String(row.memory_id),
-        memory_key: String(row.key),
-        revision: Number(row.revision) || 1,
-        content_hash: String(row.content_hash || ''),
-        tenant_key: String(row.tenant_id || ''),
-        user_key: String(row.user_id || ''),
-        workspace_key: String(row.workspace_id || ''),
-        memory_type: String(row.memory_type || ''),
-        status: String(row.status || 'active'),
-        sensitivity: String(row.sensitivity || 'normal'),
-        embedding_model: String(embedContract?.model || ''),
-        embedding_provider: String(embedContract?.provider || ''),
-      },
-    },
-  ]);
-}
-
 async function tombstoneProjections(env, db, job, row, now) {
+  let embedContract;
+  try {
+    embedContract = await resolveMemoryEmbeddingLaneConfig(env);
+  } catch (e) {
+    return { status: 'partial', semantic_ready: false, receipts: {}, failed: ['embed_lane_unresolved'], error: e?.message };
+  }
   const projectionKey = buildProjectionKey({
     memory_id: row.memory_id,
     revision: row.revision,
     chunk_index: 0,
+    embedding_version: embedContract.version,
   });
-  const remoteUuid = await uuidFromProjectionKey(projectionKey);
   const receipts = {};
   try {
     if (isHyperdriveUsable(env)) {
@@ -652,40 +511,44 @@ async function tombstoneProjections(env, db, job, row, now) {
           WHERE memory_id = $2 AND revision = $3`,
         [row.status, row.memory_id, row.revision],
       );
+      const table = String(embedContract.pgvectorQualifiedTable || '').trim();
+      if (!/^[A-Za-z_][A-Za-z0-9_]*\.[A-Za-z_][A-Za-z0-9_]*$/.test(table)) {
+        throw new Error('memory_pgvector_table_required');
+      }
       await runHyperdriveQuery(
         env,
-        `UPDATE agentsam.agentsam_memory_oai3large_1536 SET status = $1, updated_at = now()
-          WHERE projection_key = $2`,
-        [row.status, projectionKey],
-      );
-      await runHyperdriveQuery(
-        env,
-        `UPDATE agentsam.agentsam_memory_gemini2_1536 SET status = $1, updated_at = now()
-          WHERE memory_id = $2 AND revision = $3`,
-        [row.status, row.memory_id, row.revision],
+        `UPDATE ${table}
+            SET is_active = FALSE, updated_at_unix = $1
+          WHERE id = $2 AND workspace_id = $3`,
+        [now, row.memory_id, row.workspace_id],
       );
       receipts.managed_pg = { ok: true, tombstone: true };
-      receipts.pgvector_chunk = { ok: true, tombstone: true };
+      receipts.pgvector_chunk = {
+        ok: true,
+        tombstone: true,
+        table: embedContract.pgvectorTable,
+        embedding_space_key: embedContract.embeddingSpaceKey || null,
+      };
     }
   } catch (e) {
     receipts.managed_pg = { ok: false, error: e?.message };
+    receipts.pgvector_chunk = { ok: false, error: e?.message };
   }
-  try {
-    // Legacy OpenAI Vectorize tombstone only — Gemini lane never wrote Vectorize (pgvector SSOT).
-    const binding = env?.AGENTSAM_VECTORIZE_MEMORY;
-    if (binding?.deleteByIds) await binding.deleteByIds([remoteUuid]);
-    else if (binding?.delete) await binding.delete([remoteUuid]);
-    receipts.vectorize = { ok: true, tombstone: true };
-  } catch (e) {
-    receipts.vectorize = { ok: false, error: e?.message };
-  }
+  const ok = receipts.managed_pg?.ok === true && receipts.pgvector_chunk?.ok === true;
   await db
     .prepare(
       `UPDATE agentsam_memory_outbox
-          SET status = 'completed', receipts_json = ?, updated_at = ?, locked_at = NULL
+          SET status = ?, receipts_json = ?, last_error = ?, updated_at = ?, locked_at = NULL
         WHERE id = ?`,
     )
-    .bind(JSON.stringify(receipts), now, job.id)
+    .bind(ok ? 'completed' : 'partial', JSON.stringify(receipts), ok ? null : 'tombstone_projection_failed', now, job.id)
     .run();
-  return { status: 'completed', semantic_ready: false, receipts, failed: [], tombstone: true };
+  return {
+    status: ok ? 'completed' : 'partial',
+    semantic_ready: false,
+    receipts,
+    failed: ok ? [] : ['tombstone_projection_failed'],
+    tombstone: true,
+    projection_key: projectionKey,
+  };
 }

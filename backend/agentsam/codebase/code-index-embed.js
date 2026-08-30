@@ -1,26 +1,20 @@
-/**
- * Online embedding adapter for the code-index lane.
- *
- * Full-index Google batches use gemini-batch-embed.js. Incremental and
- * single-item paths use this adapter so codebase orchestration stays under
- * backend ownership.
- */
-import { embedTextGemini } from '../../rag/embeddings/google-gemini.js';
+/** Online embedding adapter for the D1-resolved code-index lane. */
+import { embedTextWithSpec } from '../../rag/embeddings/provider.js';
 
-/**
- * @param {any} env
- * @param {string} text
- * @param {{ spec?: { provider?: string }, userId?: string|null, taskType?: string }} [opts]
- */
 export async function createCodeIndexEmbedding(env, text, opts = {}) {
-  const provider = String(opts.spec?.provider || 'google').toLowerCase();
-  if (provider !== 'google') {
-    const error = new Error(`code_index_online_embed_provider_unsupported:${provider}`);
-    error.code = 'code_index_online_embed_provider_unsupported';
+  const spec = opts.spec;
+  const provider = String(spec?.provider || '').trim().toLowerCase();
+  const model = String(spec?.model ?? spec?.modelKey ?? '').trim();
+  const dimensions = Number(spec?.dimensions);
+  if (!provider || !model || !Number.isInteger(dimensions) || dimensions <= 0) {
+    const error = new Error('code_index_embedding_spec_required');
+    error.code = 'code_index_embedding_spec_required';
     throw error;
   }
-  return embedTextGemini(env, text, {
+  return embedTextWithSpec(env, text, { provider, model, dimensions }, {
     userId: opts.userId ?? null,
+    tenantId: opts.tenantId ?? null,
     taskType: opts.taskType,
+    fetchImpl: opts.fetchImpl,
   });
 }

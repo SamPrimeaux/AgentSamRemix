@@ -1,3 +1,6 @@
+import { isHyperdriveUsable, runHyperdriveQuery } from '../../services/database/hyperdrive.js';
+import { resolveSupabaseWorkspaceId } from '../scope/workspace.js';
+
 async function sha256Hex(value) {
   const bytes = new TextEncoder().encode(String(value || ''));
   const digest = await crypto.subtle.digest('SHA-256', bytes);
@@ -64,4 +67,53 @@ export async function recordRetrievalObservation(env, observation) {
         : `retrieval_observation_write_failed:${message.slice(0, 160)}`,
     };
   }
+}
+
+
+/** Legacy search-log receipt retained as retrieval telemetry, not HTTP behavior. */
+export async function logSemanticSearch(env, args) {
+  const workspaceIdD1 =
+    args?.workspaceId != null && String(args.workspaceId).trim() !== ''
+      ? String(args.workspaceId).trim()
+      : args?.metadata?.workspace_id != null
+        ? String(args.metadata.workspace_id).trim()
+        : '';
+  if (!workspaceIdD1 || !isHyperdriveUsable(env)) return;
+
+  const workspaceUuid = await resolveSupabaseWorkspaceId(env, workspaceIdD1).catch(() => null);
+  if (!workspaceUuid) return;
+
+  const metaObj = {
+    ...(args?.metadata && typeof args.metadata === 'object' && !Array.isArray(args.metadata)
+      ? args.metadata
+      : {}),
+    search_fn: String(args?.searchFn || 'unknown').slice(0, 200),
+    tenant_id: args?.tenantId != null ? String(args.tenantId).trim() : null,
+    session_id:
+      args?.sessionId != null && String(args.sessionId).trim() !== ''
+        ? String(args.sessionId).trim().slice(0, 500)
+        : null,
+    match_threshold: args?.matchThreshold,
+    match_count_requested: args?.matchCountRequested,
+    top_similarity: args?.topSimilarity ?? null,
+    avg_similarity: args?.avgSimilarity ?? null,
+    sources_hit: Array.isArray(args?.sourcesHit) ? args.sourcesHit : [],
+  };
+
+  const result = await runHyperdriveQuery(
+    env,
+    `INSERT INTO agentsam.agentsam_search_log (
+       workspace_id, user_id, query_text, result_count, duration_ms, search_type, metadata
+     ) VALUES ($1::uuid, $2::uuid, $3, $4, $5, $6, $7::jsonb)`,
+    [
+      workspaceUuid,
+      null,
+      String(args?.queryPreview ?? '').slice(0, 4000),
+      Number(args?.matchCountReturned) || 0,
+      Math.max(0, Math.floor(args?.latencyMs ?? 0)),
+      String(args?.searchFn || 'unified_search').slice(0, 120),
+      JSON.stringify(metaObj),
+    ],
+  );
+  if (!result?.ok) console.warn('[rag] agentsam_search_log insert:', result?.error ?? 'query_failed');
 }

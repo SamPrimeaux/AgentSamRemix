@@ -1,11 +1,8 @@
 /**
- * Hybrid memory recall — exact → pinned/recent → pgvector (Gemini SSOT) → legacy pgvector → lexical → D1 hydrate.
+ * Hybrid memory recall — exact → pinned/recent → D1-selected pgvector → lexical → D1 hydrate.
  * Semantic search reads Supabase pgvector via MemoryService; Vectorize is not queried (cost dedupe).
  */
-import { createAgentsamEmbedding } from './agentsam-vectorize.js';
-import { EMBEDDING_CONTRACT } from './agentsam-memory-contract.js';
-import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
-import { resolveMemoryEmbeddingLaneConfig } from './memory-embedding-lane-resolve.js';
+import { isHyperdriveUsable } from '../../backend/services/database/hyperdrive.js';
 import { searchSemanticMemory } from './memory-service-bridge.js';
 import {
   memoryExcludeNoiseSourcesSql,
@@ -32,7 +29,7 @@ export const MEMORY_MIN_SEMANTIC_SCORE = 0.35;
 export const MEMORY_PIPELINE_VERSION = 'agentsam_memory_v1';
 
 /** Provenance kinds that must clear MEMORY_MIN_SEMANTIC_SCORE. */
-const SEMANTIC_PROVENANCE = new Set(['pgvector', 'pgvector_gemini']);
+const SEMANTIC_PROVENANCE = new Set(['pgvector']);
 
 /**
  * @param {Record<string, unknown>} env
@@ -154,91 +151,38 @@ export async function executeAgentsamMemoryHybridSearch(env, db, workspace, args
     });
   }
 
-  // 3) Semantic pgvector — Gemini SSOT first; legacy OpenAI pgvector only when recall is thin
+  // 3) Semantic pgvector — exactly one D1-selected embedding space.
   let usedSemantic = false;
   let usedPgvector = false;
-  if (query) {
+  if (query && semanticWorkspaceId && isHyperdriveUsable(env)) {
     try {
-      try {
-        const lane = await resolveMemoryEmbeddingLaneConfig(env);
-        if (
-          lane?.provider === 'google' &&
-          lane.pgvectorAvailable &&
-          semanticWorkspaceId &&
-          isHyperdriveUsable(env)
-        ) {
-          const semHits = await searchSemanticMemory(env, {
-            workspaceId: semanticWorkspaceId,
-            query,
-            limit: topK * 2,
-            subjectId: userId,
-          });
-          if (semHits.length) {
-            usedPgvector = true;
-            usedSemantic = true;
-            for (const r of semHits) {
-              const meta = r.metadata || {};
-              push(
-                {
-                  memory_id: meta.memory_id || r.id,
-                  key: meta.memory_key,
-                  status: 'active',
-                  content_hash: r.content_hash,
-                  revision: meta.revision,
-                },
-                'pgvector_gemini',
-                Number(r.rank_score ?? r.semantic_score) || 0,
-              );
-            }
-          }
-        }
-      } catch {
-        /* pgvector gemini lane failure — legacy fallback below */
-      }
-
-      if (hits.size < topK && isHyperdriveUsable(env)) {
-        try {
-          const { embedding } = await createAgentsamEmbedding(env, query, {
-            spec: {
-              provider: 'openai',
-              model: EMBEDDING_CONTRACT.model,
-              dimensions: EMBEDDING_CONTRACT.dimensions,
+      const semHits = await searchSemanticMemory(env, {
+        workspaceId: semanticWorkspaceId,
+        query,
+        limit: topK * 2,
+        subjectId: userId,
+        tenantId,
+      });
+      if (semHits.length) {
+        usedPgvector = true;
+        usedSemantic = true;
+        for (const r of semHits) {
+          const meta = r.metadata || {};
+          push(
+            {
+              memory_id: meta.memory_id || r.id,
+              key: meta.memory_key,
+              status: 'active',
+              content_hash: r.content_hash,
+              revision: meta.revision,
             },
-          });
-          usedPgvector = true;
-          const vec = `[${embedding.join(',')}]`;
-          const pg = await runHyperdriveQuery(
-            env,
-            `SELECT memory_id, memory_key, revision, content_hash, status, workspace_key,
-                    1 - (embedding <=> $1::vector) AS score
-               FROM agentsam.agentsam_memory_oai3large_1536
-              WHERE tenant_key = $2
-                AND user_key = $3
-                AND COALESCE(status, 'active') = 'active'
-              ORDER BY embedding <=> $1::vector
-              LIMIT $4`,
-            [vec, tenantId, userId, topK * 2],
+            'pgvector',
+            Number(r.rank_score ?? r.semantic_score) || 0,
           );
-          for (const r of pg?.rows || []) {
-            usedSemantic = true;
-            push(
-              {
-                memory_id: r.memory_id,
-                key: r.memory_key,
-                status: r.status || 'active',
-                content_hash: r.content_hash,
-                revision: r.revision,
-              },
-              'pgvector',
-              Number(r.score) || 0,
-            );
-          }
-        } catch {
-          /* legacy OpenAI pgvector unavailable */
         }
       }
     } catch {
-      /* fall through to lexical */
+      /* semantic lane/config/provider failure is soft; lexical recall still runs */
     }
   }
 

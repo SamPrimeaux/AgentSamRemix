@@ -1,40 +1,38 @@
-import { MEMORY_EMBEDDING_DIMENSIONS } from './constants.js';
-
-/**
- * Owns text → Gemini Embedding 2 → 1536-d vector.
- * The provider is injected so tests never call Google.
- */
+/** Runtime-dimension embedding validator around an injected provider. */
 export class MemoryEmbedding {
-  constructor(provider) {
+  constructor(provider, dimensions) {
     if (!provider || typeof provider.embedDocument !== 'function') {
       throw new TypeError('embeddingProvider.embedDocument() is required');
     }
     if (typeof provider.embedQuery !== 'function') {
       throw new TypeError('embeddingProvider.embedQuery() is required');
     }
+    this.dimensions = requireDimensions(dimensions);
     this.provider = provider;
   }
 
   async embedDocument(text, opts = {}) {
-    const vector = await this.provider.embedDocument(text, opts);
-    assertEmbedding(vector);
-    return vector;
+    return assertEmbedding(await this.provider.embedDocument(text, opts), this.dimensions);
   }
 
   async embedQuery(text) {
-    const vector = await this.provider.embedQuery(text);
-    assertEmbedding(vector);
-    return vector;
+    return assertEmbedding(await this.provider.embedQuery(text), this.dimensions);
   }
 }
 
-export function assertEmbedding(vector) {
-  if (!Array.isArray(vector) || vector.length !== MEMORY_EMBEDDING_DIMENSIONS) {
-    throw new Error(
-      `embedding must contain ${MEMORY_EMBEDDING_DIMENSIONS} dimensions`,
-    );
+function requireDimensions(value) {
+  const dimensions = Number(value);
+  if (!Number.isInteger(dimensions) || dimensions <= 0) {
+    throw new TypeError('embedding dimensions must be a positive integer');
   }
-  if (!vector.every(Number.isFinite)) {
-    throw new Error('embedding contains a non-finite value');
+  return dimensions;
+}
+
+export function assertEmbedding(vector, expectedDimensions) {
+  const dimensions = requireDimensions(expectedDimensions);
+  if (!Array.isArray(vector) || vector.length !== dimensions) {
+    throw new Error(`embedding must contain ${dimensions} dimensions`);
   }
+  if (!vector.every(Number.isFinite)) throw new Error('embedding contains a non-finite value');
+  return vector;
 }

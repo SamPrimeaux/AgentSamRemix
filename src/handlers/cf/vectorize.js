@@ -1,110 +1,98 @@
 /**
  * agentsam_cf_vectorize — query | upsert | delete against AGENTSAM_VECTORIZE_* bindings.
  */
-import { createAgentsamEmbedding } from '../../core/agentsam-vectorize.js';
-import { resolveAgentsamEmbeddingSpecForDimensions } from '../../core/agentsam-vectorize-index.js';
-import {
-  RAG_EMBED_LANE_MULTIMODAL,
-  createEmbedding,
-} from '../../../backend/http/agentsam/routes/memory-legacy.js';
-import { MULTIMODAL_EMBED_DIMS } from '../../core/multimodal-embedding.js';
-
-const LANE_DIM = 1536;
-const EMBED_SPEC_1536 = resolveAgentsamEmbeddingSpecForDimensions(LANE_DIM);
-const MEDIA_INDEX_NAME = 'agentsam-moviemode-gemini2-1536';
-
-/** @type {Record<string, string>} */
-const INDEX_ALIASES = {
-  'agentsam-codebase-oai3large-1536': 'AGENTSAM_VECTORIZE_CODE',
-  'agentsam-courses-oai3large-1536': 'AGENTSAM_VECTORIZE_COURSES',
-  'agentsam-memory-oai3large-1536': 'AGENTSAM_VECTORIZE_MEMORY',
-  'agentsam-schema-oai3large-1536': 'AGENTSAM_VECTORIZE_SCHEMA',
-  'agentsam-documents-oai3large-1536': 'AGENTSAM_VECTORIZE_DOCUMENTS',
-  [MEDIA_INDEX_NAME]: 'AGENTSAM_VECTORIZE_MEDIA',
-  code: 'AGENTSAM_VECTORIZE_CODE',
-  courses: 'AGENTSAM_VECTORIZE_COURSES',
-  memory: 'AGENTSAM_VECTORIZE_MEMORY',
-  schema: 'AGENTSAM_VECTORIZE_SCHEMA',
-  documents: 'AGENTSAM_VECTORIZE_DOCUMENTS',
-  docs: 'AGENTSAM_VECTORIZE_DOCUMENTS',
-  media: 'AGENTSAM_VECTORIZE_MEDIA',
-  moviemode: 'AGENTSAM_VECTORIZE_MEDIA',
-};
+import { embedTextForLane } from '../../../backend/rag/embeddings/lane-router.js';
+import { resolveRagLane } from '../../../backend/rag/lanes/registry.js';
+import { embedMultimodalContent } from '../../core/multimodal-embedding.js';
 
 function trim(v) {
   return v == null ? '' : String(v).trim();
 }
 
-/** @param {any} env */
-function buildBindingMap(env) {
-  /** @type {Record<string, string>} */
-  const map = {};
-  for (const [indexName, bindingName] of Object.entries(INDEX_ALIASES)) {
-    const isOai = indexName.includes('-oai3large-');
-    const isMedia = indexName === MEDIA_INDEX_NAME;
-    if ((isOai || isMedia) && env?.[bindingName]) {
-      map[indexName] = bindingName;
-    }
-  }
-  return map;
+async function listVectorizeRegistry(env) {
+  if (!env?.DB) return [];
+  const result = await env.DB.prepare(
+    `SELECT binding_name, index_name, dimensions, metric
+       FROM vectorize_index_registry
+      WHERE COALESCE(is_active, 1) = 1
+      ORDER BY index_name`,
+  ).all().catch(() => ({ results: [] }));
+  return (result?.results || []).filter((row) => row?.binding_name && row?.index_name);
 }
 
-/** @param {any} env @param {string} indexName */
-function resolveVectorizeBinding(env, indexName) {
-  const raw = trim(indexName);
-  const key = raw.toLowerCase().replace(/_/g, '-');
-  const bindingName = INDEX_ALIASES[key] || INDEX_ALIASES[raw];
-  if (bindingName && env?.[bindingName]) {
-    return { bindingName, indexName: canonicalIndexName(key, bindingName) };
-  }
-  const map = buildBindingMap(env);
-  if (map[key]) {
-    return { bindingName: map[key], indexName: key };
+async function resolveVectorizeBinding(env, requested) {
+  const raw = trim(requested);
+  if (!raw) return null;
+  const normalized = raw.toLowerCase().replace(/_/g, '-');
+  const rows = await listVectorizeRegistry(env);
+  const aliases = {
+    code: 'AGENTSAM_VECTORIZE_CODE',
+    courses: 'AGENTSAM_VECTORIZE_COURSES',
+    memory: 'AGENTSAM_VECTORIZE_MEMORY',
+    schema: 'AGENTSAM_VECTORIZE_SCHEMA',
+    documents: 'AGENTSAM_VECTORIZE_DOCUMENTS',
+    docs: 'AGENTSAM_VECTORIZE_DOCUMENTS',
+    media: 'AGENTSAM_VECTORIZE_MEDIA',
+    moviemode: 'AGENTSAM_VECTORIZE_MEDIA',
+  };
+  const aliasBinding = aliases[normalized] || null;
+  const row = rows.find((candidate) =>
+    String(candidate.index_name).toLowerCase() === normalized ||
+    String(candidate.binding_name).toLowerCase() === raw.toLowerCase() ||
+    (aliasBinding && candidate.binding_name === aliasBinding),
+  );
+  if (!row || !env?.[row.binding_name]) return null;
+  return {
+    bindingName: String(row.binding_name),
+    indexName: String(row.index_name),
+    dimensions: Number(row.dimensions) || null,
+    metric: String(row.metric || 'cosine'),
+  };
+}
+
+async function resolveEmbeddingLaneForBinding(env, bindingName, indexName) {
+  for (const laneName of ['memory', 'docs', 'schema', 'media']) {
+    const lane = await resolveRagLane(env, laneName).catch(() => null);
+    if (!lane?.vectorizeBinding) continue;
+    if (
+      lane.vectorizeBinding.bindingName === bindingName ||
+      (lane.vectorizeBinding.indexName && lane.vectorizeBinding.indexName === indexName)
+    ) return lane;
   }
   return null;
 }
 
-/** @param {string} key @param {string} bindingName */
-function canonicalIndexName(key, bindingName) {
-  if (bindingName === 'AGENTSAM_VECTORIZE_MEDIA') return MEDIA_INDEX_NAME;
-  for (const [name, binding] of Object.entries(INDEX_ALIASES)) {
-    if (binding === bindingName && name.includes('-oai3large-')) return name;
+async function embedForIndex(env, bindingName, indexName, queryText, scope = {}, input = {}) {
+  const lane = await resolveEmbeddingLaneForBinding(env, bindingName, indexName);
+  if (!lane) throw new Error(`embedding_lane_unregistered:${indexName}`);
+  if (lane.name === 'media') {
+    if (lane.provider !== 'google') throw new Error(`media_embedding_provider_unsupported:${lane.provider}`);
+    const parts = Array.isArray(input?.parts) ? input.parts : [];
+    const out = await embedMultimodalContent(env, {
+      text: queryText,
+      parts,
+      modelKey: lane.modelKey,
+      dimensions: lane.dimensions,
+    });
+    return { embedding: out.embedding, dimensions: lane.dimensions, lane };
   }
-  return key;
-}
-
-function listValidIndexes(env) {
-  const out = [];
-  for (const [name, bindingName] of Object.entries(INDEX_ALIASES)) {
-    const isOai = name.includes('-oai3large-');
-    const isMedia = name === MEDIA_INDEX_NAME;
-    if ((isOai || isMedia) && env?.[bindingName]) out.push(name);
-  }
-  return out;
-}
-
-/** @param {string} indexName */
-function isMultimodalMediaIndex(indexName) {
-  return String(indexName || '').trim() === MEDIA_INDEX_NAME;
-}
-
-/**
- * @param {any} env
- * @param {string} queryText
- * @param {string|null} userId
- * @param {Record<string, unknown>} [input]
- */
-async function embedForIndex(env, indexName, queryText, userId, input = {}) {
-  if (isMultimodalMediaIndex(indexName)) {
-    const parts = Array.isArray(input?.parts) ? input.parts : null;
-    const { embedding } = await createEmbedding(env, queryText, RAG_EMBED_LANE_MULTIMODAL, { parts });
-    return embedding;
-  }
-  const { embedding } = await createAgentsamEmbedding(env, queryText, {
-    spec: EMBED_SPEC_1536,
-    userId,
+  const out = await embedTextForLane(env, lane.name, queryText, {
+    userId: scope.userId ?? null,
+    tenantId: scope.tenantId ?? null,
   });
-  return embedding;
+  return { embedding: out.embedding, dimensions: lane.dimensions, lane };
+}
+
+async function expectedDimensions(env, binding, bindingName, indexName, registeredDimensions = null) {
+  if (Number.isInteger(Number(registeredDimensions)) && Number(registeredDimensions) > 0) return Number(registeredDimensions);
+  const lane = await resolveEmbeddingLaneForBinding(env, bindingName, indexName);
+  if (lane?.dimensions) return Number(lane.dimensions);
+  if (typeof binding?.describe === 'function') {
+    const described = await binding.describe().catch(() => null);
+    const dimensions = Number(described?.dimensions ?? described?.config?.dimensions);
+    if (Number.isInteger(dimensions) && dimensions > 0) return dimensions;
+  }
+  return null;
 }
 
 function sanitizeMetadata(metadata) {
@@ -125,13 +113,14 @@ function sanitizeMetadata(metadata) {
  */
 export async function handleCfVectorizeManage(env, input, scope = {}) {
   const indexNameRaw = trim(input?.index_name || input?.indexName || input?.index);
-  const validIndexes = listValidIndexes(env);
+  const registry = await listVectorizeRegistry(env);
+  const validIndexes = registry.filter((row) => env?.[row.binding_name]).map((row) => row.index_name);
 
   if (!indexNameRaw) {
     return { ok: false, error: 'index_name required', valid_indexes: validIndexes };
   }
 
-  const resolved = resolveVectorizeBinding(env, indexNameRaw);
+  const resolved = await resolveVectorizeBinding(env, indexNameRaw);
   if (!resolved) {
     return {
       ok: false,
@@ -142,7 +131,7 @@ export async function handleCfVectorizeManage(env, input, scope = {}) {
     };
   }
 
-  const { bindingName, indexName } = resolved;
+  const { bindingName, indexName, dimensions: registeredDimensions } = resolved;
   const binding = env[bindingName];
   if (!binding) {
     return { ok: false, error: 'vectorize_binding_unavailable', binding: bindingName, index_name: indexName };
@@ -159,7 +148,8 @@ export async function handleCfVectorizeManage(env, input, scope = {}) {
 
     if ((!vector || !vector.length) && queryText) {
       try {
-        vector = await embedForIndex(env, indexName, queryText, userId, input);
+        const embedded = await embedForIndex(env, bindingName, indexName, queryText, { userId, tenantId }, input);
+        vector = embedded.embedding;
       } catch (e) {
         return { ok: false, error: 'embedding_failed', message: String(e?.message || e) };
       }
@@ -168,8 +158,8 @@ export async function handleCfVectorizeManage(env, input, scope = {}) {
     if (!Array.isArray(vector) || !vector.length) {
       return { ok: false, error: 'vector or query required for query operation' };
     }
-    const expectedDim = isMultimodalMediaIndex(indexName) ? MULTIMODAL_EMBED_DIMS : LANE_DIM;
-    if (vector.length !== expectedDim) {
+    const expectedDim = await expectedDimensions(env, binding, bindingName, indexName, registeredDimensions);
+    if (expectedDim && vector.length !== expectedDim) {
       return {
         ok: false,
         error: 'invalid_vector_dimensions',
@@ -208,7 +198,8 @@ export async function handleCfVectorizeManage(env, input, scope = {}) {
     const text = trim(input?.text || input?.content || input?.value);
     if ((!vector || !vector.length) && text) {
       try {
-        vector = await embedForIndex(env, indexName, text, userId, input);
+        const embedded = await embedForIndex(env, bindingName, indexName, text, { userId, tenantId }, input);
+        vector = embedded.embedding;
       } catch (e) {
         return { ok: false, error: 'embedding_failed', message: String(e?.message || e) };
       }
@@ -217,8 +208,8 @@ export async function handleCfVectorizeManage(env, input, scope = {}) {
     if (!Array.isArray(vector) || !vector.length) {
       return { ok: false, error: 'vector or text required for upsert' };
     }
-    const expectedDimUpsert = isMultimodalMediaIndex(indexName) ? MULTIMODAL_EMBED_DIMS : LANE_DIM;
-    if (vector.length !== expectedDimUpsert) {
+    const expectedDimUpsert = await expectedDimensions(env, binding, bindingName, indexName, registeredDimensions);
+    if (expectedDimUpsert && vector.length !== expectedDimUpsert) {
       return {
         ok: false,
         error: 'invalid_vector_dimensions',

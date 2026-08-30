@@ -1,32 +1,15 @@
-/**
- * MovieMode media semantic search — Gemini multimodal @1536 on AGENTSAM_VECTORIZE_MEDIA.
- * D1 `media_assets` hydrates hits; never mix OpenAI vectors into this index.
- */
+/** MovieMode media semantic search using the D1-resolved `media` RAG lane. */
 import { getR2Binding } from '../api/r2-api.js';
 import {
-  RAG_EMBED_LANE_MULTIMODAL,
-  createEmbedding,
-} from '../../backend/http/agentsam/routes/memory-legacy.js';
-import {
   buildMediaEmbedParts,
+  embedMultimodalContent,
   isEmbeddableMediaMime,
   resolveMediaMimeType,
-  MULTIMODAL_EMBED_DIMS,
 } from './multimodal-embedding.js';
-import { embeddingPolicy } from './embedding-routes.js';
-import { contentHash, resolveSupabaseWorkspaceId } from '../../backend/rag/index.js';
+import { contentHash, resolveRagLane, resolveSupabaseWorkspaceId } from '../../backend/rag/index.js';
 import { runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
 
-export const MOVIEMODE_PGVECTOR_TABLE = 'agentsam_media_gemini2_1536';
-
-export const MOVIEMODE_VECTORIZE_BINDING = 'AGENTSAM_VECTORIZE_MEDIA';
-export const MOVIEMODE_VECTORIZE_INDEX_NAME = 'agentsam-moviemode-gemini2-1536';
 export const MOVIEMODE_MEDIA_MAX_EMBED_BYTES = 20 * 1024 * 1024;
-
-/** @param {any} env */
-export function moviemodeVectorizeBinding(env) {
-  return env?.[MOVIEMODE_VECTORIZE_BINDING] || null;
-}
 
 /**
  * @param {any} env
@@ -60,7 +43,14 @@ export async function createMovieModeQueryEmbedding(env, opts = {}) {
   }
 
   const text = String(opts.text || opts.caption || '').trim();
-  return createEmbedding(env, text, RAG_EMBED_LANE_MULTIMODAL, { parts });
+  const lane = await resolveRagLane(env, 'media');
+  if (lane.provider !== 'google') throw new Error(`media_embedding_provider_unsupported:${lane.provider}`);
+  return embedMultimodalContent(env, {
+    text,
+    parts,
+    modelKey: lane.modelKey,
+    dimensions: lane.dimensions,
+  });
 }
 
 /**
@@ -69,7 +59,10 @@ export async function createMovieModeQueryEmbedding(env, opts = {}) {
  * @param {{ caption?: string, transcript?: string, force?: boolean }} [opts]
  */
 export async function indexMediaAssetForSearch(env, asset, opts = {}) {
-  const binding = moviemodeVectorizeBinding(env);
+  const lane = await resolveRagLane(env, 'media');
+  if (lane.provider !== 'google') throw new Error(`media_embedding_provider_unsupported:${lane.provider}`);
+  const bindingName = lane.vectorizeBinding?.bindingName || null;
+  const binding = bindingName ? env?.[bindingName] : null;
   if (!binding?.upsert) return { ok: false, skipped: 'no_vectorize_binding' };
 
   const assetId = String(asset.id || '').trim();
@@ -80,7 +73,7 @@ export async function indexMediaAssetForSearch(env, asset, opts = {}) {
     throw new Error('indexMediaAssetForSearch: id, workspace_id, bucket, object_key required');
   }
 
-  if (!opts.force && asset.vectorize_id && asset.embed_model === embeddingPolicy.multimodalAssetSearch) {
+  if (!opts.force && asset.vectorize_id && String(asset.embed_model || '') === String(lane.modelKey)) {
     return { ok: true, skipped: 'already_indexed', vectorize_id: asset.vectorize_id };
   }
 
@@ -115,13 +108,12 @@ export async function indexMediaAssetForSearch(env, asset, opts = {}) {
     return { ok: false, skipped: 'no_embeddable_content' };
   }
 
-  const { embedding, model, dimensions } = await createEmbedding(env, caption, RAG_EMBED_LANE_MULTIMODAL, {
+  const { embedding, model, dimensions } = await embedMultimodalContent(env, {
+    text: caption,
     parts,
+    modelKey: lane.modelKey,
+    dimensions: lane.dimensions,
   });
-
-  if (dimensions !== MULTIMODAL_EMBED_DIMS) {
-    throw new Error(`dimension_mismatch: expected ${MULTIMODAL_EMBED_DIMS}, got ${dimensions}`);
-  }
 
   const vectorId = assetId;
   const metadata = {
@@ -154,6 +146,7 @@ export async function indexMediaAssetForSearch(env, asset, opts = {}) {
     model,
     vectorizeId: vectorId,
     userId: asset.user_id ? String(asset.user_id) : null,
+    lane,
     extraMetadata: {
       lane: 'moviemode_media',
       parts_count: parts.length,
@@ -198,7 +191,9 @@ export async function upsertMediaPgvectorRow(env, row) {
   const hash = await contentHash(content);
   const vector = `[${embedding.join(',')}]`;
   const rowId = crypto.randomUUID();
-  const table = MOVIEMODE_PGVECTOR_TABLE;
+  const lane = row.lane || (await resolveRagLane(env, 'media'));
+  const table = String(lane.tableName || '').trim();
+  if (!/^[A-Za-z_][A-Za-z0-9_]*$/.test(table)) return { ok: false, error: 'media_pgvector_table_invalid' };
   const metadata = {
     ...(row.extraMetadata && typeof row.extraMetadata === 'object' ? row.extraMetadata : {}),
     asset_id: assetId,
@@ -252,10 +247,10 @@ export async function upsertMediaPgvectorRow(env, row) {
       row.projectId || null,
       hash,
       vector,
-      String(row.model || 'gemini-embedding-2'),
+      String(row.model || '').trim(),
       embedding.length,
-      MOVIEMODE_VECTORIZE_BINDING,
-      MOVIEMODE_VECTORIZE_INDEX_NAME,
+      lane.vectorizeBinding?.bindingName || null,
+      lane.vectorizeBinding?.indexName || null,
       String(row.vectorizeId || assetId),
       JSON.stringify(metadata),
     ],
@@ -273,7 +268,9 @@ export async function upsertMediaPgvectorRow(env, row) {
  * @param {{ workspaceId: string, query: string, topK?: number, projectId?: string|null, mediaKind?: string|null, queryParts?: import('./multimodal-embedding.js').MultimodalContentPart[] }} opts
  */
 export async function searchMovieModeMedia(env, opts) {
-  const binding = moviemodeVectorizeBinding(env);
+  const lane = await resolveRagLane(env, 'media');
+  const bindingName = lane.vectorizeBinding?.bindingName || null;
+  const binding = bindingName ? env?.[bindingName] : null;
   if (!binding?.query) return { ok: false, error: 'no_vectorize_binding', results: [] };
 
   const workspaceId = String(opts.workspaceId || '').trim();

@@ -213,7 +213,7 @@ export function mapD1ProjectToSupabaseRow(row, opts = {}) {
     created_at: isoFromD1Time(row.created_at) || new Date().toISOString(),
     updated_at: isoFromD1Time(row.updated_at) || new Date().toISOString(),
     summary,
-    embedding_model: 'text-embedding-3-large',
+    embedding_model: meta.embedding_model != null ? String(meta.embedding_model).trim() || null : null,
   };
 }
 

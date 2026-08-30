@@ -29,33 +29,6 @@ export const MEMORY_SENSITIVITIES = Object.freeze([
   'secret',
 ]);
 
-/**
- * Fixture/reference values only — NOT the runtime source. Production reads the live
- * embed model from D1 (agentsam_routing_arms, task_type='memory_embed') via
- * resolveMemoryEmbeddingLaneConfig() in ./memory-embedding-lane-resolve.js. Mirrors how
- * CODE_INDEX_LANE_FIXTURE_TABLES in code-index-lane-resolve.js is labeled fixture-only.
- * Kept here for tests / default param fallbacks / documentation, not for decisions.
- * See docs/platform/memory-embedding-gemini-lane-2026-08.md.
- */
-export const EMBEDDING_CONTRACT = Object.freeze({
-  model: 'text-embedding-3-large',
-  dimensions: 1536,
-  version: 'oai3large_1536_v1',
-  provider: 'openai',
-  vectorizeBinding: 'AGENTSAM_VECTORIZE_MEMORY',
-  vectorizeIndex: 'agentsam-memory-oai3large-1536',
-});
-
-/** Fixture only — see EMBEDDING_CONTRACT comment above. */
-export const EMBEDDING_CONTRACT_GEMINI = Object.freeze({
-  model: 'gemini-embedding-2',
-  dimensions: 1536,
-  version: 'gemini2_1536_v1',
-  provider: 'google',
-  vectorizeBinding: null,
-  vectorizeIndex: null,
-});
-
 /** Rebuildable projections for new commits — semantic SSOT is pgvector (Hyperdrive), not Vectorize. */
 export const DESIRED_PROJECTIONS = Object.freeze(['managed_pg', 'pgvector_chunk']);
 
@@ -187,7 +160,8 @@ export async function sha256Hex(text) {
  */
 export function buildProjectionKey(p) {
   const chunk = Number.isFinite(Number(p.chunk_index)) ? Number(p.chunk_index) : 0;
-  const ver = trim(p.embedding_version) || EMBEDDING_CONTRACT.version;
+  const ver = trim(p.embedding_version);
+  if (!ver) throw new Error('memory_embedding_version_required');
   return `memory:${trim(p.memory_id)}:revision:${Number(p.revision) || 1}:chunk:${chunk}:embed:${ver}`;
 }
 
@@ -338,7 +312,7 @@ export async function draftMemoryCommit(args = {}, auth = {}) {
       idempotency_key: idempotencyKey,
       retrieval_text: retrievalText,
       long_content_route: route,
-      embedding: { ...EMBEDDING_CONTRACT },
+      embedding: { routing_task: 'memory_embed' },
       desired_projections: [...DESIRED_PROJECTIONS],
     },
   };

@@ -5,8 +5,13 @@
  */
 
 function googleEmbeddingApiModelId(modelKey) {
-  const model = String(modelKey || 'gemini-embedding-2').trim().replace(/^models\//, '');
-  return model || 'gemini-embedding-2';
+  const model = String(modelKey || '').trim().replace(/^models\//, '');
+  if (!model) {
+    const e = new Error('gemini_batch_embed_model_required');
+    e.code = 'gemini_batch_embed_model_required';
+    throw e;
+  }
+  return model;
 }
 
 function estimateTokensLocal(text) {
@@ -68,7 +73,8 @@ export function isGeminiBatchSucceededState(state) {
  */
 export function buildGeminiAsyncBatchEmbedBody(texts, opts) {
   const modelId = googleEmbeddingApiModelId(opts.modelId);
-  const dim = Number(opts.dimensions) || 1536;
+  const dim = Number(opts.dimensions);
+  if (!Number.isInteger(dim) || dim <= 0) throw new Error('gemini_batch_embed_dimensions_required');
   const taskType = opts.taskType || 'RETRIEVAL_DOCUMENT';
   const list = (Array.isArray(texts) ? texts : []).map((t) => String(t ?? '').trim()).filter(Boolean);
   // REST JSON uses camelCase (proto3 JSON mapping).
@@ -233,7 +239,12 @@ export async function embedTextsViaGeminiBatchMode(env, texts, opts) {
   }
 
   const modelId = googleEmbeddingApiModelId(spec.model);
-  const dim = Number(spec.dimensions) || 1536;
+  const dim = Number(spec.dimensions);
+  if (!Number.isInteger(dim) || dim <= 0) {
+    const e = new Error('gemini_batch_embed_dimensions_required');
+    e.code = 'gemini_batch_embed_dimensions_required';
+    throw e;
+  }
   const body = buildGeminiAsyncBatchEmbedBody(list, {
     modelId,
     dimensions: dim,

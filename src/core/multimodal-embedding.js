@@ -2,14 +2,7 @@
  * Gemini gemini-embedding-2 multimodal embed parts (image/audio/video/PDF).
  * Separate Vectorize index only — never mix with OpenAI text-embedding-3-large vectors.
  */
-import {
-  embeddingPolicy,
-  googleEmbeddingApiModelId,
-  resolveMultimodalEmbeddingRoute,
-  EMBEDDING_DIMS,
-} from './embedding-routes.js';
-
-export const MULTIMODAL_EMBED_DIMS = EMBEDDING_DIMS.balancedProductionRag;
+/** Provider adapter only. Model + dimensions must come from backend/rag routing. */
 
 /** @typedef {{ type: 'text', text: string }} MultimodalTextPart */
 /** @typedef {{ type: 'inline_data', mimeType: string, data: ArrayBuffer | Uint8Array | string }} MultimodalInlinePart */
@@ -114,22 +107,19 @@ export function geminiEmbedPartsFromContent(parts) {
  * @returns {Promise<{ embedding: number[], provider: 'google', model: string, dimensions: number }>}
  */
 export async function embedMultimodalContent(env, opts = {}) {
-  const route = resolveMultimodalEmbeddingRoute();
   const apiKey = String(
     env?.GOOGLE_AI_API_KEY || env?.GEMINI_API_KEY || env?.GOOGLE_API_KEY || '',
   ).trim();
   if (!apiKey) {
     throw new Error(
-      `multimodal_embedding_unavailable: ${embeddingPolicy.multimodalAssetSearch} requires Google API key`,
+      'multimodal_embedding_unavailable: Google API key required',
     );
   }
 
-  const dim = Number(
-    opts.dimensions || env?.RAG_MULTIMODAL_EMBEDDING_DIMENSIONS || route.dimensions || MULTIMODAL_EMBED_DIMS,
-  );
-  const modelId = googleEmbeddingApiModelId(
-    opts.modelKey || env?.RAG_MULTIMODAL_EMBEDDING_MODEL || route.model,
-  );
+  const dim = Number(opts.dimensions);
+  if (!Number.isInteger(dim) || dim <= 0) throw new Error('multimodal_embedding_dimensions_required');
+  const modelId = String(opts.modelKey || '').trim().replace(/^models\//i, '');
+  if (!modelId) throw new Error('multimodal_embedding_model_required');
 
   /** @type {MultimodalContentPart[]} */
   const merged = [];

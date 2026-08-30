@@ -1,8 +1,8 @@
 /**
  * inneranimalmedia-autorag R2 → AGENTSAM_VECTORIZE_DOCUMENTS indexing (queue-driven Put/Delete).
  */
-import { createAgentsamEmbedding } from '../core/agentsam-vectorize.js';
-import { resolveAgentsamEmbeddingSpecForDimensions } from '../core/agentsam-vectorize-index.js';
+import { embedTextForLane } from '../../backend/rag/embeddings/lane-router.js';
+import { resolveRagLane } from '../../backend/rag/lanes/registry.js';
 import { chunkTextForCodebaseReindex } from './docs-chunk.js';
 import {
   getDocsVectorizePauseState,
@@ -13,10 +13,8 @@ import {
 const AUTORAG_BUCKET_NAME = 'inneranimalmedia-autorag';
 const DOCS_VECTOR_CHUNK_SIZE = 1000;
 const DOCS_VECTOR_CHUNK_OVERLAP = 100;
-const DOCS_EMBED_DIM = 1536;
 const RAG_EMBED_BATCH_SIZE = 32;
 const SKIP_KEY_PREFIXES = ['screenshots/', 'reports/quality-report/'];
-const EMBED_SPEC = resolveAgentsamEmbeddingSpecForDimensions(DOCS_EMBED_DIM);
 
 function documentsVectorizeIndex(env) {
   return env?.AGENTSAM_VECTORIZE_DOCUMENTS || null;
@@ -64,7 +62,8 @@ export async function deleteVectorsForDocKey(env, objectKey) {
     }
     return;
   }
-  const zeroVec = new Array(DOCS_EMBED_DIM).fill(0);
+  const lane = await resolveRagLane(env, 'docs');
+  const zeroVec = new Array(lane.dimensions).fill(0);
   let safety = 0;
   while (safety++ < 200) {
     let matches;
@@ -156,7 +155,7 @@ export async function performDocsBucketVectorizeIndex(env, keyFilter) {
           const textPart = batchParts[j];
           let embedding;
           try {
-            ({ embedding } = await createAgentsamEmbedding(env, textPart, { spec: EMBED_SPEC }));
+            ({ embedding } = await embedTextForLane(env, 'docs', textPart));
           } catch (e) {
             console.warn('[docs-vector-index] embed failed', key, chunkIndex, e?.message ?? e);
             if (shouldTripDocsVectorizeCircuit(e)) {

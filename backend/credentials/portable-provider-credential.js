@@ -363,7 +363,7 @@ export async function resolveProviderCredential(env, { userId, tenantId, provide
   }
 
   const envFallbacks = {
-    google: ['GEMINI_API_KEY'],
+    google: ['GOOGLE_AI_API_KEY', 'GEMINI_API_KEY', 'GOOGLE_API_KEY'],
     openai: ['OPENAI_API_KEY'],
     anthropic: ['ANTHROPIC_API_KEY'],
     cloudflare: ['CLOUDFLARE_API_TOKEN'],

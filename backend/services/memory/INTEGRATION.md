@@ -46,7 +46,7 @@ Callers (Worker routes, tools) should look like:
 
 1. Adapt Hyperdrive (`src/core/hyperdrive-query.js`) with `adaptSqlExecutor`.
 2. Replace env-key lookup with `resolveGoogleAiApiKey` from
-   `backend/rag/embeddings/google-gemini.js` if BYOK is required.
+   `backend/rag/embeddings/provider.js` for provider-neutral, D1-resolved embeddings.
 3. Register/apply
    `backend/database/migrations/20260822_agentsam_memory_gemini2_1536.sql`
    through the Supabase lane. Do not copy it into D1 `migrations/`.

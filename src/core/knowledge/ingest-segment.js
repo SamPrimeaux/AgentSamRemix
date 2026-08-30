@@ -4,7 +4,7 @@
  * (workspace_id, segment_id, projection_key) identity — not (workspace_id, source_ref).
  */
 
-import { createAgentsamEmbedding } from '../agentsam-vectorize.js';
+import { embedTextWithSpec } from '../../../backend/rag/embeddings/provider.js';
 import { enqueueVectorSyncOutbox } from '../agentsam-vector-sync-outbox.js';
 import { runHyperdriveQuery } from '../../../backend/services/database/hyperdrive.js';
 import {
@@ -158,9 +158,7 @@ async function ingestDocsSegment(env, input, workspaceUuid, steps) {
   const chunkIndex = Number.isInteger(Number(input.ordinal)) ? Number(input.ordinal) : 0;
   const sourceType = mapDocsSourceType(metaIn.source_type || 'markdown');
   const chunkType = String(metaIn.chunk_type || 'section').trim() || 'section';
-  const routeVersion = String(
-    input.embedding_route_version || metaIn.embedding_route_version || 'text-embedding-3-large:1536',
-  ).trim();
+  const routeVersion = lane.embeddingSpaceKey;
 
   const hash = await contentHash(content);
   steps.hash = { ok: true };
@@ -289,13 +287,16 @@ async function ingestDocsSegment(env, input, workspaceUuid, steps) {
   steps.idempotency = { ok: true, skipped: false };
 
   let embedding;
-  let embedModel = 'text-embedding-3-large';
+  let embedModel = lane.modelKey;
   try {
-    const emb = await createAgentsamEmbedding(env, content, {
-      spec: { provider: 'openai', model: 'text-embedding-3-large', dimensions: 1536 },
-    });
+    const emb = await embedTextWithSpec(
+      env,
+      content,
+      { provider: lane.provider, model: lane.modelKey, dimensions: lane.dimensions },
+      { userId: input.user_id ?? null, tenantId: input.tenant_id ?? null },
+    );
     embedding = emb.embedding;
-    embedModel = emb.model || embedModel;
+    embedModel = emb.model;
     steps.embed = { ok: true };
   } catch (e) {
     steps.embed = { ok: false, error: String(e?.message || e).slice(0, 400) };
@@ -346,8 +347,8 @@ async function ingestDocsSegment(env, input, workspaceUuid, steps) {
     projectionKey,
     routeVersion,
     JSON.stringify(metadata),
-    lane.vectorize || 'AGENTSAM_VECTORIZE_DOCUMENTS',
-    'agentsam-documents-oai3large-1536',
+    lane.vectorizeBinding?.bindingName || null,
+    lane.vectorizeBinding?.indexName || null,
   ];
 
   let upsert;
@@ -393,7 +394,7 @@ async function ingestDocsSegment(env, input, workspaceUuid, steps) {
          vectorize_binding, vectorize_index, vectorize_id, embedded_at, updated_at
        ) VALUES (
          $1::uuid, $2::uuid, $3, $4, $5, $6, $7,
-         $8, $9, $10, $11::vector, $12, 1536,
+         $8, $9, $10, $11::vector, $12, ${lane.dimensions},
          $13, $14, $15, $16,
          $17, true, NULL, $18::jsonb,
          $19, $20, $1::text, now(), now()
@@ -451,7 +452,8 @@ async function ingestDocsSegment(env, input, workspaceUuid, steps) {
     source_type: sourceType,
   };
 
-  const binding = lane.vectorize ? env?.[lane.vectorize] : null;
+  const vectorizeBindingName = lane.vectorizeBinding?.bindingName || null;
+  const binding = vectorizeBindingName ? env?.[vectorizeBindingName] : null;
   if (binding && typeof binding.upsert === 'function') {
     try {
       await binding.upsert([{ id: rowId, values: embedding, metadata: vectorMeta }]);
@@ -465,26 +467,30 @@ async function ingestDocsSegment(env, input, workspaceUuid, steps) {
     pendingSteps.push('vectorize');
   }
 
-  try {
-    const enq = await enqueueVectorSyncOutbox(env, {
-      workspaceId: workspaceUuid,
-      sourceTable: table,
-      sourceId: rowId,
-      vectorIndex: lane.vectorize || 'AGENTSAM_VECTORIZE_DOCUMENTS',
-      operation: 'upsert',
-      contentHash: hash,
-      embeddingModel: embedModel,
-      embeddingDims: 1536,
-    });
-    steps.vector_sync_outbox = {
-      ok: !!enq?.ok,
-      outbox_enqueued: !!enq?.ok,
-      ...(enq?.ok ? {} : { error: enq?.error || enq?.reason || 'enqueue_failed' }),
-    };
-    if (!enq?.ok) pendingSteps.push('vector_sync_outbox');
-  } catch (e) {
-    steps.vector_sync_outbox = { ok: false, error: String(e?.message || e).slice(0, 400) };
-    pendingSteps.push('vector_sync_outbox');
+  if (vectorizeBindingName) {
+    try {
+      const enq = await enqueueVectorSyncOutbox(env, {
+        workspaceId: workspaceUuid,
+        sourceTable: table,
+        sourceId: rowId,
+        vectorIndex: vectorizeBindingName,
+        operation: 'upsert',
+        contentHash: hash,
+        embeddingModel: embedModel,
+        embeddingDims: lane.dimensions,
+      });
+      steps.vector_sync_outbox = {
+        ok: !!enq?.ok,
+        outbox_enqueued: !!enq?.ok,
+        ...(enq?.ok ? {} : { error: enq?.error || enq?.reason || 'enqueue_failed' }),
+      };
+      if (!enq?.ok) pendingSteps.push('vector_sync_outbox');
+    } catch (e) {
+      steps.vector_sync_outbox = { ok: false, error: String(e?.message || e).slice(0, 400) };
+      pendingSteps.push('vector_sync_outbox');
+    }
+  } else {
+    steps.vector_sync_outbox = { ok: true, skipped: true, reason: 'no_vectorize_mirror_registered' };
   }
 
   const receipts = {
@@ -709,7 +715,7 @@ export async function legacyWriteEntryToIngestInput(laneName, entry) {
   const projectionKey = String(
     entry?.projection_key ||
       meta.projection_key ||
-      (lane === 'docs' ? 'docs:oai3large:1536:v1' : `${lane}:oai3large:1536:v1`),
+      `${lane}:segment:v1`,
   ).trim();
 
   const sourceTypeRaw = String(entry?.source_type || meta.source_type || 'other').trim();
@@ -723,7 +729,7 @@ export async function legacyWriteEntryToIngestInput(laneName, entry) {
     segment_id: segmentId,
     projection_key: projectionKey,
     embedding_route_version: String(
-      entry?.embedding_route_version || meta.embedding_route_version || 'text-embedding-3-large:1536',
+      entry?.embedding_route_version || meta.embedding_route_version || '',
     ),
     ordinal: Number.isInteger(Number(entry?.chunk_index ?? meta.chunk_index))
       ? Number(entry?.chunk_index ?? meta.chunk_index)

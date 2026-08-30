@@ -2,11 +2,11 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 
 import { MemoryService } from '../memory-service.js';
-import { MEMORY_EMBEDDING_DIMENSIONS } from '../constants.js';
 import { VectorizeMemoryStore } from '../adapters/vectorize-memory-store.js';
 
+const TEST_EMBEDDING_DIMENSIONS = 4;
 const VECTOR = Object.freeze(
-  Array.from({ length: MEMORY_EMBEDDING_DIMENSIONS }, (_, i) => (i === 0 ? 1 : 0)),
+  Array.from({ length: TEST_EMBEDDING_DIMENSIONS }, (_, i) => (i === 0 ? 1 : 0)),
 );
 
 const NOW_MS = Date.parse('2026-08-22T12:00:00.000Z');
@@ -127,6 +127,8 @@ function makeHarness() {
   const service = new MemoryService({
     repository,
     embeddingProvider,
+    embeddingModel: 'fixture-embedding-model',
+    embeddingDimensions: TEST_EMBEDDING_DIMENSIONS,
     idFactory: () => `mem_fixture_${++id}`,
     now: () => NOW_MS,
   });

@@ -2,17 +2,11 @@
  * Wave 2: promote aged / superseded / ADR-class memory into deep_archive_oai3large_3072.
  * Supplement-only retrieval was retired with agent-chat-lane-context (shouldSupplementDeepArchive → always false).
  */
-import { createAgentsamEmbedding } from './agentsam-vectorize.js';
+import { embedTextWithSpec } from '../../backend/rag/embeddings/provider.js';
 import { contentHash, resolveSupabaseWorkspaceId, resolveRagLane } from '../../backend/rag/index.js';
 import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
 
 export const DEEP_ARCHIVE_AGE_DAYS = 90;
-export const DEEP_ARCHIVE_EMBED_SPEC = Object.freeze({
-  provider: 'openai',
-  model: 'text-embedding-3-large',
-  dimensions: 3072,
-});
-
 function vectorLiteral(embedding) {
   if (!Array.isArray(embedding) || !embedding.length) throw new Error('embedding required');
   return `[${embedding.join(',')}]`;
@@ -46,7 +40,8 @@ export async function writeDeepArchiveLane(env, entry) {
   const archiveTier = String(entry?.archive_tier || 'standard').trim() || 'standard';
   const title = String(entry?.title || sourceRef).trim();
   const hash = await contentHash(content);
-  const table = (await resolveRagLane(env, 'archive')).tableName;
+  const lane = await resolveRagLane(env, 'archive');
+  const table = lane.tableName;
 
   const existing = await runHyperdriveQuery(
     env,
@@ -59,12 +54,11 @@ export async function writeDeepArchiveLane(env, entry) {
     return { ok: true, skipped: 'unchanged', id: String(existingRow.id) };
   }
 
-  const { embedding, model } = await createAgentsamEmbedding(env, content, {
-    spec: DEEP_ARCHIVE_EMBED_SPEC,
-  });
-  if (!Array.isArray(embedding) || embedding.length !== 3072) {
-    throw new Error(`deep archive embed dims ${embedding?.length ?? 0}, expected 3072`);
-  }
+  const { embedding, model } = await embedTextWithSpec(
+    env, content,
+    { provider: lane.provider, model: lane.modelKey, dimensions: lane.dimensions },
+    { userId: entry?.user_id ?? null },
+  );
 
   const rowId = existingRow?.id != null ? String(existingRow.id) : crypto.randomUUID();
   const upsert = await runHyperdriveQuery(
@@ -76,7 +70,7 @@ export async function writeDeepArchiveLane(env, entry) {
      ) VALUES (
        $1::uuid, $2::uuid, $3, $4, $5, $6,
        $7, $8, $9, $10,
-       $11::vector, $12, 3072, now(), $13::jsonb, now()
+       $11::vector, $12, $13, now(), $14::jsonb, now()
      )
      ON CONFLICT (workspace_id, source_ref) DO UPDATE SET
        title = EXCLUDED.title,
@@ -87,7 +81,7 @@ export async function writeDeepArchiveLane(env, entry) {
        source_path = EXCLUDED.source_path,
        embedding = EXCLUDED.embedding,
        embedding_model = EXCLUDED.embedding_model,
-       embedding_dims = 3072,
+       embedding_dims = EXCLUDED.embedding_dims,
        embedded_at = now(),
        metadata = EXCLUDED.metadata,
        updated_at = now()
@@ -104,7 +98,8 @@ export async function writeDeepArchiveLane(env, entry) {
       sourceRef,
       entry?.source_path != null ? String(entry.source_path) : null,
       vectorLiteral(embedding),
-      model || DEEP_ARCHIVE_EMBED_SPEC.model,
+      model,
+      lane.dimensions,
       JSON.stringify(entry?.metadata && typeof entry.metadata === 'object' ? entry.metadata : {}),
     ],
   );

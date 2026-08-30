@@ -11,7 +11,8 @@
  *  to keep agentsam_model_routing_memory populated for cold-start priors.
  */
 
-import { logSemanticSearch, createEmbedding } from '../../backend/http/agentsam/routes/memory-legacy.js';
+import { logSemanticSearch } from '../../backend/rag/retrieval/observations.js';
+import { embedTextForLane } from '../../backend/rag/embeddings/lane-router.js';
 import { isHyperdriveUsable, runHyperdriveQuery } from '../../backend/services/database/hyperdrive.js';
 import { agentsamMemoryActiveSqlOrEmpty } from '../../backend/http/agentsam/routes/memory-resolve-runtime.js';
 
@@ -168,7 +169,7 @@ async function searchSupabaseContext(env, userMessage, tenantId, workspaceId, se
 
   if (isHyperdriveUsable(env)) {
     try {
-      const { embedding } = await createEmbedding(env, q);
+      const { embedding } = await embedTextForLane(env, 'docs', q, { tenantId });
       if (!Array.isArray(embedding) || !embedding.length) throw new Error('empty_embedding');
       const embeddingStr = `[${embedding.join(',')}]`;
       const queryPreview = String(userMessage || '').slice(0, 120);

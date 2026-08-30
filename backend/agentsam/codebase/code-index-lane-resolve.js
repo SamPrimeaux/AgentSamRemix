@@ -200,9 +200,9 @@ export async function resolveCodeIndexLaneConfig(env) {
   const armProvider = String(arm.provider || '')
     .trim()
     .toLowerCase();
-  if (armProvider && armProvider !== 'google') {
-    const e = new Error(`code_index_embed_arm_provider_forbidden:${armProvider}`);
-    e.code = 'code_index_embed_arm_provider_forbidden';
+  if (!armProvider) {
+    const e = new Error('code_index_embed_arm_provider_required');
+    e.code = 'code_index_embed_arm_provider_required';
     throw e;
   }
   if (armModel !== registryModel) {
@@ -218,7 +218,7 @@ export async function resolveCodeIndexLaneConfig(env) {
       ? String(arm.model_catalog_id).trim()
       : null;
   let catalogModelKey = arm.model_key;
-  let catalogProvider = armProvider || 'google';
+  let catalogProvider = armProvider;
 
   if (catalogId) {
     const cat = await env.DB.prepare(
@@ -243,9 +243,9 @@ export async function resolveCodeIndexLaneConfig(env) {
       e.code = 'code_index_lane_catalog_model_mismatch';
       throw e;
     }
-    if (catalogProvider && catalogProvider !== 'google') {
-      const e = new Error(`code_index_embed_catalog_provider_forbidden:${catalogProvider}`);
-      e.code = 'code_index_embed_catalog_provider_forbidden';
+    if (catalogProvider !== armProvider) {
+      const e = new Error('code_index_lane_catalog_provider_mismatch');
+      e.code = 'code_index_lane_catalog_provider_mismatch';
       throw e;
     }
   } else {
@@ -276,9 +276,9 @@ export async function resolveCodeIndexLaneConfig(env) {
     }),
     dimensions: /** @type {number} */ (dimensions),
     embed: Object.freeze({
-      provider: catalogProvider || 'google',
+      provider: catalogProvider,
       model: armModel,
-      modelKey: String(catalogModelKey || arm.model_key),
+      modelKey: String(catalogModelKey),
       catalogId,
       armId: String(arm.id),
       dimensions: /** @type {number} */ (dimensions),
@@ -303,9 +303,9 @@ export async function resolveCodeIndexLaneConfig(env) {
  */
 export function embedSpecFromCodeIndexLaneConfig(config) {
   return {
-    provider: config.embed.provider || 'google',
+    provider: config.embed.provider,
     model: config.embed.model,
-    modelKey: config.embed.modelKey || config.embed.model,
+    modelKey: config.embed.modelKey,
     dimensions: config.dimensions,
     catalogId: config.embed.catalogId ?? null,
     armId: config.embed.armId,
