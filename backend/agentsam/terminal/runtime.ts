@@ -30,8 +30,12 @@ function isBlockedHostCommand(command: string) {
   return BLOCKED_HOST_COMMANDS.some((pattern) => pattern.test(command));
 }
 
-export async function preferredExecLane(env: Env, userId: string, workspaceId: string): Promise<ExecLane> {
-  const key = `asr:exec-lane:${userId}:${workspaceId}`;
+export async function preferredExecLane(
+  env: Env,
+  userId: string,
+  _workspaceId?: string | null,
+): Promise<ExecLane> {
+  const key = `asr:exec-lane:${userId}`;
   const cached = await env.SESSION_CACHE?.get(key).catch(() => null);
   if (isExecLane(cached)) return cached;
   // The VPC VM is platform infrastructure and requires no per-user connection
@@ -40,9 +44,14 @@ export async function preferredExecLane(env: Env, userId: string, workspaceId: s
   return env.PTY_SERVICE?.fetch ? 'remote' : 'local';
 }
 
-export async function rememberExecLane(env: Env, userId: string, workspaceId: string, lane: ExecLane) {
+export async function rememberExecLane(
+  env: Env,
+  userId: string,
+  _workspaceId: string | null | undefined,
+  lane: ExecLane,
+) {
   if (!env.SESSION_CACHE) return;
-  const key = `asr:exec-lane:${userId}:${workspaceId}`;
+  const key = `asr:exec-lane:${userId}`;
   await env.SESSION_CACHE.put(key, lane, { expirationTtl: 60 * 60 * 24 * 30 });
 }
 
