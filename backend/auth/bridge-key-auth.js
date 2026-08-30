@@ -16,6 +16,22 @@ function trim(v) {
   return v == null ? '' : String(v).trim();
 }
 
+export const AGENTSAM_PLATFORM_PRINCIPAL = Object.freeze({
+  id: 'agentsam-platform',
+  type: 'service',
+  capabilities: Object.freeze(['retrieval.read', 'retrieval.evaluate']),
+});
+
+export function machineProofHasCapability(proof, capability) {
+  const requested = trim(capability);
+  return Boolean(
+    proof?.type === 'bridge' &&
+    requested &&
+    Array.isArray(proof.capabilities) &&
+    proof.capabilities.includes(requested),
+  );
+}
+
 /**
  * Outbound key for platform machine-to-machine calls.
  * @param {any} env
