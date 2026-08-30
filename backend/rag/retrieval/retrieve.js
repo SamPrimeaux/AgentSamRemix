@@ -11,7 +11,7 @@ import { packEvidence } from './budget.js';
 import { rankingEntropy, scoreMargin } from './math.js';
 import { recordRetrievalObservation } from './observations.js';
 
-export const RETRIEVAL_POLICY_VERSION = 'retrieval-v1.0';
+export const RETRIEVAL_POLICY_VERSION = 'retrieval-v1.1';
 const RERANK_ENTROPY_THRESHOLD = 0.72;
 
 async function timed(fn) {
@@ -26,10 +26,32 @@ async function timed(fn) {
 function cleanScope(params) {
   return {
     workspaceId: String(params?.workspaceId || '').trim(),
-    tenantId: params?.tenantId ? String(params.tenantId).trim() : null,
-    userId: params?.userId ? String(params.userId).trim() : null,
     repoFullName: params?.repoFullName ? String(params.repoFullName).trim() : '',
     sourceType: params?.sourceType ? String(params.sourceType).trim() : 'code',
+  };
+}
+
+function buildCorpusIdentity(scope, codeScopes) {
+  const active = (Array.isArray(codeScopes) ? codeScopes : [])
+    .filter((row) => row?.repoFullName && row?.generationId)
+    .map((row) => ({
+      repoFullName: String(row.repoFullName),
+      generationId: String(row.generationId),
+      revisionSha: row?.revisionSha ? String(row.revisionSha) : null,
+    }))
+    .sort((a, b) => `${a.repoFullName}@${a.generationId}`.localeCompare(`${b.repoFullName}@${b.generationId}`));
+  const repoFullName = scope.repoFullName || (active.length === 1 ? active[0].repoFullName : '');
+  const corpusKey = active.length
+    ? active.map((row) => `${row.repoFullName}@${row.generationId}`).join('|').slice(0, 4000)
+    : repoFullName
+      ? `repo:${repoFullName}`
+      : `source:${scope.sourceType || 'code'}`;
+  return {
+    corpusType: active.length > 1 ? 'code_index_set' : 'code_index',
+    corpusKey,
+    repoFullName: repoFullName || null,
+    indexGenerationKey: active.length ? active.map((row) => row.generationId).join('|').slice(0, 4000) : null,
+    revisionSha: active.length === 1 ? active[0].revisionSha : null,
   };
 }
 
@@ -69,7 +91,8 @@ function groundingBlock(selected) {
 /**
  * Retrieval V1: active AST generations + lexical exactness + injected ANN,
  * one-hop call/import graph expansion, RRF, ambiguity-gated reranking, MMR
- * diversity, then hard token packing. No model/provider/vector-index default.
+ * diversity, then hard token packing. Workspace is an access/physical index
+ * partition only; retrieval learning is keyed by corpus/index identity.
  */
 export async function retrieveKnowledge(env, params, services = {}) {
   const totalStarted = performance.now();
@@ -208,6 +231,7 @@ export async function retrieveKnowledge(env, params, services = {}) {
     policyVersion: RETRIEVAL_POLICY_VERSION,
     stages,
     totalRetrievalMs: performance.now() - totalStarted,
+    annK: dense.ok ? profile.candidateK : 0,
     astCandidates: structural.hits?.length || 0,
     lexicalCandidates: lexical.hits?.length || 0,
     denseCandidates: dense.hits?.length || 0,
@@ -229,19 +253,16 @@ export async function retrieveKnowledge(env, params, services = {}) {
     identifierDensity: profile.identifierDensity,
   };
 
+  const corpus = buildCorpusIdentity(scope, codeScopes);
   const observation = await recordRetrievalObservation(env, {
     query: profile.query,
-    workspaceId: scope.workspaceId,
-    tenantId: scope.tenantId,
-    userId: scope.userId,
     runId: params?.runId,
+    decisionId: params?.decisionId,
     taskType: params?.taskType || 'knowledge_retrieval',
-    scopeType: scope.repoFullName ? 'repo' : scope.sourceType || 'workspace',
-    scopeId: scope.repoFullName || scope.workspaceId,
+    ...corpus,
     policyVersion: RETRIEVAL_POLICY_VERSION,
     denseRouteKey: dense.routeKey,
     embeddingSpaceKey: dense.embeddingSpaceKey,
-    annK: dense.ok ? profile.candidateK : 0,
     metrics,
   });
 
@@ -258,8 +279,8 @@ export async function retrieveKnowledge(env, params, services = {}) {
       rerankRecommended: profile.rerankRecommended,
     },
     scope: {
-      workspaceId: scope.workspaceId,
-      repoFullName: scope.repoFullName || null,
+      repoFullName: corpus.repoFullName,
+      corpusKey: corpus.corpusKey,
       activeCodeGenerations: codeScopes.map((row) => ({ repoFullName: row.repoFullName, generationId: row.generationId, revisionSha: row.revisionSha })),
     },
     results: selected,

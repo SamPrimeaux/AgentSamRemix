@@ -30,12 +30,11 @@ export async function handleRetrievalHttpRequest(request, env, scope, services =
   const result = await retrieveKnowledge(env, {
     query,
     workspaceId: scope.workspaceId,
-    tenantId: scope.tenantId,
-    userId: scope.userId,
     repoFullName: trim(body.repoFullName || body.repo_full_name || body.repo),
     sourceType: trim(body.sourceType || body.source_type) || 'code',
     taskType: trim(body.taskType || body.task_type) || 'knowledge_retrieval',
     runId: trim(body.runId || body.run_id) || null,
+    decisionId: trim(body.decisionId || body.decision_id) || null,
     candidateK: body.candidateK ?? body.candidate_k,
     topK: body.topK ?? body.top_k,
     tokenBudget: body.tokenBudget ?? body.token_budget,

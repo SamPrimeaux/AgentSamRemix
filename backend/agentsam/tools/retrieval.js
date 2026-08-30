@@ -25,8 +25,6 @@ export function createCodebaseRetrieveTool(env, resolveScope, resolveServices = 
         query: input.query,
         repoFullName: input.repoFullName,
         workspaceId: scope.workspaceId,
-        tenantId: scope.tenantId,
-        userId: scope.userId,
         sourceType: 'code',
         taskType: 'codebase_retrieval',
         candidateK: input.candidateK,

@@ -11,66 +11,97 @@ function trim(value) {
   return value == null ? '' : String(value).trim();
 }
 
+function finiteOrNull(value) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+}
+
 /**
- * Retrieval observations are control/evaluation telemetry. Raw query text is
- * deliberately not stored; only a SHA-256 query hash and bounded metrics JSON.
+ * Retrieval observations are policy/evaluation telemetry, not identity state.
+ * Raw query text is deliberately not stored. Workspace/user/tenant may be used
+ * upstream to authorize or physically partition a corpus, but they are never
+ * persisted as learning dimensions here.
  */
 export async function recordRetrievalObservation(env, observation) {
   if (!env?.DB) return { recorded: false, error: 'db_unavailable' };
   try {
-    const id = observation?.id || `ret_${crypto.randomUUID().replace(/-/g, '')}`;
+    const id = trim(observation?.id) || `ret_${crypto.randomUUID().replace(/-/g, '')}`;
+    const decisionId = trim(observation?.decisionId) || `rdec_${crypto.randomUUID().replace(/-/g, '')}`;
     const queryHash = await sha256Hex(observation?.query || '');
+    const corpusKey = trim(observation?.corpusKey);
+    if (!corpusKey) return { recorded: false, error: 'retrieval_corpus_key_required' };
+
     const metrics = observation?.metrics && typeof observation.metrics === 'object'
       ? observation.metrics
       : {};
     const metricsJson = JSON.stringify(metrics);
     if (metricsJson.length > 48_000) return { recorded: false, error: 'retrieval_metrics_too_large' };
 
-    await env.DB.prepare(
-      `INSERT INTO agentsam_retrieval_observations (
-         id, workspace_id, tenant_id, user_id, run_id, query_hash,
-         task_type, scope_type, scope_id, retrieval_policy_version,
-         dense_route_key, embedding_space_key, ann_k,
-         dense_candidates, lexical_candidates, ast_candidates, fused_candidates,
-         reranked_candidates, selected_chunks, selected_tokens, metrics_json, created_at
-       ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, unixepoch())`,
-    ).bind(
+    const values = [
       id,
-      trim(observation?.workspaceId),
-      trim(observation?.tenantId) || null,
-      trim(observation?.userId) || null,
       trim(observation?.runId) || null,
+      decisionId,
       queryHash,
       trim(observation?.taskType) || 'retrieval',
-      trim(observation?.scopeType) || 'workspace',
-      trim(observation?.scopeId) || null,
+      trim(observation?.corpusType) || 'code_index',
+      corpusKey,
+      trim(observation?.repoFullName) || null,
+      trim(observation?.indexGenerationKey) || null,
+      trim(observation?.revisionSha) || null,
       trim(observation?.policyVersion) || 'retrieval-v1',
       trim(observation?.denseRouteKey) || null,
       trim(observation?.embeddingSpaceKey) || null,
-      Number(observation?.annK) || 0,
+      Number(metrics.annK ?? observation?.annK) || 0,
       Number(metrics.denseCandidates) || 0,
       Number(metrics.lexicalCandidates) || 0,
       Number(metrics.astCandidates) || 0,
+      Number(metrics.graphCandidates) || 0,
       Number(metrics.fusedCandidates) || 0,
       Number(metrics.rerankedCandidates) || 0,
       Number(metrics.selectedChunks) || 0,
       Number(metrics.selectedTokens) || 0,
+      finiteOrNull(metrics.totalRetrievalMs),
+      finiteOrNull(metrics?.stages?.rerankMs),
+      finiteOrNull(metrics?.stages?.packingMs),
+      finiteOrNull(metrics.fusionScoreMargin),
+      finiteOrNull(metrics.fusionScoreEntropy),
+      finiteOrNull(metrics.redundantTokenRatio),
+      finiteOrNull(metrics.budgetUtilization),
       metricsJson,
-    ).run();
-    return { recorded: true, id };
+    ];
+    const placeholders = values.map(() => '?').join(', ');
+
+    await env.DB.prepare(
+      `INSERT INTO agentsam_retrieval_observations (
+         id, run_id, decision_id, query_hash, task_type,
+         corpus_type, corpus_key, repo_full_name, index_generation_key, revision_sha,
+         retrieval_policy_version, dense_route_key, embedding_space_key, ann_k,
+         dense_candidates, lexical_candidates, ast_candidates, graph_candidates,
+         fused_candidates, reranked_candidates, selected_chunks, selected_tokens,
+         total_retrieval_ms, rerank_ms, packing_ms,
+         fusion_score_margin, fusion_score_entropy, redundant_token_ratio,
+         budget_utilization, metrics_json, created_at
+       ) VALUES (${placeholders}, unixepoch())`,
+    ).bind(...values).run();
+    return { recorded: true, id, decisionId };
   } catch (error) {
     const message = String(error?.message || error);
     return {
       recorded: false,
       error: message.includes('no such table')
         ? 'retrieval_observation_table_missing'
-        : `retrieval_observation_write_failed:${message.slice(0, 160)}`,
+        : message.includes('no column named')
+          ? 'retrieval_observation_schema_outdated'
+          : `retrieval_observation_write_failed:${message.slice(0, 160)}`,
     };
   }
 }
 
-
-/** Legacy search-log receipt retained as retrieval telemetry, not HTTP behavior. */
+/**
+ * Legacy Supabase search-log receipt retained for existing non-code lane
+ * compatibility. workspace_id is the physical pgvector corpus partition only;
+ * tenant/session/user identity is intentionally not duplicated into metadata.
+ */
 export async function logSemanticSearch(env, args) {
   const workspaceIdD1 =
     args?.workspaceId != null && String(args.workspaceId).trim() !== ''
@@ -83,16 +114,17 @@ export async function logSemanticSearch(env, args) {
   const workspaceUuid = await resolveSupabaseWorkspaceId(env, workspaceIdD1).catch(() => null);
   if (!workspaceUuid) return;
 
+  const metadata = args?.metadata && typeof args.metadata === 'object' && !Array.isArray(args.metadata)
+    ? { ...args.metadata }
+    : {};
+  delete metadata.workspace_id;
+  delete metadata.tenant_id;
+  delete metadata.user_id;
+  delete metadata.session_id;
+
   const metaObj = {
-    ...(args?.metadata && typeof args.metadata === 'object' && !Array.isArray(args.metadata)
-      ? args.metadata
-      : {}),
+    ...metadata,
     search_fn: String(args?.searchFn || 'unknown').slice(0, 200),
-    tenant_id: args?.tenantId != null ? String(args.tenantId).trim() : null,
-    session_id:
-      args?.sessionId != null && String(args.sessionId).trim() !== ''
-        ? String(args.sessionId).trim().slice(0, 500)
-        : null,
     match_threshold: args?.matchThreshold,
     match_count_requested: args?.matchCountRequested,
     top_similarity: args?.topSimilarity ?? null,
