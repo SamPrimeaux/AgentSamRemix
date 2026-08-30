@@ -34,8 +34,11 @@ export class AgentSam extends Think<Env> {
   }
 
   private runtimeScope = async () => {
-    const scope = await scopeFromAgentName(this.env, this.name);
-    if (!scope) throw new Error('agent_runtime_scope_unresolved');
+    // Agent instance identity is the D1-owned conversation_id. The Worker route
+    // verifies the signed-in user owns this conversation before the request ever
+    // reaches the Durable Object; tools independently resolve the same owner here.
+    const scope = await resolveConversationRuntimeScope(this.env, this.name);
+    if (!scope) throw new Error('agent_conversation_scope_unresolved');
     return scope;
   };
 
