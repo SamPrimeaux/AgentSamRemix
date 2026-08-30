@@ -2,7 +2,7 @@
 
 Audited against `SamPrimeaux/agentsam-os@1cb5e3d9096589e38f3fcfaf3f2191aa95a4c592`.
 
-## Large controllers intentionally referenced, not vendored
+## Large controllers captured as inert reference source
 
 ### Workspace shell
 
@@ -47,6 +47,6 @@ Audited against `SamPrimeaux/agentsam-os@1cb5e3d9096589e38f3fcfaf3f2191aa95a4c59
 
 ## Screenshot
 
-The visual reference remains upstream at `docs/images/q3-planning-workspace.png` (blob SHA
+The visual reference is copied to `reference/q3-planning-workspace.png` from upstream `docs/images/q3-planning-workspace.png` (blob SHA
 `12363781a40fdd9eb50968b13ebfe7de8be9e251`). The README embeds it directly so the inspiration directory stays
 text-first and reviewable.

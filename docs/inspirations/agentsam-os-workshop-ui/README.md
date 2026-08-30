@@ -4,7 +4,7 @@ This directory is an intentionally isolated design/reference snapshot for the `a
 It captures the parts of `SamPrimeaux/agentsam-os` that materially define the Q3 Planning Workspace UI without
 turning AgentSamRemix into a fork of Cloudflare OS.
 
-![Q3 Planning Workspace reference](https://raw.githubusercontent.com/SamPrimeaux/agentsam-os/main/docs/images/q3-planning-workspace.png)
+![Q3 Planning Workspace reference](./reference/q3-planning-workspace.png)
 
 ## Why this exists
 
@@ -64,7 +64,7 @@ artifact can read `Document`, `App`, etc. That pattern is more useful to us than
 
 ## What is copied here
 
-The `source/` directory contains the smaller, presentation-heavy upstream files that are useful to inspect locally:
+The `source/` directory contains an exact, reference-only snapshot of the core upstream workspace files and the smaller presentation primitives that define the screenshot:
 
 - `ChatInterface.module.css` — markdown, streaming/thinking, capsule/composer presentation.
 - `GadgetUI.tsx` — generated-output iframe shell and loading/error/fullscreen-adjacent behavior.
@@ -77,9 +77,6 @@ The `source/` directory contains the smaller, presentation-heavy upstream files 
 - `styles.css` — upstream semantic tokens, neutral surfaces, motion, shadows, and scrollbar treatment.
 - `routes/workspace.$id.tsx` — route boundary for understanding the shell.
 
-The three large controller files that contain substantial Cloudflare OS runtime machinery are **not copied wholesale**:
-`GadgetEditor.tsx`, `ChatInterface.tsx`, and `GadgetCodeInterface.tsx`. Their exact upstream paths/SHAs and the UI
-behaviors we want from them are recorded in `SOURCE_POINTERS.md`. This is deliberate: dragging hundreds of KB of
-foreign runtime state into AgentSamRemix would defeat the purpose of a careful inspiration branch.
+The three large controllers (`GadgetEditor.tsx`, `ChatInterface.tsx`, and `GadgetCodeInterface.tsx`) are included **only as inert reference source under `docs/`**. They are not dependency-complete and must not be wired into the app wholesale. `SOURCE_POINTERS.md` records their upstream SHAs and the specific behaviors worth adopting.
 
 Read `ADOPTION_MATRIX.md` before moving anything into `app/`.
