@@ -1,5 +1,5 @@
 /**
- * app/dashboard/components/MeetPage.tsx
+ * app/components/MeetPage.tsx
  * InnerAnimalMedia Meet — RealtimeKit (v2) or legacy Cloudflare Calls SFU
  * Fully theme-variable-driven. No hardcoded colors.
  */

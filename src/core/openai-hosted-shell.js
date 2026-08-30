@@ -11,7 +11,7 @@ export const FLAG_KEY = 'openai_hosted_shell';
 /** Hybrid routing hint appended to Responses instructions when shell is injected. */
 export const HOSTED_SHELL_HYBRID_INSTRUCTION = [
   'Shell routing (hybrid):',
-  '- Prefer the active workspace terminal / filesystem tools for Inner Animal Media repo, git, deploys, and workspace files (.scratch/, src/, app/dashboard/, absolute Mac/GCP paths).',
+  '- Prefer the active workspace terminal / filesystem tools for Inner Animal Media repo, git, deploys, and workspace files (.scratch/, src/, app/, absolute Mac/GCP paths).',
   '- Use the OpenAI hosted shell tool ONLY for isolated Debian container work under /mnt/data (scratch compute). Hosted shell is NOT the IAM workspace.',
   '- Never use hosted shell for .scratch/, repo-relative paths, /Users/, /home/<tunnel-owner>/, or git/deploy. If the task needs those, use workspace tools already on your menu.',
   '- Hosted shell has no outbound network unless an allowlist is configured; do not assume curl/pip network works.',

@@ -1431,7 +1431,7 @@ export async function handleOAuthApi(request, env, ctx) {
     if (!PROVIDERS.has(provider)) return jsonResponse({ error: 'unsupported_provider' }, 400);
 
     const authUser = await getAuthUser(request, env);
-    // Login/sign-up OAuth: always use login handlers for app/dashboard/auth return_to even when a stale
+    // Login/sign-up OAuth: always use login handlers for dashboard/auth return_to even when a stale
     // session cookie exists — otherwise Google tokens attach to the wrong user_id (integration path).
     if (provider === 'google' && (isGoogleLoginOAuthStart(url) || !authUser)) {
       return loginGoogleOAuthStart(request, url, env);

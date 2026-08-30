@@ -1,6 +1,6 @@
 /**
  * WireframeStudio — Figma-like lo-fi UI canvas (Draw engine companion to Excalidraw).
- * Design ref: app/dashboard/design-refs/wireframe_canvas_editor.html
+ * Design ref: app/design-refs/wireframe_canvas_editor.html
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {

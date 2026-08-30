@@ -1,4 +1,4 @@
-// app/dashboard/components/finance/panels/AlertFeed.tsx
+// app/components/finance/panels/AlertFeed.tsx
 
 import React, { useState } from 'react';
 import { cn } from '../../../lib/utils';

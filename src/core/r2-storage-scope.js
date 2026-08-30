@@ -13,8 +13,8 @@
  *   src/core/platform-owner-r2-access.js — Agent tool catalog (auth_source=platform)
  *   src/core/user-storage-r2-credentials.js — mergeR2S3EnvFromUserStorage (BYOK vs superadmin)
  *   src/core/bootstrap-scoped-context.js — platform_r2_visible, tenant_buckets
- *   app/dashboard/components/StoragePage.tsx — /api/storage/*
- *   app/dashboard/components/LocalExplorer.tsx — /api/r2/* placeholders
+ *   app/components/StoragePage.tsx — /api/storage/*
+ *   legacy LocalExplorer surface — /api/r2/* placeholders
  */
 
 import { ApiError } from './api-error.js';

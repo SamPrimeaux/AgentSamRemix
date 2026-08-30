@@ -18,7 +18,7 @@ Current compatibility flow:
 
 ```text
 dashboard URL
-  -> app/dashboard/pages/cms/cmsRoute.ts        compatibility facade
+  -> app/pages/cms/cmsRoute.ts        compatibility facade
   -> src/core/agentsam/cms/routing/         canonical semantics
   -> normalized CMS route context
 ```
@@ -133,7 +133,7 @@ The dispatcher has two deliberate phases: context/integration discovery runs bef
 
 `src/dashboard/cms/` is the single frontend ownership boundary for CMS editing. It owns the browser API client, Page → Section → Block editor model, preview/selection bridge, and `CmsEditor` implementation. The dashboard CMS surface remains the hub/route host rather than a second editor.
 
-The existing Studio iframe build remains intentionally isolated for React/build safety, but it now mounts the canonical editor. `app/dashboard/studio-cms/main.tsx` and the historical `app/dashboard/pages/cms/studio/iamApi.ts` are compatibility hosts only.
+The existing Studio iframe build remains intentionally isolated for React/build safety, but it now mounts the canonical editor. `app/studio-cms/main.tsx` and the historical `app/pages/cms/studio/iamApi.ts` are compatibility hosts only.
 
 Editor UI must not fabricate customer seed content, telemetry, or successful mutations. Capabilities without a real canonical API are shown as unavailable until implemented.
 

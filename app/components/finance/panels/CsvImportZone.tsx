@@ -1,4 +1,4 @@
-// app/dashboard/components/finance/panels/CsvImportZone.tsx
+// app/components/finance/panels/CsvImportZone.tsx
 
 import React, { useRef, useState, useCallback } from 'react';
 import { cn } from '../../../lib/utils';

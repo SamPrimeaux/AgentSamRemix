@@ -1,6 +1,6 @@
 /**
  * Agent Sam composer mode contract — shared between dashboard types and Worker runtime.
- * Keep in sync with `app/dashboard/components/ChatAssistant/types.ts` AgentMode / AGENT_MODES.
+ * Keep in sync with `app/components/ChatAssistant/types.ts` AgentMode / AGENT_MODES.
  *
  * Composer modes: ask | plan | agent | debug | multitask
  * NOT a mode: `auto` — that is Thompson model selection (`model=auto` / AUTO_MODEL_KEY).

@@ -619,7 +619,7 @@ export async function batchDeleteFromCfImages(batchToken, imageId) {
 // literally named "public" can be configured to any width/height (confirmed on
 // this account: "public" = 1366x768, "large" = 1200x1200, not any generic
 // default). Any UI showing variant dimensions must read this real catalog, not
-// hardcode assumed values — the app/dashboard/components/images/imagesRegistry.ts
+// hardcode assumed values — the app/components/images/imagesRegistry.ts
 // NAMED_VARIANTS constant is a client-side fallback only, for when this call
 // fails or no CF Images credentials are configured; it must never be trusted as
 // ground truth over what this function returns.

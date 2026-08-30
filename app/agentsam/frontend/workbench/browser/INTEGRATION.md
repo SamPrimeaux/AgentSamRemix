@@ -9,11 +9,11 @@
 ## Hard law
 
 1. **Product code lives here** — `app/agentsam/frontend/workbench/browser/`.  
-   `app/dashboard/components/BrowserView.tsx` is a **mount shim only** (~10 lines).
+   `app/components/BrowserView.tsx` is a **mount shim only** (~10 lines).
 
-2. **Never** `app/dashboard/components/browser/` — no second product tree in dashboard.
+2. **Never** `app/components/browser/` — no second product tree in dashboard.
 
-3. **No duplicate implementations.** Legacy `BrowserView.tsx` body is deleted; grep must not find `PermissionGate`, `BrowserSurfaceDevToolsDock`, or `PICKER_SCRIPT` under `app/dashboard/components/BrowserView.tsx`.
+3. **No duplicate implementations.** Legacy `BrowserView.tsx` body is deleted; grep must not find `PermissionGate`, `BrowserSurfaceDevToolsDock`, or `PICKER_SCRIPT` under `app/components/BrowserView.tsx`.
 
 4. **Import boundary**
 
@@ -135,7 +135,7 @@ agent_run_id  →  attribution on tool invoke / optional DO column — not DO ke
 ```bash
 node --check backend/browser/sessions/client.js
 node --check backend/browser/sessions/scope.js
-npm --prefix app/dashboard run build
+npm --prefix app run build
 ./scripts/with-cloudflare-env.sh node scripts/smoke-browser-devtools-dock-live.mjs
 ```
 

@@ -12,7 +12,7 @@ import { dirname, join } from 'node:path';
 const root = join(dirname(fileURLToPath(import.meta.url)), '../../../..');
 
 test('dashboard session list uses createAgentClient.listSessions', () => {
-  const hook = readFileSync(join(root, 'app/dashboard/hooks/useAgentChatSessions.ts'), 'utf8');
+  const hook = readFileSync(join(root, 'app/hooks/useAgentChatSessions.ts'), 'utf8');
   assert.match(hook, /createAgentClient/);
   assert.match(hook, /\.listSessions\(/);
   assert.doesNotMatch(hook, /fetch\(`\/api\/agent\/sessions\?/);

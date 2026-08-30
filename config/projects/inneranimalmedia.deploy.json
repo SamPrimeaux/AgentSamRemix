@@ -7,7 +7,7 @@
     "binding": "ASSETS",
     "bucket": "inneranimalmedia",
     "prefix": "static/dashboard/app",
-    "viteDist": "app/dashboard/dist"
+    "viteDist": "app/dist"
   },
   "cms": {
     "binding": "CMS_BUCKET",

@@ -10,8 +10,8 @@ This directory is a **thin monolith facade** — not a second editor implementat
 |-------|----------|------|
 | **Editor UI** | `packages/client-cms-editor/frontend/` | `CmsEditor`, `mountClientCmsEditor`, `studio.css` |
 | **Browser API + model** | `packages/client-cms-editor/backend/` | HTTP client, types, model mapping, preview bridge, routing re-exports |
-| **Studio bundle entry** | `app/dashboard/studio-cms/main.tsx` + `vite.config.ts` | Builds isolated `dist/cms/studio-cms.js` (React inlined) |
-| **CMS hub / iframe host** | `app/dashboard/pages/cms/*` | Discovery, routes, `StudioCmsHost` — not editor logic |
+| **Studio bundle entry** | `app/studio-cms/main.tsx` + `vite.config.ts` | Builds isolated `dist/cms/studio-cms.js` (React inlined) |
+| **CMS hub / iframe host** | `app/pages/cms/*` | Discovery, routes, `StudioCmsHost` — not editor logic |
 | **Worker CMS** | `src/core/agentsam/cms/` + `src/api/cms*.js` | D1, R2, publish, tools — server truth |
 | **Monolith-only storefront** | `cmsStorefrontUrl.ts` | Hub URL helper with worker `resolveCmsStorefrontUrl` fallback |
 
@@ -31,7 +31,7 @@ import { getBootstrap, type StudioPage } from '../studio/iamApi';
 
 ## Build
 
-`app/dashboard/package.json` runs two Vite builds:
+`app/package.json` runs two Vite builds:
 
 1. Main dashboard PWA (`vite build`)
 2. Studio CMS iframe bundle (`vite build --config studio-cms/vite.config.ts`)

@@ -171,7 +171,7 @@ export function RulesSkillsDrawers({ data }: RulesSkillsDrawersProps) {
                   <input
                     value={data.ruleDraft.globs || ''}
                     onChange={(e) => data.setRuleDraft((p: any) => ({ ...p, globs: e.target.value }))}
-                    placeholder="scripts/**/*.py, app/dashboard/**"
+                    placeholder="scripts/**/*.py, app/**"
                     disabled={(data.ruleDraft.apply_mode || 'always') !== 'glob'}
                     className="px-3 py-2 rounded-xl bg-[var(--bg-app)] border border-[var(--border-subtle)] text-[12px] font-mono disabled:opacity-40"
                   />

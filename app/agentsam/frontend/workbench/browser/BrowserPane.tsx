@@ -1,5 +1,5 @@
 /** @license SPDX-License-Identifier: Apache-2.0 */
-/** Agent Sam IDE browser pane — product code (peeled from app/dashboard/components/BrowserView.tsx). */
+/** Agent Sam IDE browser pane — product code (peeled from app/components/BrowserView.tsx). */
 import React, {
   useState, useEffect, useCallback, useRef,
 } from 'react';

@@ -1,5 +1,5 @@
 /**
- * Shared file classification for R2 API + dashboard (keep in sync with app/dashboard/src/lib/fileKind.ts).
+ * Shared file classification for R2 API + dashboard (keep in sync with app/src/lib/fileKind.ts).
  */
 
 const IMAGE_EXT = new Set(['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg', 'avif', 'bmp', 'ico']);

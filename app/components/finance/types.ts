@@ -1,4 +1,4 @@
-// app/dashboard/components/finance/types.ts
+// app/components/finance/types.ts
 // Shapes aligned to canonical GET /api/finance/* responses
 
 export type TabId = 'transactions' | 'budgets';

@@ -1,5 +1,5 @@
 /**
- * @file app/dashboard/components/WorkspaceTerminalTile.tsx
+ * @file app/components/WorkspaceTerminalTile.tsx
  *
  * Quick-launch tile shown in the workspace list and "Also open" footer.
  * Displays per-workspace terminal status inline (no separate status fetch needed —

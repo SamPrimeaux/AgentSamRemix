@@ -1,4 +1,4 @@
-// app/dashboard/features/agent-presence/iamDerivePresenceState.ts
+// app/features/agent-presence/iamDerivePresenceState.ts
 
 import type { AgentPresenceState } from './iamPresenceStateMap';
 

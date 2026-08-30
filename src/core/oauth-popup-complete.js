@@ -1,6 +1,6 @@
 /**
  * OAuth popup completion — postMessage to opener + window.close().
- * Used by integration and login connect flows from app/dashboard/agent hub.
+ * Used by integration and login connect flows from the `/dashboard/agent` hub.
  */
 
 /** @param {string} provider */

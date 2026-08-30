@@ -55,7 +55,7 @@ export function imagesResourceTagsCatalogUrl() {
 
 /**
  * Real, account-configured named Variant dimensions from Cloudflare Images —
- * NOT the same as app/dashboard/components/images/imagesRegistry.ts's
+ * NOT the same as app/components/images/imagesRegistry.ts's
  * NAMED_VARIANTS constant, which is a hardcoded client-side fallback only.
  * Named variants are account-specific (e.g. "public" and "large" can be
  * configured to any dimensions) — always prefer this real catalog when it's

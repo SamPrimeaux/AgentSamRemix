@@ -1,4 +1,4 @@
-// app/dashboard/components/finance/constants.ts
+// app/components/finance/constants.ts
 
 export const API = {
   summary:       '/api/finance/summary',

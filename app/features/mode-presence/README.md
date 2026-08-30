@@ -104,7 +104,7 @@ Use for cards/panels (subagent status cards, workflow progress).
 
 Animations are global and loaded by the dashboard root:
 
-- `app/dashboard/index.css` imports `./features/mode-presence/agentModePresenceMotion.css`
+- `app/index.css` imports `./features/mode-presence/agentModePresenceMotion.css`
 
 Do not rely on ChatAssistant-only imports for global availability.
 

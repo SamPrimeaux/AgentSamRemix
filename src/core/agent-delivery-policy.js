@@ -129,7 +129,7 @@ export function resolveWorkspaceShipProfile(row) {
       deployCommand,
       validateHint:
         trim(patterns.validate_worker) ||
-        'node --check src/index.js — MCP worker repo only (no app/dashboard/vite build)',
+        'node --check src/index.js — MCP worker repo only (no app/vite build)',
       deployUrl: trim(row.deploy_url) || null,
       repoNote:
         'This is an MCP server workspace (workspace_kind=mcp_server) — edit, commit, and deploy only from that workspace repo root. Never run main-app Vite builds here.',

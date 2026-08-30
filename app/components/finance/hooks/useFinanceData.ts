@@ -1,4 +1,4 @@
-// app/dashboard/components/finance/hooks/useFinanceData.ts
+// app/components/finance/hooks/useFinanceData.ts
 
 import { useState, useEffect, useCallback } from 'react';
 import {

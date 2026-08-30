@@ -73,10 +73,8 @@ Product map: [`agentsam/README.md`](agentsam/README.md).
 
 <!-- memory-service-scaffold -->
 
-## Not yet decided
+## Frontend source root
 
-Whether `/frontend` becomes the equivalent home for new frontend-only code
-(vs. the existing `app/dashboard/` / `src/dashboard/` split) is partially answered
-for **identity**: auth portal HTML is `app/frontend/` (see `frontend/README.md`).
-Other new frontend-only modules may still land in `app/dashboard/` until a broader
-split is explicit.
+The current Vite/browser application root is `app/`. Browser pages, components, hooks,
+and browser-local `src/` primitives stay under that root. Public auth HTML is intentionally
+under `app/frontend/public/auth/`. Do not recreate a nested dashboard application root.

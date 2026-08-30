@@ -1,5 +1,8 @@
 # InnerAnimalMedia → AgentSamRemix harvest ledger
 
+> **Historical harvest record — not current source-root guidance.** The current AgentSamRemix Vite/browser application root is `app/`. Do not use the proposed `app/frontend/**` destinations below to move the application or recreate a second frontend root. `app/frontend/public/auth/` remains an intentional public-auth subtree.
+
+
 Updated: 2026-08-29
 
 InnerAnimalMedia is a donor/reference implementation. AgentSamRemix is the clean target.
@@ -38,7 +41,7 @@ Never copy a donor folder wholesale when it would create a second identity resol
 | Capability | IAM donor | Remix destination | Status | Decision |
 | --- | --- | --- | --- | --- |
 | Browser Run live view | `app/agentsam/frontend/workbench/browser/**` + `backend/browser/**` | `app/frontend/browser/**` + Think `AgentSam` BrowserConnector | **LANDED in PR #6** | Keep the useful live-view UX, but **do not** reproduce IAM's second `BROWSER_SESSION`/job/trust router. Think AgentSam remains the sole Browser Run session authority. |
-| Terminal setup browser client | dashboard PTY setup helper | `app/frontend/services/terminal/` | **LANDED in PR #6** | Browser-client behavior belongs under frontend; `app/dashboard/` is retired as a Remix source root. |
+| Terminal setup browser client | dashboard PTY setup helper | `app/frontend/services/terminal/` | **LANDED in PR #6** | Browser-client behavior belongs under frontend; the former nested dashboard source root is retired. |
 | Public/auth surfaces | `app/frontend/auth/**` | `app/frontend/auth/**` | **GREEN** | Same ownership model; audit identity endpoints before copying presentation changes. |
 | Keys & Secrets settings | IAM settings UI + credentials domain | `app/frontend/components/settings/` + `app/backend/credentials/` + `app/backend/http/settings/` | **LANDED in PR #7** | `user_secrets` is the persisted BYOK authority and existing vault crypto is the encryption authority. Internal PTY/tunnel rows are outside the Settings domain. Gemini-only and parallel secret stores are retired. |
 | Index Rules | IAM settings UI + code-index policy backend | `app/frontend/components/settings/` + `app/backend/agentsam/codebase/ignore-policy.js` | **LANDED in PR #7** | Reuses shared `agentsam_ignore_pattern`, requires exact GitHub repo authorization, fails loud on empty policy, and uses optimistic policy versions. |

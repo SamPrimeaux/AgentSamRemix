@@ -1,7 +1,7 @@
 /**
  * User-scoped workspace payload — persisted in localStorage (survives browser restarts).
  * Legacy key `iam_workspace` in sessionStorage is migrated once on read.
- * Key strings: app/dashboard/src/lib/sessionStorageKeys.ts (SSOT).
+ * Key strings: app/src/lib/sessionStorageKeys.ts (SSOT).
  */
 export {
   IAM_WORKSPACE_LS_PREFIX,

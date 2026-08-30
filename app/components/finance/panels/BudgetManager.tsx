@@ -1,4 +1,4 @@
-// app/dashboard/components/finance/panels/BudgetManager.tsx
+// app/components/finance/panels/BudgetManager.tsx
 
 import React, { useState } from 'react';
 import { cn } from '../../../lib/utils';

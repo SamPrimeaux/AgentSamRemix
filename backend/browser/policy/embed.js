@@ -8,7 +8,7 @@
  *   3. Live header probe (probeEmbedMode) — definitive results upserted back into D1
  *
  * All D1 access here is non-fatal: DB missing or query failure falls back to seeds.
- * Dashboard mirror: app/dashboard/src/lib/browserEmbedPolicy.ts
+ * Browser mirror: app/agentsam/frontend/workbench/browser/embedPolicy.ts
  */
 
 /** @type {readonly string[]} */

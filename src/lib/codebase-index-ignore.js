@@ -38,19 +38,19 @@ export const CODEBASE_INDEX_IGNORE_GLOBS = [
  */
 export const CODEBASE_INDEX_ALLOW_RULES = [
   { prefix: 'src/', ext: /\.js$/i },
-  { prefix: 'app/dashboard/components/', ext: /\.tsx$/i },
-  { prefix: 'app/dashboard/features/', ext: /\.tsx$/i },
-  { prefix: 'app/dashboard/src/', ext: /\.ts$/i },
-  { prefix: 'app/dashboard/pages/', ext: /\.(tsx|ts|jsx|js)$/i },
+  { prefix: 'app/components/', ext: /\.tsx$/i },
+  { prefix: 'app/features/', ext: /\.tsx$/i },
+  { prefix: 'app/src/', ext: /\.ts$/i },
+  { prefix: 'app/pages/', ext: /\.(tsx|ts|jsx|js)$/i },
 ];
 
 /** Directories to walk when building a fresh index (subset of repo). */
 export const CODEBASE_INDEX_WALK_DIRS = [
   'src',
-  'app/dashboard/components',
-  'app/dashboard/features',
-  'app/dashboard/src',
-  'app/dashboard/pages',
+  'app/components',
+  'app/features',
+  'app/src',
+  'app/pages',
 ];
 
 /** @deprecated Use CODEBASE_INDEX_WALK_DIRS — kept for imports that expect roots. */

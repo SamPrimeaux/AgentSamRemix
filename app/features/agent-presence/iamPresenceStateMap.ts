@@ -1,4 +1,4 @@
-// app/dashboard/features/agent-presence/iamPresenceStateMap.ts
+// app/features/agent-presence/iamPresenceStateMap.ts
 
 export type AgentPresenceIcon =
   // legacy "surface" icons (still used for generic tool classification)

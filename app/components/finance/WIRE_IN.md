@@ -1,10 +1,10 @@
 # Finance Dashboard — Wire-in Instructions for Cursor
 # Apply these two surgical edits after dropping the `finance/` folder into
-# `app/dashboard/components/finance/`.
+# `app/components/finance/`.
 #
 # DO NOT touch billing.js, overview-bundle.js, cron/, or existing finance.js handlers.
 
-## 1. app/dashboard/App.tsx — Add lazy route
+## 1. app/App.tsx — Add lazy route
 
 Find the existing lazy import block (where Overview is imported) and add:
 
@@ -58,15 +58,15 @@ Typical pattern to verify / add if missing:
 ```js
 // In the route handler that serves dashboard pages
 if (path.startsWith('/dashboard/') && !path.includes('.')) {
-  // serve app/dashboard/index.html (SPA shell) — already handled if overview works
+  // serve app/index.html (SPA shell) — already handled if overview works
 }
 ```
 
 ## 4. Build + Deploy
 
 ```bash
-npm run build:vite-only   # verify clean build
-npm run deploy:frontend   # push to R2
+npm run build             # verify clean Vite build
+bin/agentsam deploy fast  # build + deploy through the repository lane
 ```
 
 Then validate: load /dashboard/finance while logged in.

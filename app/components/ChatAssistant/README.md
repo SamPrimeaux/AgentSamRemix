@@ -7,64 +7,28 @@
 ## Directory Structure
 
 ```
-app/dashboard/components/
-├── ChatAssistant.tsx                        ← re-export shim (19 lines, back-compat entrypoint)
-│
-└── ChatAssistant/
-    ├── ChatAssistant.tsx                    ← REAL implementation (~2800 lines)
-    ├── index.ts                             ← barrel exports
-    ├── types.ts                             ← shared types + constants
-    ├── streamParsing.ts                     ← SSE + text normalization helpers
-    ├── streamDebug.ts                       ← window.__IAM_AGENT_LAST_STREAM_DEBUG helpers
-    ├── mentionContext.ts                    ← @mention context builder
-    ├── composerLayout.ts                    ← composer sizing/layout helpers
-    │
-    ├── hooks/
-    │   └── useAgentChatStream.ts            ← SSE stream consumer (consumeAgentChatSseBody)
-    │
-    ├── components/
-    │   ├── AgentMessageList.tsx
-    │   ├── AgentChatMarkdown.tsx
-    │   ├── AgentCodeFencePreview.tsx
-    │   ├── AgentCodeDiffPreview.tsx
-    │   ├── DiffViewer.tsx
-    │   ├── AgentPlanChecklist.tsx
-    │   └── WorkflowRunBoard.tsx
-    │
-    ├── execution/
-    │   ├── index.ts                         ← barrel (types + components)
-    │   ├── types.ts                         ← AgentToolTraceRow, AgentToolTraceStatus, etc.
-    │   ├── shShellQuote.ts                  ← shellSingleQuote util
-    │   ├── ExecutionTimeline.tsx
-    │   ├── ArtifactChipList.tsx
-    │   ├── ToolTraceRow.tsx
-    │   ├── ScrollablePreviewPanel.tsx
-    │   └── ScriptDraftPanel.tsx
-    │
-    └── artifacts/
-        └── EmailArtifactCard.tsx
+app/components/ChatAssistant/
+├── ChatAssistant.tsx                    ← real implementation
+├── index.ts                             ← public barrel / compatibility entrypoint
+├── types.ts                             ← shared types + constants
+├── streamParsing.ts                     ← SSE + text normalization helpers
+├── streamDebug.ts                       ← stream debug helpers
+├── mentionContext.ts                    ← @mention context builder
+├── composerLayout.ts                    ← composer sizing/layout helpers
+├── hooks/
+│   └── useAgentChatStream.ts            ← SSE stream consumer
+├── components/                          ← message, diff, workflow, mobile UI
+├── composer/                            ← composer controls, sources, voice
+├── execution/                           ← tool timeline/output panels
+└── artifacts/
+    └── EmailArtifactCard.tsx
 ```
 
 ---
 
 ## Public Surface
 
-### `ChatAssistant.tsx` (shim) — re-exports
-| Export | Source |
-|---|---|
-| `ChatAssistant` | `./ChatAssistant/ChatAssistant` |
-| `IAM_AGENT_CHAT_CONVERSATION_CHANGE` | `./ChatAssistant/types` |
-| `IAM_AGENT_CHAT_NEW_THREAD` | `./ChatAssistant/types` |
-| `normalizeAssistantSseText` | `./ChatAssistant/streamParsing` |
-| `looksLikeRawProviderLeak` | `./ChatAssistant/streamParsing` |
-| `ssePayloadLooksReasoningOnly` | `./ChatAssistant/streamParsing` |
-| `isStreamErrorPayload` | `./ChatAssistant/streamParsing` |
-| `extractMonacoInvokesFromBuffer` | `./ChatAssistant/streamParsing` |
-| `hideIncompleteMonacoInvokeTail` | `./ChatAssistant/streamParsing` |
-| `looksLikeEmbeddedFileDumpStart` | `./ChatAssistant/streamParsing` |
-| `formatHttpErrorMessage` | `./ChatAssistant/streamParsing` |
-
-### `index.ts` (folder barrel) — re-exports
+### `index.ts` (folder barrel) — public surface
 | Export | Notes |
 |---|---|
 | `ChatAssistant` | main component |
@@ -131,5 +95,5 @@ Dev/debug utilities. Exposed on `window.__IAM_AGENT_LAST_STREAM_DEBUG`.
 
 - **Mac filesystem is case-insensitive** — `chatAssistant/` and `ChatAssistant/` resolve to the same directory.
   Git tracks the canonical casing: `ChatAssistant/`. Never import using lowercase path.
-- The top-level shim `app/dashboard/components/ChatAssistant.tsx` **may not exist on disk** if it was never recreated. If missing, recreate it as the 19-line re-export wrapper.
+- The top-level shim `app/components/ChatAssistant.tsx` **may not exist on disk** if it was never recreated. If missing, recreate it as the 19-line re-export wrapper.
 - Never import directly from `ChatAssistant/ChatAssistant.tsx`. Always go through the barrel (`ChatAssistant/index.ts`) or the shim.

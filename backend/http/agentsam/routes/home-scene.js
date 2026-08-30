@@ -1,7 +1,7 @@
 /**
  * GET/PUT /api/agent/scene — user/workspace agent home background config.
  * Theme defaults live in cms_themes.components_json.agent_home (canonical CMS theme domain).
- * @see app/dashboard/types/agentHomeScene.ts
+ * @see app/types/agentHomeScene.ts
  */
 
 import { jsonResponse } from '../shared.js';

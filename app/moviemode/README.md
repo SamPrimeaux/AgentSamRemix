@@ -16,7 +16,7 @@ This folder is the **only** Movie Mode SPA surface (was split across `features/m
 | `/dashboard/moviemode/ai-studio` | ai-studio | `MovieModePlaceholderTab` | **Thin / placeholder** |
 | `/dashboard/moviemode/:projectId` | editor | `MovieModeWorkbench` + studio/timeline | **Partial** (mobile editor pending) |
 
-Route parsing: `movieModeRoutes.ts` · App mount: `app/dashboard/App.tsx` lazy → `./moviemode/MovieModePage`.
+Route parsing: `movieModeRoutes.ts` · App mount: `app/App.tsx` lazy → `./moviemode/MovieModePage`.
 
 ## Module map (what lives here)
 
@@ -26,12 +26,12 @@ Route parsing: `movieModeRoutes.ts` · App mount: `app/dashboard/App.tsx` lazy �
 | Projects | `MovieModeProjectsTab` |
 | Placeholders | `MovieModePlaceholderTab` (templates + ai-studio) |
 | Editor | `MovieModeWorkbench`, `MovieModeStudio`, `TimelineRail`, `TextOverlayEditor`, `ExportPanel` |
-| Remotion | `MovieModeComposition`, `PreviewComposition`, `remotion-utils` · entry `app/dashboard/src/remotion-entry.tsx` |
+| Remotion | `MovieModeComposition`, `PreviewComposition`, `remotion-utils` · entry `app/src/remotion-entry.tsx` |
 | Media bin | `MovieModeMediaPanel`, `MediaLibrary`, `movieModeMediaEvents` |
 | Shared | `types`, `createEmptyTimeline`, `editSessionAdapter`, `useMovieModeShell` |
 
-Hooks (shared, not duplicated here): `app/dashboard/hooks/useMovieModeProject.ts`, `useMovieModeProjects.ts`
-Shared types: `app/dashboard/src/types/moviemode.ts`
+Hooks (shared, not duplicated here): `app/hooks/useMovieModeProject.ts`, `useMovieModeProjects.ts`
+Shared types: `app/src/types/moviemode.ts`
 
 ## Known gaps (update when closing)
 
@@ -42,5 +42,5 @@ Shared types: `app/dashboard/src/types/moviemode.ts`
 
 ## Do not
 
-- Put Movie Mode UI back under `app/dashboard/features/` or a second `pages/moviemode/` tree
-- Mix Videos (`app/dashboard/components/videos`) into this product
+- Put Movie Mode UI back under `app/features/` or a second `pages/moviemode/` tree
+- Mix Videos (`app/components/videos`) into this product

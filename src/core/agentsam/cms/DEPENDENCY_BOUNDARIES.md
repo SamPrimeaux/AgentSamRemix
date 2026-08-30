@@ -287,7 +287,7 @@ The reconstruction is structurally complete when:
 
 - CMS domain behavior has one canonical implementation
 - `src/core/agentsam/cms/` has zero legacy CMS implementation imports
-- app/dashboard/Studio code consumes the canonical editor/client rather than implementing another CMS
+- Dashboard Studio code consumes the canonical editor/client rather than implementing another CMS
 - `src/api/cms.js` is a thin transport layer
 - provider SDKs are behind provider adapters
 - host/storage details are behind runtime adapters
@@ -333,7 +333,7 @@ Sections/Blocks may refer to asset IDs or canonical descriptors, but they do not
 
 ## Preview boundary
 
-`preview/` may consume canonical Pages, Sections and Blocks contracts. It must not import app/dashboard/editor implementations, provider SDKs, legacy preview helpers, Cloudflare bindings, customer identity, publish mutation code, or revision storage. The Cloudflare preview adapter owns D1/KV query mechanics and batched block retrieval. Legacy `cms-preview-route.js` and preview helpers in `cms-edit-safety.js` are compatibility facades only.
+`preview/` may consume canonical Pages, Sections and Blocks contracts. It must not import dashboard editor implementations, provider SDKs, legacy preview helpers, Cloudflare bindings, customer identity, publish mutation code, or revision storage. The Cloudflare preview adapter owns D1/KV query mechanics and batched block retrieval. Legacy `cms-preview-route.js` and preview helpers in `cms-edit-safety.js` are compatibility facades only.
 
 ## Lifecycle and publish boundary
 

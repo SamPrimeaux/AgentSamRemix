@@ -12,14 +12,18 @@ The dashboard provides the browser surfaces for:
 
 The server-side APIs and execution logic live in the repository's `backend/` and transitional root `src/` runtime. The browser calls those services through `/api/*`.
 
+### Source-root invariant
+
+`app/` is the Vite/browser application root. `DashboardApp.tsx`, `DashboardAppRoutes.tsx`, and `lazyDashboardPages.tsx` live directly under `app/`. Do not recreate `app/app/` or `app/dashboard/`. `app/frontend/public/auth/` is intentional public-auth content and is not a dashboard application root.
+
 ## How the app starts
 
 ```text
-app/dashboard/index.html
-  → app/dashboard/index.tsx
-  → app/dashboard/App.tsx
-  → app/dashboard/components/shell/AppShellFrame.tsx
-  → app/dashboard/app/DashboardAppRoutes.tsx
+app/index.html
+  → app/index.tsx
+  → app/App.tsx
+  → app/components/shell/AppShellFrame.tsx
+  → app/DashboardAppRoutes.tsx
 ```
 
 Important files:
@@ -167,9 +171,9 @@ From the repository root:
 
 ```bash
 npm install
-npm --prefix app/dashboard install
-npm run dev:dashboard
-npm run build:vite-only
+npm --prefix app install
+npm run dev
+npm run build
 ```
 
 The dashboard package's `build` script runs two Vite builds:
@@ -192,7 +196,7 @@ Do not treat a Worker-only deploy as proof that dashboard assets shipped. The da
 
 ### Properly located browser code
 
-These are dashboard-owned browser concerns and belong under `app/dashboard/`:
+These are dashboard-owned browser concerns and belong under `app/`:
 
 - React pages and components
 - Shell navigation and layout
@@ -201,7 +205,7 @@ These are dashboard-owned browser concerns and belong under `app/dashboard/`:
 - PWA/session recovery UI
 - CMS editor host and dashboard product surfaces
 
-`app/dashboard/src/` is a browser-local source folder. It is not the same thing as the legacy root `src/`; it currently contains active frontend primitives such as `EditorContext`, `WorkspaceContext`, PWA helpers, library surfaces, database clients, and collaboration UI.
+`app/src/` is a browser-local source folder. It is not the same thing as the legacy root `src/`; it currently contains active frontend primitives such as `EditorContext`, `WorkspaceContext`, PWA helpers, library surfaces, database clients, and collaboration UI.
 
 ### Properly relocated server code
 
@@ -246,14 +250,14 @@ Some new backend files also still import legacy root `src/` modules. Notable exa
 
 There are also three direct dashboard-to-root-runtime edges that still need ownership decisions:
 
-- `app/dashboard/lib/excalidrawLibraries.ts` → `src/core/excalidraw-library-normalize.js`
-- `app/dashboard/pages/cms/cmsRoute.ts` → `src/core/agentsam/cms/routing/index.js`
-- `app/dashboard/src/lib/fsMerkleSnapshot.ts` → `src/core/fs-merkle-snapshot.js` and `src/core/fs-merkle-snapshot-adapter.js`
+- `app/lib/excalidrawLibraries.ts` → `src/core/excalidraw-library-normalize.js`
+- `app/pages/cms/cmsRoute.ts` → `src/core/agentsam/cms/routing/index.js`
+- `app/src/lib/fsMerkleSnapshot.ts` → `src/core/fs-merkle-snapshot.js` and `src/core/fs-merkle-snapshot-adapter.js`
 
 The target architecture is:
 
 ```text
-app/dashboard
+app/
   → HTTP / packages
   → backend/worker/index.js
   → backend/http/*

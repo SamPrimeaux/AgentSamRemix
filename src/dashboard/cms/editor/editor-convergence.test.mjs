@@ -6,8 +6,8 @@ const canonical = read('packages/client-cms-editor/frontend/src/CmsEditor.tsx');
 const model = read('packages/client-cms-editor/backend/src/model.ts');
 const client = read('packages/client-cms-editor/backend/src/api/client.ts');
 const bridge = read('packages/client-cms-editor/backend/src/preview/bridge.ts');
-const legacyApi = read('app/dashboard/pages/cms/studio/iamApi.ts');
-const studioMain = read('app/dashboard/studio-cms/main.tsx');
+const legacyApi = read('app/pages/cms/studio/iamApi.ts');
+const studioMain = read('app/studio-cms/main.tsx');
 
 assert.match(legacyApi, /@inneranimalmedia\/client-cms-editor\/backend/);
 assert.match(studioMain, /@inneranimalmedia\/client-cms-editor\/frontend/);

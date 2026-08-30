@@ -2,7 +2,7 @@
  * Frontend/API contract for Agent Sam memory.
  *
  * Callers know only this surface. They must not import Gemini, pgvector,
- * Supabase, HNSW, or Vectorize from app/dashboard/ or packages/client.
+ * Supabase, HNSW, or Vectorize from app/ or packages/client.
  *
  *   memory.search({ query, workspaceId, limit: 12 })
  *   memory.remember({ content, workspaceId, subjectId, sourceType })

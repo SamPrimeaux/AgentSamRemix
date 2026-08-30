@@ -1,4 +1,4 @@
-// app/dashboard/components/finance/panels/TransactionsTable.tsx
+// app/components/finance/panels/TransactionsTable.tsx
 // Read-only finance_transactions list (CSV import via Import tab)
 
 import React, { useState, useMemo } from 'react';

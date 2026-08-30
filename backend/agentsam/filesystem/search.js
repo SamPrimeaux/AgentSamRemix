@@ -122,7 +122,7 @@ export function extractSearchQueryFromUserText(message) {
 
 /**
  * SPA route paths like `/dashboard/artifacts` are not repo paths. Convert to
- * search under `app/dashboard/` with the last segment as the ripgrep query.
+ * search under `app/` with the last segment as the ripgrep query.
  * @param {string} rawPath
  * @returns {{ path: string, routeSegment: string|null }}
  */
@@ -136,7 +136,7 @@ export function rewriteSpaRouteSearchPath(rawPath) {
     .split('/')
     .filter(Boolean);
   const routeSegment = rest.length ? rest[rest.length - 1] : null;
-  return { path: 'app/dashboard', routeSegment };
+  return { path: 'app', routeSegment };
 }
 
 /**
@@ -152,7 +152,7 @@ export function isGithubRepoStylePath(rawPath) {
     .trim();
   if (!p || p === '.' || p.startsWith('/') || p.startsWith('../')) return false;
   // Owner/repo or Owner/repo/file… — never a valid cwd for local ripgrep.
-  return !/^app\/dashboard(?:\/|$)/i.test(p) && /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\/.*)?$/.test(p);
+  return !/^app(?:\/|$)/i.test(p) && /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?:\/.*)?$/.test(p);
 }
 
 export function normalizeFsSearchFilesParams(params, hints = {}) {
@@ -172,14 +172,14 @@ export function normalizeFsSearchFilesParams(params, hints = {}) {
   const msgSpa = msg.match(/\/dashboard\/([A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*)/i);
   if (msgSpa) {
     const seg = msgSpa[1].split('/').filter(Boolean).pop() || msgSpa[1];
-    out.path = 'app/dashboard';
+    out.path = 'app';
     delete out.glob_path;
     if (!query) query = String(seg).trim();
   }
 
   const spa = rewriteSpaRouteSearchPath(rawPath);
   if (spa.routeSegment != null || (rawPath && /^\/?dashboard\b/i.test(rawPath))) {
-    out.path = spa.path || 'app/dashboard';
+    out.path = spa.path || 'app';
     delete out.glob_path;
     if (!query && spa.routeSegment) query = spa.routeSegment;
   }

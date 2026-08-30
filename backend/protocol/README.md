@@ -10,11 +10,10 @@ this tree is spec + index only.
 |------|------|------|
 | **Runtime wire** | `backend/protocol/` (this tree) | ACP, memory, SKP, bootstrap envelopes, MCP OAuth shapes |
 | **SDK dual-home** | `agentsam-sdk/protocol/` | Portable tool contracts mirrored to npm |
-| **Browser client** | `app/protocol/` | Dashboard/PWA consumption of Worker APIs |
+| **Browser client** | `app/protocols/` | Dashboard/PWA consumption of Worker APIs |
 
 `packages/platform-contracts` and `packages/client-core` are the **typed** client
-contracts today; `app/protocol/` documents how they map to HTTP until the
-`app/dashboard/` peel is complete.
+contracts today; `app/protocols/` documents how they map to HTTP for the browser client.
 
 ## Protocol index
 

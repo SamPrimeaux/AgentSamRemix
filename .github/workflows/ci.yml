@@ -40,11 +40,13 @@ jobs:
 
       - name: Frontend root invariant
         run: |
-          if [ -d app/dashboard ] && find app/dashboard -type f -print -quit | grep -q .; then
-            echo "Browser/product implementation belongs under app/frontend, not app/dashboard"
-            find app/dashboard -type f -print
-            exit 1
-          fi
+          for forbidden in app/dashboard app/app; do
+            if [ -d "$forbidden" ] && find "$forbidden" -type f -print -quit | grep -q .; then
+              echo "Vite/browser source root is app/. Do not recreate nested source root: $forbidden"
+              find "$forbidden" -type f -print
+              exit 1
+            fi
+          done
 
       - name: Single credential authority invariant
         run: |

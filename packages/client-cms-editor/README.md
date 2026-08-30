@@ -18,7 +18,7 @@ packages/client-cms-editor/
 ## Install (monorepo)
 
 ```bash
-# app/dashboard/package.json
+# app/package.json
 "@inneranimalmedia/client-cms-editor": "file:../../packages/client-cms-editor"
 ```
 
@@ -49,4 +49,4 @@ only — HTTP to `/api/cms/*` on the host worker.
 1. One editor (`frontend/CmsEditor.tsx`).
 2. One API client (`backend/api/client.ts`).
 3. One preview bridge (`backend/preview/bridge.ts`).
-4. Dashboard hub shells (`app/dashboard/pages/cms/`) are hosts, not second editors.
+4. Dashboard hub shells (`app/pages/cms/`) are hosts, not second editors.

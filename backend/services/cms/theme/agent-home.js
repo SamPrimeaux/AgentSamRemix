@@ -1,6 +1,6 @@
 /**
  * Agent home scene defaults + cms_themes.components_json.agent_home parsing.
- * Keeps app/dashboard/types/agentHomeScene.ts shapes in sync conceptually.
+ * Keeps app/types/agentHomeScene.ts shapes in sync conceptually.
  */
 
 const FLAT_CANVAS_BACKDROP = {
@@ -178,7 +178,7 @@ export function mergeAgentHomeCms(existingRaw, patchRaw) {
   };
 }
 
-/** Map local hour segment → backdrop key (matches app/dashboard/lib/agentDayPart.ts). */
+/** Map local hour segment → backdrop key (matches app/lib/agentDayPart.ts). */
 export function cmsScenePresetForDayPart(part) {
   switch (part) {
     case 'late-night':

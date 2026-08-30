@@ -2,7 +2,7 @@
  * useMcpOAuthConsent.ts
  *
  * Reads ?authorization_id= from the URL and exposes it for
- * IamMcpOAuthConsentPage. Place in app/dashboard/components/auth/ alongside
+ * IamMcpOAuthConsentPage. Place in app/components/auth/ alongside
  * the page component.
  *
  * Usage:

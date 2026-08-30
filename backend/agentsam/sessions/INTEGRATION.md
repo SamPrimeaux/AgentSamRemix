@@ -247,7 +247,7 @@ node --test backend/agentsam/sessions/tests/*.test.mjs
 ## Deliberate non-goals (this tree)
 
 - Agent execution / mode controllers (`backend/agentsam/runtime/`)
-- Dashboard session UI (`app/dashboard/`)
+- Dashboard session UI (`app/`)
 - Auth sessions (`backend/identity/sessions/`)
 - Terminal PTY (`backend/agentsam/terminal/`)
 - MCP tool catalog (`backend/agentsam/catalog/`)

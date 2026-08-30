@@ -25,28 +25,28 @@ GET /dashboard/cms[…]
     getDashboardSpaHtmlShell()         src/core/dashboard-r2-assets.js
       R2 key: static/dashboard/app.html  (fallbacks: app/index.html, legacy agent.html)
   dashboard SPA boots
-    app/dashboard/App.tsx
+    app/App.tsx
       isCmsRoute / isCmsFullscreen / isCmsStudioEditor
-      parseCmsRoute()                  app/dashboard/pages/cms/cmsRoute.ts
-    app/dashboard/app/DashboardAppRoutes.tsx
+      parseCmsRoute()                  app/pages/cms/cmsRoute.ts
+    app/DashboardAppRoutes.tsx
       /dashboard/cms        → CmsPage
       /dashboard/cms/*      → CmsPage
       /dashboard/cms/sites  → Navigate /dashboard/cms
-    app/dashboard/app/lazyDashboardPages.tsx
-      lazy import app/dashboard/pages/cms/CmsPage.tsx
+    app/lazyDashboardPages.tsx
+      lazy import app/pages/cms/CmsPage.tsx
 ```
 
 **Chrome around the canvas (not the page body):**
 
 | File | Role on these URLs |
 |------|--------------------|
-| `app/dashboard/App.tsx` | Fullscreen CMS shell; Agent Sam rail on editor routes |
-| `app/dashboard/hooks/useAppAgentPanelChrome.ts` | Collapses Agent by default on studio editor |
-| `app/dashboard/config/shellNav.ts` | `CMS_SUITE_NAV` — Sites `/dashboard/cms`, Theme editor `/dashboard/cms/theme-editor` |
-| `app/dashboard/components/shell/DashboardSidebar.tsx` | CMS suite active when path starts with `/dashboard/cms` |
-| `app/dashboard/components/shell/AppShellFrame.tsx` | Workbench deep-link to `/dashboard/cms/pages?site=` |
-| `app/dashboard/lib/dashboardRouteContext.ts` | Agent `route_key=cms_edit` for `/dashboard/cms*` |
-| `app/dashboard/hooks/useCmsWorkspaceContext.ts` | `GET /api/cms/workspace-context` (also fetched from `App.tsx`) |
+| `app/App.tsx` | Fullscreen CMS shell; Agent Sam rail on editor routes |
+| `app/hooks/useAppAgentPanelChrome.ts` | Collapses Agent by default on studio editor |
+| `app/config/shellNav.ts` | `CMS_SUITE_NAV` — Sites `/dashboard/cms`, Theme editor `/dashboard/cms/theme-editor` |
+| `app/components/shell/DashboardSidebar.tsx` | CMS suite active when path starts with `/dashboard/cms` |
+| `app/components/shell/AppShellFrame.tsx` | Workbench deep-link to `/dashboard/cms/pages?site=` |
+| `app/lib/dashboardRouteContext.ts` | Agent `route_key=cms_edit` for `/dashboard/cms*` |
+| `app/hooks/useCmsWorkspaceContext.ts` | `GET /api/cms/workspace-context` (also fetched from `App.tsx`) |
 
 **API dispatch for everything `/api/cms*`:**
 
@@ -126,17 +126,17 @@ CmsPage.tsx
       iam-studio-cms-navigate  → parent React Router (Overview → /dashboard/cms)
 
 R2 (after dashboard build):
-  app/dashboard/public/cms/studio-cms-shell.html
+  app/public/cms/studio-cms-shell.html
     <script type="module" src="/static/dashboard/app/cms/studio-cms.js">
 
-  app/dashboard/studio-cms/vite.config.ts
-    input:  app/dashboard/studio-cms/main.tsx
-    out:    app/dashboard/dist/cms/studio-cms.js   (React inlined — do not share vendor-react.js)
+  app/studio-cms/vite.config.ts
+    input:  app/studio-cms/main.tsx
+    out:    app/dist/cms/studio-cms.js   (React inlined — do not share vendor-react.js)
 
-  app/dashboard/studio-cms/main.tsx
+  app/studio-cms/main.tsx
     reads ?site=&panel=&page=&workspace=
     mounts src/dashboard/cms/editor/CmsEditor.tsx
-    injects app/dashboard/studio-cms/studio.css
+    mounts package-owned editor styles via packages/client-cms-editor/frontend/src/mount.tsx
 
   CmsEditor (panel theme)
     inspector tab ThemeInspector
@@ -164,14 +164,14 @@ R2 (after dashboard build):
 | `src/core/cms-theme-kv-cache.js` | **FACADE:** canonical active-theme cache is `src/core/agentsam/cms/theme/cache.js` |
 | `src/core/cms-kv-cache.js` | Bootstrap cache key + invalidate on theme-vars PATCH |
 
-**Build:** `app/dashboard/package.json` `"build": "vite build && vite build --config studio-cms/vite.config.ts"`
+**Build:** `app/package.json` `"build": "vite build && vite build --config studio-cms/vite.config.ts"`
 Isolation is intentional (Mac vs CF Builds racing shared `vendor-react.js`). Do not re-import Studio into the dashboard vendor chunk.
 
 ---
 
 ## 4. Route parser (both URLs)
 
-`src/core/agentsam/cms/routing/cms-route.js` is now the canonical CMS route SSOT. `app/dashboard/pages/cms/cmsRoute.ts` is a compatibility facade plus dashboard-only localStorage helpers:
+`src/core/agentsam/cms/routing/cms-route.js` is now the canonical CMS route SSOT. `app/pages/cms/cmsRoute.ts` is a compatibility facade plus dashboard-only localStorage helpers:
 
 | Path | `view` | Studio `initialPanel` |
 |------|--------|------------------------|
@@ -195,17 +195,17 @@ Worker-side aliases (not the live dashboard URL, but they land on these screens)
 
 ## 5. Reconstruction peel (this lane)
 
-Target home: **`src/core/agentsam/cms/`**. Dashboard React stays in `app/dashboard/` until a later UI peel. Worker `src/api/cms.js` stays the HTTP facade until handlers are extracted.
+Target home: **`src/core/agentsam/cms/`**. Dashboard React stays in `app/` until a later UI peel. Worker `src/api/cms.js` stays the HTTP facade until handlers are extracted.
 
 | Move first (shared by both screens) | Legacy today | Intended |
 |-------------------------------------|--------------|----------|
-| Route parse / `buildCmsPath` / `buildCmsHubPath` | `app/dashboard/pages/cms/cmsRoute.ts` | **MOVED:** `src/core/agentsam/cms/routing/`; dashboard facade delegates to core |
+| Route parse / `buildCmsPath` / `buildCmsHubPath` | `app/pages/cms/cmsRoute.ts` | **MOVED:** `src/core/agentsam/cms/routing/`; dashboard facade delegates to core |
 | Workspace + hub site list | `cms-hub-sites.js`, `cms-site-config.js`, workspace-context in `cms.js` | `src/core/agentsam/cms/workspace-context.*` |
 | Bootstrap payload | `cms.js` GET bootstrap + legacy helper adapters | **MOVED:** `src/core/agentsam/cms/bootstrap/`; `/api/cms/bootstrap` now delegates inward |
 | Theme vars/read/write/active state | legacy API/theme facades | **MOVED:** `src/core/agentsam/cms/theme/`; Cloudflare-only behavior stays in `cms-theme-host-adapters.js` |
 | Typed contracts | `src/types/cms.ts` (host DTOs) | `src/core/agentsam/cms/contracts/` + domain modules |
 
-**Stay in dashboard (screen chrome, not core):** `CmsPage`, `CmsHubPage`, `CmsDashboard`, `CmsShellLayout`, `StudioCmsHost`, `app/dashboard/studio-cms/main.tsx`, `iamApi.ts` (re-export).
+**Stay in dashboard (screen chrome, not core):** `CmsPage`, `CmsHubPage`, `CmsDashboard`, `CmsShellLayout`, `StudioCmsHost`, `app/studio-cms/main.tsx`, `iamApi.ts` (re-export).
 
 **Stay Worker HTTP:** `src/api/cms.js` dispatch table; peel bodies, do not duplicate routes.
 
@@ -218,8 +218,8 @@ Target home: **`src/core/agentsam/cms/`**. Dashboard React stays in `app/dashboa
 | `cms-editor/` Python iframe, `cms-studio-shell.html`, `cms-editor.js` | Removed / `cms-studio-lane.js` refuses to serve |
 | `vendor/inneranimalmedia-cms/` | Removed from this monolith (`cms/README.md`) |
 | `ClientWorkerCmsStudio` embed | Do not revive (`docs/products/cms/ARCHITECTURE.md`) |
-| `app/dashboard/public/cms/studio.jsx`, `tweaks-panel.jsx` | Leftover public copies — not the live iframe |
-| `app/dashboard/pages/cms/ThemeEditorImportStrip.tsx` | **Dead** — defined, never imported (hub uses `CmsHubImportStrip`) |
+| Former donor `studio.jsx` / `tweaks-panel.jsx` public copies | Removed — not the live iframe; do not revive |
+| `app/pages/cms/ThemeEditorImportStrip.tsx` | **Dead** — defined, never imported (hub uses `CmsHubImportStrip`) |
 | `src/core/cms-*.js` hydrate/publish/pipeline modules | Storefront / agent / import — not required to paint these two URLs |
 | Separate repo `inneranimalmedia-cms` pipeline worker | Deploy from that repo; not the dashboard canvas |
 
@@ -229,7 +229,7 @@ Sibling studio URLs (`/pages`, `/online-store`, `/templates`, `/imports`) share 
 
 ## 7. Debt to kill on this lane (not new features)
 
-1. **`app/dashboard/studio-cms/main.tsx`** silent fallback `projectSlug = … || 'inneranimalmedia'`. Fail loud if `?site=` is missing — do not invent a slug.
+1. **`app/studio-cms/main.tsx`** silent fallback `projectSlug = … || 'inneranimalmedia'`. Fail loud if `?site=` is missing — do not invent a slug.
 2. **`CmsPage.tsx` hubSiteSlug** still ranks a literal `'inneranimalmedia'` among operator-hub candidates. Hub launcher rows in D1 (`cms-hub-sites.js`) are the SSOT; drop the string default.
 3. **`src/api/cms.js`** is now the thin HTTP composition root (~253 lines). Workspace context, bootstrap, theme, lifecycle, preview, templates, and storage ownership have been peeled into canonical CMS domains/adapters; do not reintroduce business logic into the facade.
 4. Studio `page.tsx` still seeds mock `initialSites` / `makeSections()` then overwrites from bootstrap. Reconstruction should boot from API or an explicit empty state — never paint mock Inner Animal sections as if they were live.
@@ -239,9 +239,9 @@ Sibling studio URLs (`/pages`, `/online-store`, `/templates`, `/imports`) share 
 ## 8. Proof commands (re-run, do not narrate)
 
 ```bash
-rg -n "path=\"/dashboard/cms" app/dashboard/app/DashboardAppRoutes.tsx
-rg -n "theme-editor|view: 'hub'|StudioCmsHost" app/dashboard/pages/cms/CmsPage.tsx app/dashboard/pages/cms/cmsRoute.ts
-rg -n "studio-cms-shell|studio-cms.js" app/dashboard/pages/cms/studio/StudioCmsHost.tsx app/dashboard/public/cms/studio-cms-shell.html
+rg -n "path=\"/dashboard/cms" app/DashboardAppRoutes.tsx
+rg -n "theme-editor|view: 'hub'|StudioCmsHost" app/pages/cms/CmsPage.tsx app/pages/cms/cmsRoute.ts
+rg -n "studio-cms-shell|studio-cms.js" app/pages/cms/studio/StudioCmsHost.tsx app/public/cms/studio-cms-shell.html
 rg -n "handleCmsApi|/api/cms/workspace-context|/api/cms/theme-vars" src/core/production-dispatch.js src/api/cms.js
 ```
 
@@ -297,9 +297,9 @@ A canonical `templates/` domain now owns reusable template CRUD. Template instan
 
 ## Editor convergence
 
-The former `studio-cms-editor/` vinext tree is removed. `src/dashboard/cms/editor/CmsEditor.tsx` owns the editor. `app/dashboard/studio-cms/main.tsx` mounts it in the isolated iframe bundle and injects `studio.css`.
+The former `studio-cms-editor/` vinext tree is removed. `src/dashboard/cms/editor/CmsEditor.tsx` owns the editor. `app/studio-cms/main.tsx` mounts it in the isolated iframe bundle; the client editor package injects its canonical styles.
 
-The historical `app/dashboard/pages/cms/studio/iamApi.ts` client is now a compatibility facade over `src/dashboard/cms/api/cmsClient.ts`. Bootstrap mapping, Page/Section/Block types, and preview bridge semantics live under `src/dashboard/cms/`.
+The historical `app/pages/cms/studio/iamApi.ts` client is now a compatibility facade over `src/dashboard/cms/api/cmsClient.ts`. Bootstrap mapping, Page/Section/Block types, and preview bridge semantics live under `src/dashboard/cms/`.
 
 Hardcoded customer demo sites, fake collaboration/telemetry, fake media upload/template application/page reorder states, and the old pseudo-Component library were removed. The editor now consumes canonical Blocks from bootstrap and uses the `/api/cms/blocks` contracts for create/save/visibility.
 

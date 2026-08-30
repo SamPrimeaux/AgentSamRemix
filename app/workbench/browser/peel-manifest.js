@@ -1,5 +1,5 @@
 /**
- * Browser workbench peel manifest — app/dashboard/components/BrowserView.tsx → app/agentsam/frontend/workbench/browser
+ * Browser workbench peel manifest — app/components/BrowserView.tsx → app/agentsam/frontend/workbench/browser
  * **Not** exported from index.ts — delete when peel debt is zero.
  *
  * @module app/agentsam/frontend/workbench/browser/peel-manifest
@@ -11,24 +11,24 @@
  * @type {readonly { id: string, status: PeelStatus, canonical: string, legacy: string, notes?: string }[]}
  */
 export const BROWSER_PEEL_MANIFEST = Object.freeze([
-  { id: 'types', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/types.ts', legacy: 'app/dashboard/components/BrowserView.tsx (inline)' },
-  { id: 'browser_api', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/browserApi.ts', legacy: 'app/dashboard/components/BrowserView.tsx (inline fetch)' },
-  { id: 'trust_gate', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/TrustGate.tsx', legacy: 'app/dashboard/components/BrowserView.tsx PermissionGate' },
-  { id: 'browser_toolbar', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/BrowserToolbar.tsx', legacy: 'app/dashboard/components/BrowserView.tsx toolbar block' },
-  { id: 'browser_surface', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/BrowserSurface.tsx', legacy: 'app/dashboard/components/BrowserView.tsx BlockedPage + DevTools dock' },
-  { id: 'element_picker', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/useElementPicker.ts + elementPickerScripts.ts', legacy: 'app/dashboard/components/BrowserView.tsx picker runtime' },
-  { id: 'design_mode_overlay', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/useDesignMode.ts + DesignModeOverlay.tsx', legacy: 'app/dashboard/components/BrowserView.tsx design mode + annotate' },
+  { id: 'types', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/types.ts', legacy: 'app/components/BrowserView.tsx (inline)' },
+  { id: 'browser_api', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/browserApi.ts', legacy: 'app/components/BrowserView.tsx (inline fetch)' },
+  { id: 'trust_gate', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/TrustGate.tsx', legacy: 'app/components/BrowserView.tsx PermissionGate' },
+  { id: 'browser_toolbar', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/BrowserToolbar.tsx', legacy: 'app/components/BrowserView.tsx toolbar block' },
+  { id: 'browser_surface', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/BrowserSurface.tsx', legacy: 'app/components/BrowserView.tsx BlockedPage + DevTools dock' },
+  { id: 'element_picker', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/useElementPicker.ts + elementPickerScripts.ts', legacy: 'app/components/BrowserView.tsx picker runtime' },
+  { id: 'design_mode_overlay', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/useDesignMode.ts + DesignModeOverlay.tsx', legacy: 'app/components/BrowserView.tsx design mode + annotate' },
   {
     id: 'browser_session',
     status: 'live',
     canonical: 'app/agentsam/frontend/workbench/browser/useBrowserSession.ts',
-    legacy: 'app/dashboard/components/BrowserView.tsx BrowserPane session block',
+    legacy: 'app/components/BrowserView.tsx BrowserPane session block',
   },
-  { id: 'browser_pane', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/BrowserPane.tsx', legacy: 'app/dashboard/components/BrowserView.tsx BrowserPane' },
-  { id: 'browser_workbench', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/BrowserWorkbench.tsx', legacy: 'app/dashboard/components/BrowserView.tsx root split' },
-  { id: 'live_timeline', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/BrowserLiveTimeline.tsx', legacy: 'app/dashboard/components/BrowserLiveTimeline.tsx' },
-  { id: 'live_ws', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/useAgentLiveBrowserWs.ts', legacy: 'app/dashboard/hooks/useAgentLiveBrowserWs.ts' },
-  { id: 'dashboard_mount', status: 'live', canonical: 'app/dashboard/components/BrowserView.tsx (re-export)', legacy: 'app/dashboard/components/BrowserView.tsx (~2787 lines)' },
+  { id: 'browser_pane', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/BrowserPane.tsx', legacy: 'app/components/BrowserView.tsx BrowserPane' },
+  { id: 'browser_workbench', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/BrowserWorkbench.tsx', legacy: 'app/components/BrowserView.tsx root split' },
+  { id: 'live_timeline', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/BrowserLiveTimeline.tsx', legacy: 'app/components/BrowserLiveTimeline.tsx' },
+  { id: 'live_ws', status: 'live', canonical: 'app/agentsam/frontend/workbench/browser/useAgentLiveBrowserWs.ts', legacy: 'app/hooks/useAgentLiveBrowserWs.ts' },
+  { id: 'dashboard_mount', status: 'live', canonical: 'app/components/BrowserView.tsx (re-export)', legacy: 'app/components/BrowserView.tsx (~2787 lines)' },
   {
     id: 'browser_session_id',
     status: 'live',
