@@ -183,6 +183,35 @@ async function openAiFetch(env, params, path, body) {
   }
 }
 
+export function openAiUpstreamError(status, rawBody, modelKey) {
+  let upstream = null;
+  try {
+    upstream = typeof rawBody === 'string' ? JSON.parse(rawBody) : rawBody;
+  } catch {
+    upstream = null;
+  }
+  const detail = upstream?.error || upstream || {};
+  const upstreamCode = String(detail?.code || '').trim() || null;
+  const model = String(modelKey || '').trim() || null;
+  if (Number(status) === 403 && upstreamCode === 'model_not_found') {
+    return {
+      error: 'The configured OpenAI project does not have access to this model.',
+      code: 'OPENAI_MODEL_ACCESS_DENIED',
+      status: 403,
+      model,
+      upstream_code: upstreamCode,
+      action: 'Use an API key from a project with model access, or enable the model for the current project.',
+    };
+  }
+  return {
+    error: 'OpenAI API error',
+    status: Number(status) || 502,
+    ...(model ? { model } : {}),
+    ...(upstreamCode ? { upstream_code: upstreamCode } : {}),
+    detail: String(detail?.message || rawBody || 'Unknown upstream error').slice(0, 500),
+  };
+}
+
 export async function dispatchOpenAIStream(env, request, params) {
   void request;
   const { response, error } = await openAiFetch(env, params, '/chat/completions', openAiChatBody(params, true));
