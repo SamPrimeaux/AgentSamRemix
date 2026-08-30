@@ -20,14 +20,12 @@ export const SDK_BOUNDARY = Object.freeze({
     reason: 'AgentSamRemix CI/operator guard that tracks SDK promotion work.',
   },
   'git-context.mjs': {
-    ownership: 'sdk-candidate',
-    targetPath: 'src/lib/git-context.js',
-    trackingIssue: SDK_TRACKING_ISSUE,
+    ownership: 'sdk-shim',
+    reason: 'Compatibility re-export of the published SDK git-context implementation.',
   },
   'bridge-client.mjs': {
-    ownership: 'sdk-candidate',
-    targetPath: 'src/lib/bridge-client.js',
-    trackingIssue: SDK_TRACKING_ISSUE,
+    ownership: 'sdk-shim',
+    reason: 'Compatibility re-export of the published SDK bridge-client implementation.',
   },
 });
 
