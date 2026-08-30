@@ -274,7 +274,10 @@ export function AppShellFrame(_p: AppShellFrameProps) {
       />
       {/* 1. TOP WINDOW BAR + mobile hamburger (sticky ≤430px) — hidden in fullscreen CMS editor */}
       {!isCmsFullscreen ? (
-      <header className="iam-chrome-topbar shrink-0 z-[110] max-phone:sticky max-phone:top-0">
+      <header
+        className="iam-chrome-topbar shrink-0 z-[110] max-phone:sticky max-phone:top-0"
+        data-agent-conversation={mobileHamburgerConversationBack ? 'true' : 'false'}
+      >
       <div className="h-10 border-b border-[var(--dashboard-border)] flex items-center justify-between px-3 overflow-visible relative">
           <div className="flex items-center gap-1 pl-1 shrink-0 min-w-0">
               {/* Mobile: hamburger (MobileNavShell inline) then logo */}
