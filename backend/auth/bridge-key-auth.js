@@ -84,9 +84,8 @@ export function verifyBridgeKey(request, env) {
 
 /**
  * Resolve AGENTSAM_BRIDGE_KEY as a service principal. A bridge caller is valid
- * without delegated user, tenant, workspace, or cookie identity. Legacy callers
- * may still provide X-User-Id as an explicit delegation hint for user-owned
- * routes, but the machine proof itself never depends on it.
+ * without delegated user, tenant, workspace, or cookie identity. User delegation
+ * is a separate compatibility operation and never appears in this proof.
  *
  * @param {Request} request
  * @param {any} env
