@@ -136,8 +136,12 @@ export async function enrichToolsFromAgentsamCatalog(env, tools, mode, _effectiv
         ? CLOUDFLARE_D1_DATABASE_QUERY_DESCRIPTION
         : String(row.description || t.description || t.name).slice(0, 4000),
       input_schema: inputSchemaFromAgentsamToolRow(row),
+      ...(parseJsonSafe(row.output_schema, null)
+        ? { output_schema: parseJsonSafe(row.output_schema, null) }
+        : {}),
       ...(cat ? { tool_category: cat } : {}),
       requires_approval: Number(row.requires_approval || 0) === 1,
+      caller_policy: row.caller_policy != null ? row.caller_policy : t.caller_policy,
     };
   });
 }
