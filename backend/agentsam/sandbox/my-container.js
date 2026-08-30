@@ -381,6 +381,21 @@ export async function tryContainerExec(env, opts) {
       res = await containerFetch(stub, '/exec', init);
     }
 
+    // A 404 from both known exec routes means the named pool is running an
+    // older image. No command was executed, so recycling once is safe even for
+    // non-idempotent commands.
+    if (res.status === 404) {
+      await destroyContainerPoolInstance(env);
+      const recycledStub = await getContainerStub(env);
+      if (!recycledStub) {
+        return { ok: false, error: 'container_unbound', lane: 'container' };
+      }
+      res = await containerFetch(recycledStub, '/v1/exec', init);
+      if (res.status === 404) {
+        res = await containerFetch(recycledStub, '/exec', init);
+      }
+    }
+
     const data = await res.json().catch(() => ({}));
     const responseOk =
       typeof data?.ok === 'boolean'
