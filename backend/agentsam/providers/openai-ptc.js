@@ -101,6 +101,17 @@ function toolShape(tool) {
   return tool?.type === 'function' && tool?.function ? tool.function : tool;
 }
 
+export function normalizeJsonSchema(raw, fallback = null) {
+  if (raw && typeof raw === 'object' && !Array.isArray(raw)) return raw;
+  if (typeof raw !== 'string' || !raw.trim()) return fallback;
+  try {
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 /** Convert Agent Sam tool definitions to the flat Responses API function shape. */
 export function toOpenAIResponsesTools(tools, opts = {}) {
   if (!Array.isArray(tools) || !tools.length) return undefined;
