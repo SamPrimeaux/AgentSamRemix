@@ -23,7 +23,6 @@ import type { QuickstartTemplate } from './AgentQuickstartPage';
 import { usePlanTasksRealtime } from '../src/hooks/usePlanTasksRealtime';
 import { readRecentWorkspacesFromLocalStorage } from '../src/recentWorkspacesStorage';
 import type { AgentHomeTab } from '../lib/agentRoutes';
-import { AgentExamplesGalleryEmbed } from './AgentExamplesGalleryEmbed';
 import { AppLibraryGrid } from './AppLibraryGrid';
 import type { AppLibraryItem } from './AppLibraryGrid';
 
@@ -301,7 +300,6 @@ export const WorkspaceDashboardV2: React.FC<WorkspaceDashboardProps> = ({
             [
               { id: 'workspaces', label: 'Workspaces' },
               { id: 'recent',     label: 'Recent' },
-              { id: 'examples',   label: 'Examples' },
             ] as { id: NavTab; label: string }[]
           ).map((n) => (
             <button
@@ -339,15 +337,7 @@ export const WorkspaceDashboardV2: React.FC<WorkspaceDashboardProps> = ({
       {/* ── BODY ── */}
       <div className="flex-1 overflow-y-auto no-scrollbar" style={{ position: 'relative' }}>
 
-        {/* ── Examples gallery (inline on /dashboard/agent?tab=examples) ── */}
-        {activeNav === 'examples' && (
-          <div className="flex flex-col h-full min-h-0">
-            <AgentExamplesGalleryEmbed />
-          </div>
-        )}
-
-        {/* ── Normal body content ── */}
-        {activeNav !== 'examples' && <div className="px-8 py-8">
+        <div className="px-8 py-8">
 
 
         {/* Make something new */}
@@ -535,7 +525,7 @@ export const WorkspaceDashboardV2: React.FC<WorkspaceDashboardProps> = ({
             </button>
           </div>
         </div>
-        </div>}{/* end activeNav !== examples */}
+        </div>
       </div>
     </div>
   );

@@ -31,7 +31,7 @@ import { handleBrowserLiveViewHttpRequest } from "../http/browser/live-view.js";
 import { handleSettingsRequest } from "../http/settings/index.js";
 import type { Env } from "./env";
 import { handleAgentRequest } from "../http/agentsam/index.js";
-import { handleCmsWorkspaceContextRequest } from "../http/cms/workspace-context.js";
+import { fetchWebsiteAsset, websiteAssetsFetcher } from "../worker/website-assets";
 
 export { AgentSam } from "../agentsam/runtime/AgentSam";
 export { CodemodeRuntime } from "@cloudflare/codemode";
@@ -106,11 +106,10 @@ export default {
 
     const identityAdapter = createCloudflareD1Adapter(env.DB);
     const identity = createIdentityService({ adapter: identityAdapter });
-    const identityEnv = { ...env, ASSETS: env.APP_ASSETS };
+    const identityEnv = { ...env, ASSETS: websiteAssetsFetcher(env.WEBSITE_ASSETS) };
 
     if (url.pathname === "/" && request.method === "GET") {
-      const homeUrl = new URL("/agentsam-home.html", request.url);
-      return env.APP_ASSETS.fetch(new Request(homeUrl.toString(), request));
+      return fetchWebsiteAsset(env.WEBSITE_ASSETS, request, { key: "agentsam-home.html" });
     }
 
     if (url.pathname === "/workbench" || url.pathname === "/agent/workbench") {
@@ -205,20 +204,6 @@ export default {
       if (!authenticated) return json({ error: "session_required" }, 401);
       const response = await routeAgentRequest(request, env);
       return response || json({ error: "agent_route_not_found" }, 404);
-    }
-
-    if (url.pathname === "/api/cms/workspace-context") {
-      if (!authenticated) return json({ error: "session_required" }, 401);
-      const scope = await authenticatedRuntimeScope(env, requestIdentity);
-      if (!scope) return json({ error: "workspace_scope_required" }, 409);
-      const response = await handleCmsWorkspaceContextRequest(request, env, {
-        userId: scope.userId,
-        tenantId: scope.tenantId,
-        workspaceId: scope.workspaceId,
-        personUuid: requestIdentity.user.personId,
-        email: requestIdentity.user.email,
-      });
-      return response || json({ error: "cms_route_not_found" }, 404);
     }
 
     if (url.pathname.startsWith("/api/settings/")) {
@@ -349,10 +334,15 @@ export default {
       });
     }
 
+    if (url.pathname.startsWith("/website-assets/")) {
+      return fetchWebsiteAsset(env.WEBSITE_ASSETS, request);
+    }
+
     if (url.pathname.startsWith("/api/"))
       return json({ error: "not_found" }, 404);
-    if (request.method === "GET" && env.APP_ASSETS)
-      return env.APP_ASSETS.fetch(request);
+    if (request.method === "GET") {
+      return fetchWebsiteAsset(env.WEBSITE_ASSETS, request, { spaFallback: true });
+    }
     return json({ error: "not_found" }, 404);
   },
 } satisfies ExportedHandler<Env>;

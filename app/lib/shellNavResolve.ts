@@ -6,9 +6,6 @@ import {
 import {
   AGENT_HOME_PATH,
   AGENT_NEW_CHAT_PATH,
-  getAgentTabFromSearch,
-  AGENT_EXAMPLES_TAB,
-  isAgentExamplesTabActive,
   isAgentConversationPath,
 } from './agentRoutes';
 
@@ -51,15 +48,12 @@ export function isProductItemActive(pathname: string, item: ShellProductItem, se
     if (!pathMatches(p, '/dashboard/images', 'prefix')) return false;
     return !pathMatches(p, '/dashboard/images/videos', 'prefix');
   }
-  if (item.id === 'examples') {
-    return isAgentExamplesTabActive(pathname, search);
-  }
   if (item.id === 'agent') {
     const onAgentSurface =
       pathMatches(pathname, AGENT_HOME_PATH, 'exact') ||
       pathMatches(pathname, AGENT_NEW_CHAT_PATH, 'exact') ||
       isAgentConversationPath(pathname);
-    return onAgentSurface && getAgentTabFromSearch(search) !== AGENT_EXAMPLES_TAB;
+    return onAgentSurface;
   }
   const pathOnly = item.path.split('?')[0] || item.path;
   return pathMatches(pathname, pathOnly, item.match ?? 'exact');

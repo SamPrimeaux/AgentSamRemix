@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { RefreshCw } from 'lucide-react';
-import type { CmsWorkspaceContext, CmsWorkspaceSite } from '../../hooks/useCmsWorkspaceContext';
+import type { CmsSiteContext, CmsSiteSummary } from './cmsSiteTypes';
 import { CmsDashboard, type CmsDashboardSetupMode } from './CmsDashboard';
 import { CmsGuidedChatHero } from './CmsGuidedChatHero';
 import { CmsSiteSwitcher } from './CmsSiteSwitcher';
@@ -8,8 +8,8 @@ import { buildCmsHubPath } from './cmsRoute';
 import './cmsShell.css';
 
 type Props = {
-  context: CmsWorkspaceContext | null;
-  sites: CmsWorkspaceSite[];
+  context: CmsSiteContext | null;
+  sites: CmsSiteSummary[];
   activeSiteSlug: string | null;
   loading: boolean;
   error: string | null;

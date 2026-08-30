@@ -1,0 +1,36 @@
+#!/usr/bin/env bash
+# Publish browser HTML authority to the real WEBSITE_ASSETS R2 bucket.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+BUCKET="${WEBSITE_ASSETS_BUCKET:-agentsam-os-blueprint-content}"
+
+put() {
+  local key="$1"
+  local file="$2"
+  local type="$3"
+  local cache_control="${4:-public, max-age=0, must-revalidate}"
+  if [ ! -f "$file" ]; then
+    echo "✗ WEBSITE_ASSETS source missing: $file" >&2
+    exit 1
+  fi
+  echo "  → $key"
+  npx wrangler r2 object put "$BUCKET/$key" \
+    --remote \
+    --force \
+    --file="$file" \
+    --content-type="$type" \
+    --cache-control="$cache_control" >/dev/null
+}
+
+echo "→ publish WEBSITE_ASSETS ($BUCKET)"
+put "index.html" "app/dist/index.html" "text/html; charset=utf-8"
+put "agentsam-home.html" "app/dist/agentsam-home.html" "text/html; charset=utf-8"
+put "auth/login.html" "app/dist/auth/login.html" "text/html; charset=utf-8"
+put "auth/signup.html" "app/dist/auth/signup.html" "text/html; charset=utf-8"
+put "auth/reset.html" "app/dist/auth/reset.html" "text/html; charset=utf-8"
+put "cms/studio-cms-shell.html" "app/dist/cms/studio-cms-shell.html" "text/html; charset=utf-8"
+
+echo "✓ WEBSITE_ASSETS shells published"

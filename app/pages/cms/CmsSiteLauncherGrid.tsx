@@ -1,16 +1,16 @@
 import React, { useMemo } from 'react';
 import { AppIcon } from '../../components/ui/AppIcon';
 import { projectAccentHue } from '../../src/lib/projectBranding';
-import type { CmsWorkspaceSite } from '../../hooks/useCmsWorkspaceContext';
+import type { CmsSiteSummary } from './cmsSiteTypes';
 
 export type CmsSiteLauncherGridProps = {
-  sites: CmsWorkspaceSite[];
+  sites: CmsSiteSummary[];
   activeSlug?: string | null;
-  onSelectSite: (site: CmsWorkspaceSite) => void;
+  onSelectSite: (site: CmsSiteSummary) => void;
   className?: string;
 };
 
-function sortFeaturedSites(sites: CmsWorkspaceSite[]): CmsWorkspaceSite[] {
+function sortFeaturedSites(sites: CmsSiteSummary[]): CmsSiteSummary[] {
   return [...sites].sort((a, b) => {
     const priA = Number(a.hub_priority) || 0;
     const priB = Number(b.hub_priority) || 0;
@@ -22,7 +22,7 @@ function sortFeaturedSites(sites: CmsWorkspaceSite[]): CmsWorkspaceSite[] {
   });
 }
 
-function siteSubtitle(site: CmsWorkspaceSite): string {
+function siteSubtitle(site: CmsSiteSummary): string {
   const domain = site.domain?.trim();
   if (domain) return domain.replace(/^https?:\/\//, '');
   return site.slug;

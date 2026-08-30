@@ -42,6 +42,7 @@ import {
   DrawPage,
   SketchPage,
   CmsPage,
+  ExamplesPage,
   LaunchDeskPage,
   BookPage,
   ChatsPage,
@@ -125,6 +126,15 @@ export function DashboardAppRoutes(props: DashboardAppRoutesProps) {
   <Route path="/dashboard/health/:tab" element={<RedirectHealthToAnalytics />} />
   <Route path="/dashboard/health/*" element={<Navigate to="/dashboard/analytics" replace />} />
   <Route path="/dashboard/learn" element={<LearnPage />} />
+  <Route path="/dashboard/agent/examples" element={<Navigate to="/dashboard/examples" replace />} />
+  <Route
+    path="/dashboard/examples"
+    element={
+      <div className="flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden">
+        <ExamplesPage />
+      </div>
+    }
+  />
   <Route path="/dashboard/workflows" element={<WorkflowsPage />} />
   <Route
     path="/dashboard/database/:databaseName"

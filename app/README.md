@@ -48,12 +48,12 @@ Important files:
 - `app/lazyDashboardPages.tsx` — route-level lazy loading.
 - `components/shell/PublicAuthRoutes.tsx` — auth and onboarding routes rendered by the same bundle.
 - `vite.config.ts` — production dashboard/PWA build configuration.
-- `studio-cms/main.tsx` — separate bundled CMS editor entrypoint.
-- `public/cms/studio-cms-shell.html` — iframe shell that loads the CMS editor bundle.
+- `frontend/public/cms/studio-cms-shell.html` — canonical parked CMS presentation shell, published to `WEBSITE_ASSETS`.
+- `pages/cms/CmsPage.tsx` — small lazy host for that shell while CMS authoring is on the backburner.
 
 ## Live dashboard route map
 
-“Live” here means registered by the current checked-out router. Production availability also requires the matching dashboard bundle to have been deployed to R2 and the Worker to be deployed.
+“Live” here means registered by the current checked-out router. Production availability requires the compiled Workers Assets bundle, the `WEBSITE_ASSETS` HTML shells, and the Worker deployment to agree.
 
 ### Agent Sam and editor
 
@@ -64,11 +64,12 @@ These routes are handled by the shell rather than the ordinary route list:
 - `/dashboard/agent/editor`
 - `/dashboard/agent/workspace`
 - `/dashboard/agent/quickstart`
-- `/dashboard/agent/examples`
 - `/dashboard/agent/:conversationId`
-- `/dashboard/agent?tab=recent|workspaces|examples`
+- `/dashboard/agent?tab=recent|workspaces`
 
 The editor route contains the file explorer, Monaco, previews, Git/source panels, browser, terminal, and the Agent Sam work rail.
+
+Examples are deliberately not part of the Agent surface or Agent critical bundle. `/dashboard/examples` is a standalone, fully lazy route. Its eventual product implementation is reserved for the CMS phase; the public route is fixed now so CMS can adopt it later without another Agent migration.
 
 ### Workspace pages
 
@@ -86,6 +87,7 @@ The editor route contains the file explorer, Monaco, previews, Git/source panels
 - `/dashboard/book/:slug`
 - `/dashboard/analytics`
 - `/dashboard/learn`
+- `/dashboard/examples` — low-priority, fully lazy gallery route
 - `/dashboard/workflows`
 - `/dashboard/database`
 - `/dashboard/database/:databaseName`
@@ -118,7 +120,7 @@ The editor route contains the file explorer, Monaco, previews, Git/source panels
 
 ### CMS pages
 
-All CMS paths render through `pages/cms/CmsPage.tsx`, which resolves the selected site and panel:
+All CMS paths currently render through the tiny lazy `pages/cms/CmsPage.tsx` host into the parked `WEBSITE_ASSETS` shell. CMS uses the application workspace identity; it does not own a second workspace-context endpoint. Site/project context will be reintroduced inside the CMS domain when that product phase resumes:
 
 - `/dashboard/cms`
 - `/dashboard/cms/pages`
@@ -162,6 +164,8 @@ The route form is `/dashboard/settings/:sectionSlug`.
 - `/dashboard/integrations` → `/dashboard/settings/integrations`
 - `/dashboard/storage` → `/dashboard/settings/storage`
 - `/dashboard/health` → `/dashboard/analytics`
+- `/dashboard/agent/examples` → `/dashboard/examples`
+- `/dashboard/agent?tab=examples` → `/dashboard/examples` (client compatibility redirect)
 
 ## Auth and onboarding routes in this bundle
 
@@ -175,7 +179,7 @@ When the URL is not under `/dashboard`, `App.tsx` renders `PublicAuthRoutes`:
 - `/api/auth/oauth/consent`
 - `/oauth/mcp/consent`
 
-The authored auth pages live under `app/frontend/public/auth/`. The Vite build copies those canonical HTML files into `app/dist/auth/` (plus `app/shared/company-branding.js` into `app/dist/shared/`), and the identity Worker serves them at `/auth/login`, `/auth/signup`, and `/auth/reset`. The React auth route list is a recovery/fallback surface only; it is not the production presentation authority.
+The authored auth pages live under `app/frontend/public/auth/`. Vite copies them into `app/dist/auth/`, and `bin/publish-website-assets` publishes them to the connected `WEBSITE_ASSETS` R2 bucket. The identity Worker receives a narrow fetcher facade over that R2 bucket and serves those shells at `/auth/login`, `/auth/signup`, and `/auth/reset`. The React auth route list is a recovery/fallback surface only; it is not the production presentation authority.
 
 ## Build and deployment
 
@@ -188,21 +192,16 @@ npm run dev
 npm run build
 ```
 
-The dashboard package's `build` script runs two Vite builds:
+The dashboard build emits `app/dist`. Cloudflare Workers Assets transports the compiled JS/CSS/PWA files, but it has **no runtime binding name**. Worker-side HTML authority is the connected `WEBSITE_ASSETS` R2 bucket. `bin/publish-website-assets` publishes `index.html`, the Agent Sam home shell, canonical auth shells, and the parked CMS shell there before deployment.
 
-```text
-vite build
-vite build --config studio-cms/vite.config.ts
-```
-
-The main dashboard is published under the R2 key prefix `static/dashboard/app/`. The PWA root assets include `/sw.js`, `/manifest.webmanifest`, `/offline.html`, and `/pwa-build-meta.json`.
+The PWA root assets include `/sw.js`, `/manifest.webmanifest`, `/offline.html`, and `/pwa-build-meta.json`.
 
 Use the repository deployment lane from the repository root:
 
 - Mac: `bin/agentsam deploy fast` or `bin/agentsam deploy full`
 - GCP/phone/remote operator: `bash scripts/ship-remote.sh`
 
-Do not treat a Worker-only deploy as proof that dashboard assets shipped. The dashboard bundle, PWA assets, Worker, and their build SHA must agree.
+Do not treat a Worker-only deploy as proof that browser presentation shipped. The Workers Assets bundle, `WEBSITE_ASSETS` HTML objects, PWA assets, Worker, and their build SHA must agree. The canonical deploy command publishes the R2 shells before `wrangler deploy`.
 
 The current production Worker authority is `https://agentsamremix.inneranimalmedia.com`. `workers_dev` and preview URLs are disabled in `wrangler.jsonc`; future promotion to `inneranimalmedia.com` should be a host/config cutover, not another application restructure.
 

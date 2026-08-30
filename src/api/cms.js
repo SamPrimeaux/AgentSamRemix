@@ -209,8 +209,7 @@ export async function handleCmsApi(request, url, env, ctx) {
 
   if (
     bridgeProjectSlug &&
-    cmsScope.allowedSlugs.has(bridgeProjectSlug) &&
-    !path.startsWith('/api/cms/workspace-context')
+    cmsScope.allowedSlugs.has(bridgeProjectSlug)
   ) {
     const bridgeCfg = await resolveCmsSiteConfig(env, workspaceId, bridgeProjectSlug);
     if (isCmsBridgeEligible(bridgeCfg)) {
@@ -225,7 +224,7 @@ export async function handleCmsApi(request, url, env, ctx) {
     }
   }
 
-  if (siteConfig.cms_hosting === 'client_worker' && !path.startsWith('/api/cms/workspace-context')) {
+  if (siteConfig.cms_hosting === 'client_worker') {
     return jsonResponse(
       {
         error: 'CMS_CLIENT_WORKER_MODE',

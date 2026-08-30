@@ -156,6 +156,14 @@ export default defineConfig(({ mode }) => {
           }
           fs.mkdirSync(sharedOutDir, { recursive: true });
           fs.copyFileSync(brandingSource, path.join(sharedOutDir, "company-branding.js"));
+
+          const cmsShellSource = path.resolve(__dirname, "frontend/public/cms/studio-cms-shell.html");
+          const cmsOutDir = path.join(outDir, "cms");
+          if (!fs.existsSync(cmsShellSource)) {
+            throw new Error(`Canonical CMS shell missing: ${cmsShellSource}`);
+          }
+          fs.mkdirSync(cmsOutDir, { recursive: true });
+          fs.copyFileSync(cmsShellSource, path.join(cmsOutDir, "studio-cms-shell.html"));
         },
       },
       VitePWA({

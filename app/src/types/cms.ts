@@ -160,21 +160,6 @@ export type CmsSaveDraftResponse = {
   error?: string;
 };
 
-export type CmsWorkspaceContext = {
-  workspace_id?: string | null;
-  workspace_name?: string | null;
-  project_slug?: string | null;
-  project_name?: string | null;
-  cms_hosting?: CmsHostingMode;
-  api_profile?: CmsApiProfile | string | null;
-  public_domain?: string | null;
-  studio_url?: string | null;
-  bridge_supported?: boolean;
-  worker_base_url?: string | null;
-  sites?: Array<{ slug: string; name?: string; domain?: string | null }>;
-  error?: string | null;
-};
-
 /** Map API section row → editor-friendly shape */
 export function toCmsSection(row: CmsPageSection, pageId: string): CmsSection {
   return {

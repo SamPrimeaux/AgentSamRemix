@@ -1,12 +1,12 @@
 import React from 'react';
 import { Plus, RefreshCw } from 'lucide-react';
-import type { CmsWorkspaceContext } from '../../hooks/useCmsWorkspaceContext';
+import type { CmsSiteContext } from './cmsSiteTypes';
 import { CmsSiteLauncherGrid } from './CmsSiteLauncherGrid';
 import { buildCmsHubPath } from './cmsRoute';
 import './cmsShell.css';
 
 type Props = {
-  context: CmsWorkspaceContext | null;
+  context: CmsSiteContext | null;
   loading: boolean;
   error: string | null;
   onRetry: () => void;

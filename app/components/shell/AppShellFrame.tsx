@@ -47,7 +47,7 @@ import { SHELL_VERSION } from '../../src/shellVersion';
 import { syncIamAppBadge } from '../../src/pwa/appBadge';
 import {
   AGENT_HOME_PATH, AGENT_EDITOR_PATH, AGENT_WORKSPACE_PATH,
-  AGENT_EXAMPLES_PATH, AGENT_TAB_QUERY, AGENT_QUICKSTART_PATH, AGENT_NEW_CHAT_PATH,
+  AGENT_QUICKSTART_PATH, AGENT_NEW_CHAT_PATH,
   isAgentShellPath, isAgentEditorPath, isAgentHomePath, isAgentNewChatPath, isAgentQuickstartPath,
 } from '../../lib/agentRoutes';
 

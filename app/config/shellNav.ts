@@ -19,8 +19,9 @@ export type ShellProductItem = {
   children?: ShellProductItem[];
 };
 
-/** CMS Suite — workspace-scoped URLs (project resolved via /api/cms/workspace-context + agentsam_bootstrap) */
+/** CMS Suite — site/project context will be resolved inside CMS when that product phase resumes. */
 export const CMS_SUITE_NAV: ShellProductItem[] = [
+  // /dashboard/examples is reserved for the later CMS-owned Examples implementation.
   { id: 'cms-sites', label: 'Sites', path: '/dashboard/cms', match: 'exact' },
   { id: 'cms-online-store', label: 'Online store', path: '/dashboard/cms/online-store', match: 'prefix' },
   { id: 'cms-theme-editor', label: 'Theme editor', path: '/dashboard/cms/theme-editor', match: 'prefix' },
@@ -67,7 +68,6 @@ export const SHELL_PRODUCTS: ShellProduct[] = [
     home: '/dashboard/agent/new',
     items: [
       { id: 'agent', label: 'Agent', path: '/dashboard/agent/new', match: 'exact' },
-      { id: 'examples', label: 'Examples', path: '/dashboard/agent?tab=examples', match: 'exact' },
       { id: 'workflows', label: 'Workflows', path: '/dashboard/workflows', match: 'exact' },
       { id: 'database', label: 'Database', path: '/dashboard/database', match: 'exact' },
     ],
@@ -108,4 +108,5 @@ export const SHELL_ROUTE_ALIASES: Record<string, string> = {
   '/dashboard/library': '/dashboard/artifacts',
   '/dashboard/launch-desk': '/dashboard/collaborate',
   '/dashboard/calendar': '/dashboard/collaborate',
+  '/dashboard/agent/examples': '/dashboard/examples',
 };

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, PanelRightClose, PanelRightOpen, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
-import type { CmsWorkspaceContext, CmsWorkspaceSite } from '../../hooks/useCmsWorkspaceContext';
+import type { CmsSiteContext, CmsSiteSummary } from './cmsSiteTypes';
 import {
   IAM_AGENT_CHAT_COMPOSE,
   IAM_AGENT_COLLAPSE_PANEL,
@@ -20,9 +20,9 @@ export type CmsShellNav = 'hub' | 'pages' | 'theme-editor' | 'online-store' | 't
 
 type Props = {
   siteSlug: string;
-  site?: CmsWorkspaceSite | null;
-  sites?: CmsWorkspaceSite[];
-  context?: CmsWorkspaceContext | null;
+  site?: CmsSiteSummary | null;
+  sites?: CmsSiteSummary[];
+  context?: CmsSiteContext | null;
   activeNav: CmsShellNav;
   children: React.ReactNode;
   /** Hub/overview compose strip — hidden on live editor routes for max canvas. */
@@ -45,7 +45,7 @@ function siteInitials(name?: string | null, slug?: string | null): string {
   return src.slice(0, 2).toUpperCase();
 }
 
-function displayDomain(site?: CmsWorkspaceSite | null, context?: CmsWorkspaceContext | null): string {
+function displayDomain(site?: CmsSiteSummary | null, context?: CmsSiteContext | null): string {
   const raw =
     site?.domain?.trim() ||
     context?.public_domain?.trim() ||
@@ -84,7 +84,7 @@ export function CmsShellLayout({
     if (sites.length) return sites;
     if (site?.slug) return [site];
     if (siteSlug) {
-      return [{ slug: siteSlug, name: siteName, domain: domain || null } satisfies CmsWorkspaceSite];
+      return [{ slug: siteSlug, name: siteName, domain: domain || null } satisfies CmsSiteSummary];
     }
     return [];
   }, [sites, site, siteSlug, siteName, domain]);

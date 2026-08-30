@@ -109,6 +109,9 @@ export const SketchPage = lazy(() =>
 export const CmsPage = lazy(() =>
   import('./pages/cms/CmsPage').then((m) => ({ default: m.default })),
 );
+export const ExamplesPage = lazy(() =>
+  import('./pages/examples/ExamplesPage').then((m) => ({ default: m.default })),
+);
 export const MonacoEditorView = lazy(() =>
   import('./components/MonacoEditorView').then((m) => ({ default: m.MonacoEditorView })),
 );

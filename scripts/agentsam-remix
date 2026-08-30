@@ -20,9 +20,9 @@ usage() {
   cat >&2 <<EOF
 usage: bin/agentsam deploy <full|fast|worker>
 
-  full    tsc --noEmit -> vite build -> wrangler deploy
-  fast    vite build -> wrangler deploy (skips typecheck)
-  worker  wrangler deploy only (uses existing app/dist)
+  full    tsc --noEmit -> vite build -> WEBSITE_ASSETS -> wrangler deploy
+  fast    vite build -> WEBSITE_ASSETS -> wrangler deploy (skips typecheck)
+  worker  WEBSITE_ASSETS -> wrangler deploy (uses existing app/dist)
 EOF
   exit 2
 }
@@ -56,6 +56,10 @@ do_build() {
   npm run build
 }
 
+do_publish_website_assets() {
+  "$ROOT/bin/publish-website-assets"
+}
+
 do_wrangler_deploy() {
   echo "→ deploy (wrangler deploy)"
   npx wrangler deploy
@@ -71,12 +75,14 @@ case "$SUBMODE" in
     require_clean_or_warn
     do_typecheck
     do_build
+    do_publish_website_assets
     do_wrangler_deploy
     ;;
   fast)
     banner "fast (typecheck skipped)"
     require_clean_or_warn
     do_build
+    do_publish_website_assets
     do_wrangler_deploy
     ;;
   worker)
@@ -85,6 +91,7 @@ case "$SUBMODE" in
       echo "✗ app/dist missing — run 'deploy fast' or 'deploy full' at least once first" >&2
       exit 1
     fi
+    do_publish_website_assets
     do_wrangler_deploy
     ;;
   *)

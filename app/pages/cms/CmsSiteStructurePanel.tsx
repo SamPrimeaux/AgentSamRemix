@@ -1,9 +1,9 @@
 import React from 'react';
-import type { CmsWorkspaceContext } from '../../hooks/useCmsWorkspaceContext';
+import type { CmsSiteContext } from './cmsSiteTypes';
 
 type Props = {
   siteSlug: string;
-  context?: CmsWorkspaceContext | null;
+  context?: CmsSiteContext | null;
   pageCount?: number;
   themeCount?: number;
   importCount?: number;

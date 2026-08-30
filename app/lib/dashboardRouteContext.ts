@@ -1,5 +1,4 @@
 import type { AgentWorkspaceContextPacket } from '../src/ideWorkspace';
-import type { CmsWorkspaceContext } from '../hooks/useCmsWorkspaceContext';
 
 export type DashboardRouteQuickAction = {
   id: string;
@@ -31,7 +30,6 @@ export function resolveDashboardRouteAgentContext(opts: {
   pathname: string;
   search?: string;
   workspaceId?: string | null;
-  cmsContext?: CmsWorkspaceContext | null;
   activeTab?: string;
   browserUrl?: string | null;
   openFiles?: string[];
@@ -39,7 +37,6 @@ export function resolveDashboardRouteAgentContext(opts: {
 }): DashboardRouteAgentContext {
   const path = normalizePath(opts.pathname);
   const search = opts.search || '';
-  const ws = (opts.workspaceId || '').trim();
   const basePacket: Partial<AgentWorkspaceContextPacket> = {
     activeTab: opts.activeTab || 'Workspace',
     browserUrl: opts.browserUrl?.trim() || null,
@@ -49,58 +46,12 @@ export function resolveDashboardRouteAgentContext(opts: {
   };
 
   if (path.startsWith('/dashboard/cms')) {
-    const cms = opts.cmsContext;
-    const slug = cms?.project_slug || null;
-    const isClientWorker = cms?.cms_hosting === 'client_worker';
-    const apiProfile = cms?.api_profile || '';
-    const routeKey =
-      apiProfile === 'fuel_admin'
-        ? 'fuel_cms_admin'
-        : isClientWorker
-          ? 'cms_client_worker'
-          : 'cms_edit';
     return {
-      route_key: routeKey,
-      context_label: slug
-        ? `CMS · ${cms?.project_name || slug}${isClientWorker ? ' (client worker)' : ''}`
-        : 'CMS · pick a site',
-      contextMode: isClientWorker ? 'cms_client_worker' : 'cms_platform',
-      workspaceContext: {
-        ...basePacket,
-        project_slug: slug,
-        bootstrap_cache_key: slug && ws ? `cms:bootstrap:${ws}:${slug}` : null,
-      },
-      quickActions: isClientWorker
-        ? [
-            {
-              id: 'fuel-list-pages',
-              label: 'List CMS pages',
-              message: 'List all CMS pages for this client worker site using the bridge admin API.',
-              route_key: 'fuel_cms_admin',
-              task_type: 'cms_schema',
-            },
-            {
-              id: 'fuel-publish-check',
-              label: 'Verify publish path',
-              message: 'Explain the D1 → R2 → KV publish contract for this client worker CMS site.',
-              route_key: 'fuel_cms_admin',
-            },
-          ]
-        : [
-            {
-              id: 'cms-list-pages',
-              label: 'List pages',
-              message: 'List CMS pages for the active PrimeTech site in this workspace.',
-              route_key: 'cms_edit',
-              task_type: 'cms_schema',
-            },
-            {
-              id: 'cms-bootstrap',
-              label: 'Bootstrap context',
-              message: 'Load CMS bootstrap KV context for the active site and summarize editable pages.',
-              route_key: 'cms_edit',
-            },
-          ],
+      route_key: 'cms',
+      context_label: 'CMS',
+      contextMode: 'cms',
+      workspaceContext: { ...basePacket, activeTab: 'cms', capabilities: ['cms'] },
+      quickActions: [],
     };
   }
 
@@ -245,55 +196,12 @@ export function resolveDashboardRouteAgentContext(opts: {
   }
 
   if (path.startsWith('/dashboard/agent')) {
-    const tab = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search).get('tab');
-    const cms = opts.cmsContext;
-    const slug = cms?.project_slug || null;
-    const ws = (opts.workspaceId || '').trim();
-    const cmsPacket: Partial<AgentWorkspaceContextPacket> = slug
-      ? {
-          project_slug: slug,
-          bootstrap_cache_key: ws ? `cms:bootstrap:${ws}:${slug}` : null,
-          preview_url: cms?.public_domain
-            ? `https://${cms.public_domain}`
-            : cms?.worker_base_url || null,
-          public_domain: cms?.public_domain || null,
-          cms_hosting: cms?.cms_hosting || null,
-          api_profile: cms?.api_profile || null,
-          capabilities: ['cms'],
-        }
-      : {};
     return {
-      route_key: tab === 'examples' ? 'agent_examples' : 'agent_sam',
-      context_label: slug
-        ? tab === 'examples'
-          ? 'Agent · Examples'
-          : `Agent · Workbench · CMS ${cms?.project_name || slug}`
-        : tab === 'examples'
-          ? 'Agent · Examples'
-          : 'Agent · Workbench',
+      route_key: 'agent_sam',
+      context_label: 'Agent Sam',
       contextMode: 'agent',
-      workspaceContext: { ...basePacket, ...cmsPacket },
-      quickActions: slug
-        ? cms?.cms_hosting === 'client_worker'
-          ? [
-              {
-                id: 'agent-fuel-list-pages',
-                label: 'List CMS pages',
-                message: 'List all CMS pages for this client worker site using the bridge admin API.',
-                route_key: 'fuel_cms_admin',
-                task_type: 'cms_schema',
-              },
-            ]
-          : [
-              {
-                id: 'agent-cms-list-pages',
-                label: 'List CMS pages',
-                message: 'List CMS pages for the active PrimeTech site in this workspace.',
-                route_key: 'cms_edit',
-                task_type: 'cms_schema',
-              },
-            ]
-        : [],
+      workspaceContext: basePacket,
+      quickActions: [],
     };
   }
 

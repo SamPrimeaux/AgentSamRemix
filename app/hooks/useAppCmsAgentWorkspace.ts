@@ -9,7 +9,6 @@ type ShellTabId = 'Workspace' | 'welcome' | 'code' | 'browser' | 'glb' | 'cms';
 
 export function useAppCmsAgentWorkspace(opts: {
   browserUrl: string;
-  cmsWorkspaceContext: any;
   cmsRouteParsed: { pageId?: string | null; panel?: string | null; siteSlug?: string | null } | null;
   isCmsRoute: boolean;
   authWorkspaceId: string | null | undefined;
@@ -42,7 +41,7 @@ export function useAppCmsAgentWorkspace(opts: {
   shellOutputLines: string[];
 }) {
   const {
-    browserUrl, cmsWorkspaceContext, cmsRouteParsed, isCmsRoute, authWorkspaceId, activeTab,
+    browserUrl, cmsRouteParsed, isCmsRoute, authWorkspaceId, activeTab,
     agentWorkbenchOpenFiles, activePlanIdForChat, locationPathname, locationSearch,
     isDrawRoute, isSketchRoute, designStudioEntryPhase, drawEntryPhase, sketchEntryPhase,
     setDesignStudioEntryPhase, setDesignStudioComposerHost, setDesignStudioMessagesHost,
@@ -54,83 +53,35 @@ export function useAppCmsAgentWorkspace(opts: {
 
   const [cmsAgentPageId, setCmsAgentPageId] = useState<string | null>(null);
   const [cmsAgentPanel, setCmsAgentPanel] = useState<string>('pages');
-  const [cmsLiveSessionId, setCmsLiveSessionId] = useState<string | null>(null);
 
   const cmsWorkbenchContext = useMemo<AgentWorkspaceContextPacket | null>(() => {
-    const slug = cmsWorkspaceContext?.project_slug || cmsRouteParsed?.siteSlug || null;
-    const ws = (authWorkspaceId || '').trim();
-    if (!slug && !isCmsRoute) return null;
+    const slug = cmsRouteParsed?.siteSlug || null;
     const pageId = isCmsRoute ? cmsRouteParsed?.pageId ?? null : cmsAgentPageId;
     const panel = isCmsRoute ? cmsRouteParsed?.panel ?? 'pages' : cmsAgentPanel;
-    const publicDomain = cmsWorkspaceContext?.public_domain || null;
-    const workerBase = cmsWorkspaceContext?.worker_base_url || null;
-    const previewUrl = publicDomain
-      ? `https://${publicDomain.replace(/^https?:\/\//, '')}`
-      : workerBase || null;
+    if (!isCmsRoute && !slug && !pageId) return null;
     return {
-      activeTab: activeTab === 'cms' || isCmsRoute ? 'cms' : String(activeTab),
+      activeTab: 'cms',
       browserUrl: browserUrl?.trim() || null,
       openFiles: agentWorkbenchOpenFiles,
       plan_id: activePlanIdForChat,
       workflow_run_id: null,
+      workspace_id: authWorkspaceId?.trim() || null,
       project_slug: slug,
       page_id: pageId,
       studio_panel: panel,
-      live_session_id: cmsLiveSessionId,
-      collab_room: pageId ? `cms:${pageId}` : null,
-      bootstrap_cache_key: slug && ws ? `cms:bootstrap:${ws}:${slug}` : null,
-      preview_url: previewUrl,
-      public_domain: publicDomain,
-      cms_hosting: cmsWorkspaceContext?.cms_hosting || null,
-      api_profile: cmsWorkspaceContext?.api_profile || null,
-      capabilities: slug ? ['cms'] : null,
-      r2_bucket:
-        (cmsWorkspaceContext as { r2_bucket?: string | null } | null)?.r2_bucket ||
-        (cmsWorkspaceContext as { agent_site_context?: { r2_bucket?: string } } | null)
-          ?.agent_site_context?.r2_bucket ||
-        null,
-      r2_key: null,
-      agent_site_context:
-        (cmsWorkspaceContext as { agent_site_context?: Record<string, unknown> } | null)
-          ?.agent_site_context || null,
-      d1_database_id:
-        (cmsWorkspaceContext as { d1_database_id?: string | null } | null)?.d1_database_id ||
-        null,
+      capabilities: ['cms'],
     };
   }, [
-    cmsWorkspaceContext,
     cmsRouteParsed,
     isCmsRoute,
     authWorkspaceId,
     cmsAgentPageId,
     cmsAgentPanel,
-    cmsLiveSessionId,
     activeTab,
     browserUrl,
     agentWorkbenchOpenFiles,
     activePlanIdForChat,
   ]);
-
-  useEffect(() => {
-    const pageId = cmsWorkbenchContext?.page_id?.trim();
-    if (!pageId || isCmsRoute) return;
-    let cancelled = false;
-    void fetch('/api/cms/live-session/join', {
-      method: 'POST',
-      credentials: 'include',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ page_id: pageId }),
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .then((data: { session_id?: string } | null) => {
-        if (cancelled || !data?.session_id?.trim()) return;
-        setCmsLiveSessionId(data.session_id.trim());
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, [cmsWorkbenchContext?.page_id, isCmsRoute]);
 
   const isDesignStudioRoute = locationPathname.startsWith('/dashboard/designstudio');
   const designStudioEntryAtmospheric = isDesignStudioRoute && designStudioEntryPhase;
@@ -205,7 +156,6 @@ export function useAppCmsAgentWorkspace(opts: {
       pathname: locationPathname,
       search: locationSearch,
       workspaceId: authWorkspaceId,
-      cmsContext: cmsWorkspaceContext,
       activeTab: String(activeTab),
       browserUrl,
       openFiles: agentWorkbenchOpenFiles,
@@ -262,7 +212,6 @@ export function useAppCmsAgentWorkspace(opts: {
     locationPathname,
     locationSearch,
     authWorkspaceId,
-    cmsWorkspaceContext,
     isDesignStudioRoute,
     activeTab,
     browserUrl,
@@ -282,7 +231,6 @@ export function useAppCmsAgentWorkspace(opts: {
         pathname: locationPathname,
         search: locationSearch,
         workspaceId: authWorkspaceId,
-        cmsContext: cmsWorkspaceContext,
         activeTab: String(activeTab),
         browserUrl,
         openFiles: agentWorkbenchOpenFiles,
@@ -292,7 +240,6 @@ export function useAppCmsAgentWorkspace(opts: {
       locationPathname,
       locationSearch,
       authWorkspaceId,
-      cmsWorkspaceContext,
       activeTab,
       browserUrl,
       agentWorkbenchOpenFiles,
@@ -303,7 +250,6 @@ export function useAppCmsAgentWorkspace(opts: {
   return {
     cmsAgentPageId, setCmsAgentPageId,
     cmsAgentPanel, setCmsAgentPanel,
-    cmsLiveSessionId, setCmsLiveSessionId,
     cmsWorkbenchContext,
     isDesignStudioRoute,
     designStudioEntryAtmospheric,

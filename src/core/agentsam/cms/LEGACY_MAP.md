@@ -46,7 +46,7 @@ GET /dashboard/cms[…]
 | `app/components/shell/DashboardSidebar.tsx` | CMS suite active when path starts with `/dashboard/cms` |
 | `app/components/shell/AppShellFrame.tsx` | Workbench deep-link to `/dashboard/cms/pages?site=` |
 | `app/lib/dashboardRouteContext.ts` | Agent `route_key=cms_edit` for `/dashboard/cms*` |
-| `app/hooks/useCmsWorkspaceContext.ts` | `GET /api/cms/workspace-context` (also fetched from `App.tsx`) |
+| ~~CMS workspace hook~~ | **Removed.** CMS inherits application workspace identity; site/project selection returns during the CMS phase. |
 
 **API dispatch for everything `/api/cms*`:**
 
@@ -56,12 +56,14 @@ GET /dashboard/cms[…]
 
 ## 2. Hub — `/dashboard/cms`
 
+> **2026-08-29 parking note:** the live route now hosts a static `WEBSITE_ASSETS` shell. The detailed authoring flow below is retained only as reconstruction history for the later CMS pass.
+
 `CmsPage` parses an empty rest segment → `view: 'sites'` (no `?site=`) or `view: 'hub'` (explicit `?site=`). Hub **does not** inherit localStorage site; only the query param counts.
 
 ```
 CmsPage.tsx
   parseCmsRoute → hub | sites
-  GET /api/cms/workspace-context     useCmsWorkspaceContext.ts
+  [removed] dedicated CMS workspace resolver
   if hubSiteSlug:
     CmsShellLayout (hubMinimal)      CmsShellLayout.tsx + cmsShell.css
       CmsHubPage.tsx
@@ -99,7 +101,7 @@ CmsPage.tsx
 
 | File | Role |
 |------|------|
-| `src/api/cms.js` | `GET/POST /api/cms/workspace-context`, `GET /api/cms/bootstrap`, `GET /api/cms/activity` |
+| `src/api/cms.js` | Legacy CMS bootstrap/activity and site-specific adapters; no dedicated CMS workspace endpoint. |
 | `src/core/cms-hub-sites.js` | Operator launcher rows (`agentsam_project_context` `hub_launcher=1` + `cms_tenants`) |
 | `src/core/cms-site-config.js` | Hosting mode, studio URL, public domain |
 | `src/core/cms-workspace-resolve.js` | Registered `cms_site` context |
@@ -242,7 +244,7 @@ Sibling studio URLs (`/pages`, `/online-store`, `/templates`, `/imports`) share 
 rg -n "path=\"/dashboard/cms" app/DashboardAppRoutes.tsx
 rg -n "theme-editor|view: 'hub'|StudioCmsHost" app/pages/cms/CmsPage.tsx app/pages/cms/cmsRoute.ts
 rg -n "studio-cms-shell|studio-cms.js" app/pages/cms/studio/StudioCmsHost.tsx app/public/cms/studio-cms-shell.html
-rg -n "handleCmsApi|/api/cms/workspace-context|/api/cms/theme-vars" src/core/production-dispatch.js src/api/cms.js
+rg -n "handleCmsApi|/api/cms/theme-vars" src/core/production-dispatch.js src/api/cms.js
 ```
 
 ## Host/runtime + package/import peel

@@ -7,13 +7,11 @@ export const AGENT_NEW_CHAT_PATH = '/dashboard/agent/new';
 export const AGENT_EDITOR_PATH = '/dashboard/agent/editor';
 export const AGENT_WORKSPACE_PATH = '/dashboard/agent/workspace';
 export const AGENT_QUICKSTART_PATH = '/dashboard/agent/quickstart';
-/** Legacy path — redirects to {@link agentHomeWithTab} examples tab. */
-export const AGENT_EXAMPLES_PATH = '/dashboard/agent/examples';
+export const LEGACY_AGENT_EXAMPLES_PATH = '/dashboard/agent/examples';
+export const EXAMPLES_PATH = '/dashboard/examples';
 
 export const AGENT_TAB_QUERY = 'tab';
-export const AGENT_EXAMPLES_TAB = 'examples';
-
-export type AgentHomeTab = 'recent' | 'workspaces' | 'examples';
+export type AgentHomeTab = 'recent' | 'workspaces';
 
 /** Bare `/dashboard/agent` (no tab) is the atmospheric home — not a workspace tab. */
 export function agentHomeWithTab(tab: AgentHomeTab): string {
@@ -23,7 +21,7 @@ export function agentHomeWithTab(tab: AgentHomeTab): string {
 export function getAgentTabFromSearch(search: string): AgentHomeTab | null {
   const raw = new URLSearchParams(search.startsWith('?') ? search.slice(1) : search).get(AGENT_TAB_QUERY);
   const tab = String(raw || '').trim();
-  if (tab === 'examples' || tab === 'workspaces' || tab === 'recent') return tab;
+  if (tab === 'workspaces' || tab === 'recent') return tab;
   return null;
 }
 
@@ -50,14 +48,11 @@ export function isAgentWorkspacePath(pathname: string): boolean {
 
 export function agentPathTab(pathname: string): AgentHomeTab | null {
   if (isAgentWorkspacePath(pathname)) return 'recent';
-  if (isAgentExamplesPath(pathname)) return 'examples';
   return null;
 }
 
 export function isAgentWorkspaceBrowserPath(pathname: string, search: string): boolean {
-  if (isAgentWorkspacePath(pathname) || isAgentExamplesPath(pathname)) {
-    return true;
-  }
+  if (isAgentWorkspacePath(pathname)) return true;
   return isAgentHomePath(pathname) && getAgentTabFromSearch(search) !== null;
 }
 
@@ -74,10 +69,6 @@ export function resolveAgentWorkspaceTab(pathname: string, search: string): Agen
   return 'recent';
 }
 
-export function isAgentExamplesTabActive(pathname: string, search: string): boolean {
-  return isAgentExamplesPath(pathname) || (isAgentHomePath(pathname) && getAgentTabFromSearch(search) === AGENT_EXAMPLES_TAB);
-}
-
 export function normalizePath(pathname: string): string {
   const p = String(pathname || '').trim();
   if (!p) return AGENT_HOME_PATH;
@@ -87,6 +78,7 @@ export function normalizePath(pathname: string): string {
 /** True when the main editor should show Agent workspace/quickstart (not lazy dashboard Routes). */
 export function isAgentShellPath(pathname: string): boolean {
   const p = normalizePath(pathname);
+  if (p === LEGACY_AGENT_EXAMPLES_PATH) return false;
   return p === AGENT_HOME_PATH || p === AGENT_QUICKSTART_PATH || p.startsWith(`${AGENT_HOME_PATH}/`);
 }
 
@@ -141,10 +133,6 @@ export function replaceAgentConversationUrl(conversationId: string): void {
 
 export function isAgentQuickstartPath(pathname: string): boolean {
   return normalizePath(pathname) === AGENT_QUICKSTART_PATH;
-}
-
-export function isAgentExamplesPath(pathname: string): boolean {
-  return normalizePath(pathname) === AGENT_EXAMPLES_PATH;
 }
 
 /**

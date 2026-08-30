@@ -5,7 +5,6 @@ import {
   AGENT_HOME_PATH,
   AGENT_QUICKSTART_PATH,
   AGENT_WORKSPACE_PATH,
-  AGENT_EXAMPLES_PATH,
   AGENT_TAB_QUERY,
   isAgentShellPath,
   type AgentHomeTab,
@@ -131,7 +130,6 @@ export function useAppAgentNavHelpers(opts: {
       const pathByTab: Record<AgentHomeTab, string> = {
         recent: AGENT_WORKSPACE_PATH,
         workspaces: `${AGENT_WORKSPACE_PATH}?${AGENT_TAB_QUERY}=workspaces`,
-        examples: AGENT_EXAMPLES_PATH,
       };
       navigate(pathByTab[tab], { replace: true });
     },

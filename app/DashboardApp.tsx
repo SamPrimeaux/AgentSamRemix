@@ -14,7 +14,6 @@ import { useTerminalWorkspace } from './hooks/useTerminalWorkspace';
 import { mergeRecentFromActiveFile } from './src/ideWorkspace';
 import { DASHBOARD_STATUS_BAR_INSET, isAgentEditorDevContext, mobileTabBarBottomOffset, PREF_SHOW_STATUS_BAR, readShellBoolPref, showDashboardStatusBar, showFullIdeTopbar, SHELL_PREF_CHANGE_EVENT } from './config/shellChrome';
 import { isCmsEditorFullscreenRoute, isCmsStudioEditorRoute, parseCmsRoute } from './pages/cms/cmsRoute';
-import { useCmsWorkspaceContext } from './hooks/useCmsWorkspaceContext';
 import { useAppPanelLayout } from './hooks/useAppPanelLayout';
 import { useAppShellStatusPoll } from './hooks/useAppShellStatusPoll';
 import { useAppAgentChatTabs } from './hooks/useAppAgentChatTabs';
@@ -168,11 +167,6 @@ const DashboardRuntime: React.FC = () => {
     new URLSearchParams(location.search),
   );
 
-  const { context: cmsWorkspaceContext } = useCmsWorkspaceContext({
-    workspaceId: authWorkspaceId,
-    siteSlug: cmsRouteParsed?.siteSlug || null,
-    enabled: Boolean(authWorkspaceId?.trim()),
-  });
   const movieModeProjectId = useMemo(() => {
     const m = location.pathname.match(/^\/dashboard\/moviemode\/([^/?#]+)/);
     if (m?.[1]) return decodeURIComponent(m[1]);
@@ -183,6 +177,13 @@ const DashboardRuntime: React.FC = () => {
     }
   }, [location.pathname, location.search]);
   const navigate = useNavigate();
+  useEffect(() => {
+    if (location.pathname !== '/dashboard/agent') return;
+    const params = new URLSearchParams(location.search);
+    if (params.get('tab') === 'examples') {
+      navigate('/dashboard/examples', { replace: true });
+    }
+  }, [location.pathname, location.search, navigate]);
   const onDevServerUrlRef = useRef<((url: string) => void) | null>(null);
   const runInTerminalRef = useRef<(cmd: string) => void>(() => {});
   const termWs = useTerminalWorkspace({
@@ -377,7 +378,6 @@ const DashboardRuntime: React.FC = () => {
   const {
     cmsAgentPageId, setCmsAgentPageId,
     cmsAgentPanel, setCmsAgentPanel,
-    cmsLiveSessionId, setCmsLiveSessionId,
     cmsWorkbenchContext,
     isDesignStudioRoute,
     designStudioEntryAtmospheric,
@@ -388,7 +388,6 @@ const DashboardRuntime: React.FC = () => {
     routeAgentMeta,
   } = useAppCmsAgentWorkspace({
     browserUrl,
-    cmsWorkspaceContext,
     cmsRouteParsed,
     isCmsRoute,
     authWorkspaceId,

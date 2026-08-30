@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { ArrowRight, ExternalLink, Plus } from 'lucide-react';
-import type { CmsWorkspaceContext, CmsWorkspaceSite } from '../../hooks/useCmsWorkspaceContext';
+import type { CmsSiteContext, CmsSiteSummary } from './cmsSiteTypes';
 import type { CmsBootstrapData } from '../../src/types/cms';
 import { buildCmsHubPath, buildCmsPath } from './cmsRoute';
 import { resolveStorefrontUrl, storefrontDisplayHost } from '../../lib/cmsStorefrontUrl';
@@ -31,9 +31,9 @@ type ActivityRow = {
 type Props = {
   siteSlug: string | null;
   setupMode: CmsDashboardSetupMode;
-  site?: CmsWorkspaceSite | null;
-  sites?: CmsWorkspaceSite[];
-  context?: CmsWorkspaceContext | null;
+  site?: CmsSiteSummary | null;
+  sites?: CmsSiteSummary[];
+  context?: CmsSiteContext | null;
   onNavigate: (path: string) => void;
   onSelectSite?: (slug: string, path: string) => void | Promise<void>;
   onOpenDeployWizard?: () => void;

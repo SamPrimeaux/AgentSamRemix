@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronsUpDown, Check, Plus } from 'lucide-react';
-import type { CmsWorkspaceSite } from '../../hooks/useCmsWorkspaceContext';
+import type { CmsSiteSummary } from './cmsSiteTypes';
 
 type Props = {
-  sites: CmsWorkspaceSite[];
+  sites: CmsSiteSummary[];
   activeSlug?: string | null;
   onSelect: (slug: string) => void | Promise<void>;
   onNewSite?: () => void;
@@ -13,7 +13,7 @@ type Props = {
   className?: string;
 };
 
-function sortSites(sites: CmsWorkspaceSite[]): CmsWorkspaceSite[] {
+function sortSites(sites: CmsSiteSummary[]): CmsSiteSummary[] {
   return [...sites].sort((a, b) => {
     const priA = Number(a.hub_priority) || 0;
     const priB = Number(b.hub_priority) || 0;
@@ -25,11 +25,11 @@ function sortSites(sites: CmsWorkspaceSite[]): CmsWorkspaceSite[] {
   });
 }
 
-function siteLabel(site: CmsWorkspaceSite): string {
+function siteLabel(site: CmsSiteSummary): string {
   return (site.name || site.slug || 'Site').trim();
 }
 
-function siteHint(site: CmsWorkspaceSite): string {
+function siteHint(site: CmsSiteSummary): string {
   const domain = site.domain?.trim();
   if (domain) return domain.replace(/^https?:\/\//, '').replace(/\/$/, '');
   return site.slug;
