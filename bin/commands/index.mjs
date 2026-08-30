@@ -2,6 +2,7 @@ import { deployCmd } from './deploy/index.mjs';
 import { acpCmd } from './acp/index.mjs';
 import { websiteCmd } from './website/index.mjs';
 import { sdkCmd } from './sdk/index.mjs';
+import { evalCmd } from './eval/index.mjs';
 
 /**
  * Canonical verbs -> handlers. Minimal on purpose — grow deliberately,
