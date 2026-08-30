@@ -83,23 +83,24 @@ export function verifyBridgeKey(request, env) {
 }
 
 /**
- * Resolve an authenticated platform bridge request without treating it as MCP.
- * The delegated actor is only a routing hint here; identity resolution still
- * loads the canonical auth_users, tenant, workspace, and capability rows.
+ * Resolve AGENTSAM_BRIDGE_KEY as a service principal. A bridge caller is valid
+ * without delegated user, tenant, workspace, or cookie identity. Legacy callers
+ * may still provide X-User-Id as an explicit delegation hint for user-owned
+ * routes, but the machine proof itself never depends on it.
  *
  * @param {Request} request
  * @param {any} env
- * @returns {{ type: 'bridge', delegatedUserId: string, tenantId: string|null, workspaceId: string|null }|null}
+ * @returns {{ type: 'bridge', principalId: string, principalType: 'service', capabilities: string[], delegatedUserId: string|null }|null}
  */
 export function resolveMachineProof(request, env) {
   if (!verifyBridgeKey(request, env)) return null;
-  const delegatedUserId = trim(request?.headers?.get?.('X-User-Id'));
-  if (!/^au_[A-Za-z0-9_]+$/.test(delegatedUserId)) return null;
+  const delegated = trim(request?.headers?.get?.('X-User-Id'));
   return {
     type: 'bridge',
-    delegatedUserId,
-    tenantId: trim(request?.headers?.get?.('X-Tenant-Id')) || null,
-    workspaceId: trim(request?.headers?.get?.('X-Workspace-Id')) || null,
+    principalId: AGENTSAM_PLATFORM_PRINCIPAL.id,
+    principalType: AGENTSAM_PLATFORM_PRINCIPAL.type,
+    capabilities: [...AGENTSAM_PLATFORM_PRINCIPAL.capabilities],
+    delegatedUserId: /^au_[A-Za-z0-9_]+$/.test(delegated) ? delegated : null,
   };
 }
 
