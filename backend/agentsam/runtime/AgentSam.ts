@@ -46,7 +46,7 @@ export class AgentSam extends Think<Env> {
     if (this._domainTools) return this._domainTools;
 
     const terminalStatus = tool({
-      description: 'Return the registered Local, VM, Sandbox, and disposable GCP Environment lanes for this user/workspace without waking or creating compute.',
+      description: 'Return the registered Local, VM, Sandbox, and disposable GCP Environment lanes available to the current user without waking or creating compute.',
       inputSchema: z.object({}),
       execute: async () => {
         const scope = await this.runtimeScope();
