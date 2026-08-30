@@ -19,7 +19,6 @@ export interface MachineProof {
   principalId: string;
   principalType: 'service';
   capabilities: string[];
-  delegatedUserId: string | null;
 }
 
 export function verifyBridgeKey(request: Request, env: BridgeEnv): boolean {
