@@ -11,10 +11,12 @@
  *
  * NOT WIRED to anything. No consumer, no queue binding, no caller yet.
  *
- * If this ends up wrapping something reporting into agentsam_operations
- * (backend/operations/repository.js), call recordStep() with the outcome so
- * the two stay visible together -- don't let this track its own separate
- * status silently next to the operations ledger.
+ * If this ends up wrapping something reporting into agentsam_execution_steps
+ * (the existing execution-tracking table -- see agentsam_executions /
+ * agentsam_execution_steps in the shared D1 schema, which already covers
+ * status ledger + approval_id linkage more completely than a new table
+ * would), write into that table's own status/attempt columns rather than
+ * inventing a second ledger next to it.
  */
 
 /** @param {number} attempts @param {{ baseSeconds?: number, capSeconds?: number }} [opts] */
