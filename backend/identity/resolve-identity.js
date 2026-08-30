@@ -101,11 +101,9 @@ export async function resolveAuth(request, env, opts = {}) {
       workspaceId = trimSessionField(mcp.workspaceId) || null;
     } else {
       const bridge = resolveMachineProof(request, env);
-      if (bridge) {
+      if (bridge?.delegatedUserId) {
         authType = bridge.type;
         userId = bridge.delegatedUserId;
-        workspaceId = bridge.workspaceId || workspaceId;
-        tenantId = bridge.tenantId || tenantId;
       }
     }
   }
