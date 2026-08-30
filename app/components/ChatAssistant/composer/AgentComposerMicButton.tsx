@@ -133,6 +133,8 @@ export function AgentComposerMicButton({
   const showVoice = realtime.enabled !== false && realtime.status !== 'unavailable';
   const activityLabel = realtime.activity?.label;
 
+  if (eventBridgeOnly) return null;
+
   return (
     <div className="relative flex items-center gap-0.5 shrink-0" ref={popoverRef}>
       {showVoice && realtime.active && activityLabel ? (
