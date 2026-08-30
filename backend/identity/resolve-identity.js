@@ -9,7 +9,7 @@
  */
 
 import { validateMcpToken } from './tokens/mcp-bearer.js';
-import { resolveMachineProof } from '../auth/bridge-key-auth.js';
+import { resolveDelegatedMachineUser } from '../auth/bridge-key-auth.js';
 import { AuthError } from '../auth/errors.js';
 import {
   loadAgentSamUserPolicyCached,
