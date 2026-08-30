@@ -21,9 +21,14 @@ import { resolveProviderCredential } from "../credentials/provider-credential.js
 import {
   destroyTerminalEnvironment,
   executeTerminalLane,
+  preferredExecLane,
   rememberExecLane,
   terminalRuntimeStatus,
 } from "../agentsam/terminal/runtime";
+import {
+  openVpcPtyWebSocket,
+  terminalConfigStatus,
+} from "../agentsam/terminal/interactive";
 import { probeExecOS } from "../agentsam/terminal/execos";
 import {
   isExecLane,
@@ -192,6 +197,83 @@ export default {
         : json({ ok: false, error: "session_required" }, 401);
     }
 
+    // Browser terminal control plane. Keep this before the generic /api/agent
+    // dispatcher so the imported terminal UI cannot be swallowed by a legacy
+    // route family that does not own the VPC PTY WebSocket.
+    if (
+      url.pathname === "/api/agent/terminal/config-status" &&
+      request.method === "GET"
+    ) {
+      if (!authenticated) return json({ error: "session_required" }, 401);
+      const scope = await authenticatedRuntimeScope(env, requestIdentity);
+      if (!scope) return json({ error: "workspace_scope_required" }, 409);
+      return json(terminalConfigStatus(env, scope, url));
+    }
+
+    if (
+      url.pathname === "/api/agent/terminal/ws" &&
+      request.method === "GET"
+    ) {
+      if (!authenticated) return json({ error: "session_required" }, 401);
+      const scope = await authenticatedRuntimeScope(env, requestIdentity);
+      if (!scope) return json({ error: "workspace_scope_required" }, 409);
+      return openVpcPtyWebSocket(request, env, scope);
+    }
+
+    if (
+      url.pathname === "/api/terminal/session/resume" &&
+      request.method === "GET"
+    ) {
+      if (!authenticated) return json({ error: "session_required" }, 401);
+      return json({ ok: true, resumable: false, session_id: null });
+    }
+
+    if (
+      url.pathname === "/api/terminal/session/close" &&
+      request.method === "POST"
+    ) {
+      if (!authenticated) return json({ error: "session_required" }, 401);
+      return json({ ok: true });
+    }
+
+    // xterm's offline fallback. Interactive input normally travels over the VPC
+    // WebSocket; this keeps command execution useful during a reconnect.
+    if (
+      url.pathname === "/api/agent/terminal/run" &&
+      request.method === "POST"
+    ) {
+      if (!authenticated) return json({ error: "session_required" }, 401);
+      const scope = await authenticatedRuntimeScope(env, requestIdentity);
+      if (!scope) return json({ error: "workspace_scope_required" }, 409);
+      const body = (await request.json().catch(() => null)) as any;
+      const result = await executeTerminalLane(env, {
+        ...scope,
+        lane: "remote",
+        command: body?.command || "",
+        cwd: body?.cwd,
+      });
+      return json(
+        {
+          ok: result.ok,
+          error: result.ok ? null : result.error,
+          command: body?.command || "",
+          output: result.text || result.stdout || result.stderr || "",
+          exit_code: result.exitCode,
+          execution_id: null,
+          transport: result.transport || null,
+        },
+        result.ok ? 200 : 502,
+      );
+    }
+
+    if (
+      url.pathname === "/api/agent/terminal/complete" &&
+      request.method === "POST"
+    ) {
+      if (!authenticated) return json({ error: "session_required" }, 401);
+      return json({ ok: true });
+    }
+
     if (
       url.pathname.startsWith("/api/agent/") ||
       url.pathname.startsWith("/api/agentsam/")
@@ -270,11 +352,12 @@ export default {
       const scope = await authenticatedRuntimeScope(env, requestIdentity);
       if (!scope) return json({ error: "workspace_scope_required" }, 409);
       const body = (await request.json().catch(() => null)) as any;
-      if (!isExecLane(body?.lane))
-        return json({ error: "exec_lane_required" }, 400);
+      const lane = isExecLane(body?.lane)
+        ? body.lane
+        : await preferredExecLane(env, scope.userId, scope.workspaceId);
       const result = await executeTerminalLane(env, {
         ...scope,
-        lane: body.lane,
+        lane,
         command: body?.command || "",
         cwd: body?.cwd,
         connectionId: body?.connectionId || body?.connection_id,

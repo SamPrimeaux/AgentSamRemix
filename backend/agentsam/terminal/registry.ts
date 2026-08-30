@@ -21,6 +21,8 @@ export type TerminalConnection = {
   metadata_json: string | null;
 };
 
+export const BUILTIN_VPC_CONNECTION_ID = 'builtin:pty-service';
+
 export const LANE_TARGET_TYPE: Record<ExecLane, string> = {
   local: 'user_hosted_tunnel',
   remote: 'platform_vm',
@@ -45,6 +47,34 @@ export function defaultCwdForConnection(connection: TerminalConnection): string 
   return execUser === 'root' ? '/root' : `/home/${execUser}`;
 }
 
+export function builtinVpcConnection(
+  env: Env,
+  input: { userId: string; workspaceId: string },
+): TerminalConnection | null {
+  if (!env.PTY_SERVICE?.fetch) return null;
+  const userId = trim(input.userId);
+  const workspaceId = trim(input.workspaceId);
+  if (!userId || !workspaceId) return null;
+  return {
+    id: BUILTIN_VPC_CONNECTION_ID,
+    user_id: userId,
+    workspace_id: workspaceId,
+    tenant_id: '',
+    name: 'AgentSam VPC',
+    target_type: 'platform_vm',
+    ws_url: '',
+    platform: 'linux',
+    shell: '/bin/bash',
+    is_default: 1,
+    target_priority: 0,
+    cwd_strategy: 'host_default',
+    remote_exec_user: null,
+    username: null,
+    privileged_target_id: null,
+    metadata_json: JSON.stringify({ source: 'binding', binding: 'PTY_SERVICE' }),
+  };
+}
+
 export async function resolveTerminalConnection(
   env: Env,
   input: {
@@ -60,26 +90,43 @@ export async function resolveTerminalConnection(
 
   const targetType = LANE_TARGET_TYPE[input.lane];
   const explicitId = trim(input.connectionId);
-  if (explicitId) {
-    return env.DB.prepare(`
+  const builtin = input.lane === 'remote'
+    ? builtinVpcConnection(env, { userId, workspaceId })
+    : null;
+
+  if (explicitId === BUILTIN_VPC_CONNECTION_ID) return builtin;
+
+  try {
+    if (explicitId) {
+      return await env.DB.prepare(`
+        SELECT id,user_id,workspace_id,tenant_id,name,target_type,ws_url,platform,shell,
+               is_default,target_priority,cwd_strategy,remote_exec_user,username,
+               privileged_target_id,metadata_json
+        FROM terminal_connections
+        WHERE id = ? AND user_id = ? AND workspace_id = ? AND target_type = ? AND is_active = 1
+        LIMIT 1
+      `).bind(explicitId, userId, workspaceId, targetType).first<TerminalConnection>();
+    }
+
+    const registered = await env.DB.prepare(`
       SELECT id,user_id,workspace_id,tenant_id,name,target_type,ws_url,platform,shell,
              is_default,target_priority,cwd_strategy,remote_exec_user,username,
              privileged_target_id,metadata_json
       FROM terminal_connections
-      WHERE id = ? AND user_id = ? AND workspace_id = ? AND target_type = ? AND is_active = 1
+      WHERE user_id = ? AND workspace_id = ? AND target_type = ? AND is_active = 1
+      ORDER BY is_default DESC, target_priority ASC, updated_at DESC
       LIMIT 1
-    `).bind(explicitId, userId, workspaceId, targetType).first<TerminalConnection>();
+    `).bind(userId, workspaceId, targetType).first<TerminalConnection>();
+    if (registered) return registered;
+  } catch (error) {
+    // A built-in Cloudflare binding must remain usable while old connection
+    // registry tables are absent or being migrated. Explicit IDs still fail
+    // closed below rather than silently switching machines.
+    if (explicitId) return null;
+    console.warn('[terminal] connection registry unavailable', error);
   }
 
-  return env.DB.prepare(`
-    SELECT id,user_id,workspace_id,tenant_id,name,target_type,ws_url,platform,shell,
-           is_default,target_priority,cwd_strategy,remote_exec_user,username,
-           privileged_target_id,metadata_json
-    FROM terminal_connections
-    WHERE user_id = ? AND workspace_id = ? AND target_type = ? AND is_active = 1
-    ORDER BY is_default DESC, target_priority ASC, updated_at DESC
-    LIMIT 1
-  `).bind(userId, workspaceId, targetType).first<TerminalConnection>();
+  return explicitId ? null : builtin;
 }
 
 export async function resolveUserRuntimeScope(env: Env, userId: string) {

@@ -2,7 +2,7 @@ import type { TerminalTarget } from '../../components/LocalTerminalSetup';
 import { LS_TERMINAL_WS_PREFS } from './sessionStorageKeys';
 
 export type TerminalWorkspacePref = {
-  /** null = dock lane unset — never invent platform_vm. */
+  /** Persisted operator lane. New Remix workspaces start on the built-in VPC VM. */
   targetType: TerminalTarget | null;
   splashDismissed: boolean;
   workspaceName?: string;
@@ -39,7 +39,11 @@ function normalizeStoredTargetType(raw: unknown): TerminalTarget | null {
   return null;
 }
 
-/** Empty / missing pref → targetType null (disconnected). No invent. */
+/**
+ * New workspace → platform VM. The VM is a bound AgentSamRemix service, not a
+ * per-user connection record, so it is safe as the zero-config default. An
+ * explicit saved Local/Sandbox choice is still preserved.
+ */
 export function getTerminalWorkspacePref(workspaceId: string): TerminalWorkspacePref {
   const wid = workspaceId.trim();
   if (!wid) {
@@ -47,10 +51,10 @@ export function getTerminalWorkspacePref(workspaceId: string): TerminalWorkspace
   }
   const row = readAll()[wid];
   if (!row) {
-    return { targetType: null, splashDismissed: true };
+    return { targetType: 'platform_vm', splashDismissed: true };
   }
   return {
-    targetType: normalizeStoredTargetType(row.targetType),
+    targetType: normalizeStoredTargetType(row.targetType) ?? 'platform_vm',
     splashDismissed: true,
     workspaceName: row.workspaceName,
     cwd: row.cwd ?? null,
@@ -100,7 +104,7 @@ export function listTerminalWorkspaceSessions(excludeWorkspaceId?: string): Term
     .sort((a, b) => (b.lastConnectedAt ?? 0) - (a.lastConnectedAt ?? 0));
 }
 
-/** Map splash lane key → connection target_type. null when unset — never invent. */
+/** Map splash lane key → connection target_type. null when unset. */
 export function targetFromSplashLane(
   lane: 'local' | 'cloud' | 'sandbox' | null,
 ): TerminalTarget | null {

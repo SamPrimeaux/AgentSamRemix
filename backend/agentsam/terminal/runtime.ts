@@ -33,7 +33,11 @@ function isBlockedHostCommand(command: string) {
 export async function preferredExecLane(env: Env, userId: string, workspaceId: string): Promise<ExecLane> {
   const key = `asr:exec-lane:${userId}:${workspaceId}`;
   const cached = await env.SESSION_CACHE?.get(key).catch(() => null);
-  return isExecLane(cached) ? cached : 'local';
+  if (isExecLane(cached)) return cached;
+  // The VPC VM is platform infrastructure and requires no per-user connection
+  // bootstrap. Local remains an explicit opt-in until the Remix local lane is
+  // equally reliable.
+  return env.PTY_SERVICE?.fetch ? 'remote' : 'local';
 }
 
 export async function rememberExecLane(env: Env, userId: string, workspaceId: string, lane: ExecLane) {
@@ -123,7 +127,7 @@ export async function executeTerminalLane(
       ok: false,
       error: 'terminal_connection_not_found',
       exitCode: 1,
-      text: `No active ${input.lane} terminal connection is registered for this user/workspace.`,
+      text: `No ${input.lane} terminal target is available for this request.`,
       lane: input.lane,
     };
   }
