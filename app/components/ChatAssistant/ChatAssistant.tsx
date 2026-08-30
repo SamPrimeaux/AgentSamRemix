@@ -848,41 +848,87 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({
     speakAssistantText,
   } = useChatVoiceThread({ setInput, setMessages, textareaRef, isNarrow });
   const handleChatImagePreview = createChatImagePreviewHandler({ onFileSelect, onOpenCodeTab });
-  const handleSend = createChatSendHandler({
-    pendingSubagentSlugRef, input, mode, setMode, setPlanSuggestDismissed,
-    selectedModelKeyRef, selectedModelKey, setSelectedModelKey, chatModels,
-    attachments, isLoading, setMessageQueue, onAgentRunContext, totalStagedBytes,
-    setComposerToast, execLane, setThinkingState, setPresenceState, setLoadingStartedAt,
-    abortControllerRef, streamFinalizedRef, setPendingToolApproval, setWorkflowLedger,
-    setInput, textareaRef, isNarrow, focusedPane, splitChild, setSplitChildMessages,
-    setMessages, messages, setIsLoading, setStreamModelKey, setMentionOpen, setSlashOpen,
-    setToolTraceRows, toolTraceRows, setPythonDraftHint, onGlbFileSelect, onFileSelect, activeFileName,
-    activeFileContent, activeFile, editorCursorLine, editorCursorColumn, browserElementContext,
-    conversationId, conversationIdRef, setConversationId, loadSessions, setSessions, githubRepoContext, githubContextActive, chatGithubFilePath,
-    chatGithubBranch, chatGithubFileContent, chatGithubContentSha, chatGithubContentTruncated,
-    databaseSurfaceRef, filesSourceContextRef, explorerActiveSource, explorerActiveSourceRef,
-    explorerActiveRepo, composerActionRef, resolvedActivePlanId, workspaceId: effectiveWsId,
-    refreshWorkspaces, workspaceLoadError,
-    designStudioSceneId, designStudioBlueprintId, designStudioCadJobId, activeProject,
-    defaultSubagentSlug, browserSurfaceRef, designStudioSurfaceRef, mailSurfaceRef,
-    fsChangeScopeRef, dashboardRouteLabel, dashboardRouteKey, openFilePaths,
-    pickedElementRef, designModeContextRef, hostWorkspaceContext, activeWorkbenchTab,
-    browserUrlProp, activePlanIdRef, workflowLedger, agentsamPolicy, cmsContext,
-    composerSources, clearAttachments, handleThinkingEvent, handleSubagentEvent,
-    handlePythonDraftOpened, handleStreamModel, stripEmptyAssistantTail, onBrowserNavigate,
-    onR2FileUpdated, onVoiceResponse: speakAssistantText, handleSendRef, messageQueue, messagesRef, setBrowserElementContext,
-    streamReaderRef, location, dashboardTaskType,
-  });
+  const handleSend = useCallback(
+    async (overrideMessage?: string, sendOpts?: ChatRoutingSendOpts) => {
+      if (isLoading && !overrideMessage) return;
+      const rawText = String(overrideMessage ?? input).trim();
+      const files = attachments.map((attachment) => attachment.file);
+      if (!rawText && !files.length) return;
+
+      let text = rawText;
+      const explicitPlan = sendOpts?.force_plan_mode === true || isPlanSlashMessage(rawText);
+      if (explicitPlan) {
+        const request = rawText.replace(/^\/plan\b\s*/i, '').trim();
+        text = `Plan this request first. Do not make code or production changes unless I explicitly ask you to proceed.\n\n${request}`.trim();
+      } else if (mode === 'ask') {
+        text = `Answer or investigate this without making changes unless I explicitly ask you to act.\n\n${rawText}`.trim();
+      }
+
+      setPendingToolApproval(null);
+      setWorkflowLedger({
+        runId: null,
+        stepsTotal: null,
+        stepsCompleted: 0,
+        currentNodeKey: null,
+        runCost: null,
+        runTokensIn: null,
+        runTokensOut: null,
+        lastError: null,
+        status: 'idle',
+      });
+      setInput('');
+      setMentionOpen(false);
+      setSlashOpen(false);
+      setLoadingStartedAt(Date.now());
+      setThinkingState({
+        steps: [],
+        thinkingText: thinkAgentSam.isRecovering ? 'Recovering…' : 'Thinking…',
+        status: 'thinking',
+        startedAt: Date.now(),
+        surface: null,
+      });
+      setPresenceState('thinking');
+      setIsLoading(true);
+      requestAnimationFrame(() => {
+        syncComposerTextareaHeight(
+          textareaRef.current,
+          isNarrow ? COMPOSER_TEXTAREA_MAX_PX_NARROW : COMPOSER_TEXTAREA_MAX_PX_WIDE,
+        );
+      });
+
+      try {
+        await thinkAgentSam.send(text || '(attachment)', files);
+        clearAttachments();
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error || 'Agent Sam send failed.');
+        setComposerToast(message);
+        setIsLoading(false);
+        setThinkingState(null);
+        setPresenceState('idle');
+      }
+    },
+    [
+      attachments,
+      clearAttachments,
+      input,
+      isLoading,
+      isNarrow,
+      mode,
+      setPendingToolApproval,
+      setPresenceState,
+      setThinkingState,
+      thinkAgentSam,
+    ],
+  );
   const handleVoiceTurn = useCallback(
     (text: string) => handleSend(text, { voiceTurn: true }),
     [handleSend],
   );
   handleSendRef.current = handleSend;
   const canSend =
-    (isAutoModelSelection(selectedModelKey) || !!selectedModelKey) &&
     (input.trim().length > 0 || attachments.length > 0) &&
     !isLoading &&
-    totalStagedBytes <= CHAT_ATTACH_MAX_TOTAL_BYTES;
+    totalStagedBytes <= 15 * 1024 * 1024;
   const onKeyDown = createChatComposerKeyDown({
     mentionOpen, mentionItems, mentionIndex, setMentionIndex, applyMention, setMentionOpen,
     slashOpen, slashItems, slashIndex, setSlashIndex, applySlash, setSlashOpen,
