@@ -130,6 +130,15 @@ export function useThinkAgentSamChat({
   });
 
   useEffect(() => {
+    const onStop = () => {
+      void chat.stop();
+      pendingSendsRef.current = [];
+    };
+    window.addEventListener(IAM_AGENT_ABORT_LIVE_STREAM, onStop);
+    return () => window.removeEventListener(IAM_AGENT_ABORT_LIVE_STREAM, onStop);
+  }, [chat.stop]);
+
+  useEffect(() => {
     setMessages(toLegacyMessages(chat.messages));
   }, [chat.messages, setMessages]);
 
