@@ -96,7 +96,7 @@ export const AgentChatSessionList: FC<{
       {starred.length > 0 ? (
         <div>
           <div className="px-1 pb-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted opacity-70">
-            Starred
+            Pinned
           </div>
           {starred.map((s) => renderRow(s))}
         </div>
