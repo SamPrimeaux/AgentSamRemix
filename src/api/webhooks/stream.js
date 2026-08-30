@@ -4,7 +4,7 @@
  * POST /api/webhooks/stream/live
  */
 import { jsonResponse } from '../../core/auth.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 import {
   verifyCfNotificationWebhookSecret,
   verifyStreamVodWebhookSignature,

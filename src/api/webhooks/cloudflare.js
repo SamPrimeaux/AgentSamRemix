@@ -2,7 +2,7 @@
  * Cloudflare build/deploy webhooks — INTERNAL_WEBHOOK_SECRET or X-Cf-Webhook-Secret.
  */
 import { jsonResponse } from '../../core/auth.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 import { resolveInternalWebhookSecret } from './internal.js';
 
 /** @param {string} a @param {string} b */

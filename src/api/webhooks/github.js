@@ -11,7 +11,7 @@
  */
 import { jsonResponse } from '../../core/auth.js';
 import { getVaultSecrets, secretFromVault } from '../../core/vault.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 import { patchAgentsamWebhookEventMetadata } from '../../../backend/services/webhooks/ledger.js';
 import { broadcastSupabaseRealtime, topicSafe } from '../../core/realtime-broadcast.js';
 

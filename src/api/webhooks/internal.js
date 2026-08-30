@@ -4,7 +4,7 @@
 import { jsonResponse } from '../../core/auth.js';
 import { getVaultSecrets, secretFromVault } from '../../core/vault.js';
 import { isVaultConfigured } from '../../../backend/credentials/vault-key-material.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 
 /** @param {string} a @param {string} b */
 function timingSafeEqualUtf8(a, b) {

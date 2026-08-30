@@ -5,7 +5,7 @@
 import { jsonResponse } from '../../core/auth.js';
 import { applyMeshyTaskToCadJob, meshyTaskIdFromPayload, meshyTaskStatus } from '../../core/meshy-cad-sync.js';
 import { verifyMeshyWebhookRequest } from '../../core/meshy-webhook-verify.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 
 const LOGICAL_PROVIDER = 'meshy';
 

@@ -7,8 +7,8 @@ import {
   markAgentsamWebhookEventIgnored,
   markAgentsamWebhookEventProcessed,
   resolveWebhookInsertScope,
-} from '../../services/webhooks/ledger.js';
-import { dispatchWebhookRegistryWorkflow } from '../workflows/webhook-dispatch.js';
+} from './ledger.js';
+import { dispatchWebhookRegistryWorkflow } from '../../workflows/integrations/webhook-dispatch.js';
 
 /** Registry soft-skips — not failures (nothing to dispatch). */
 const DISPATCH_SOFT_SKIP = new Set([

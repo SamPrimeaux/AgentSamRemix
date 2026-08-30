@@ -4,9 +4,9 @@
  * Playwright screenshot jobs are registered from Worker composition (src/index.js)
  * so this queue module does not import backend/browser (platform ↛ backend).
  */
-import { deleteVectorsForDocKey, performDocsBucketVectorizeIndex } from '../../../src/queue/docs-vectorize.js';
-import { getDocsVectorizePauseState } from '../../../src/queue/docs-vectorize-pause.js';
-import { resolveAutoragBucketName } from '../../../src/core/r2-storage-scope.js';
+import { deleteVectorsForDocKey, performDocsBucketVectorizeIndex } from '../../src/queue/docs-vectorize.js';
+import { getDocsVectorizePauseState } from '../../src/queue/docs-vectorize-pause.js';
+import { resolveAutoragBucketName } from '../../src/core/r2-storage-scope.js';
 
 /** @type {null | ((env: any, body: Record<string, unknown>) => Promise<unknown>)} */
 let playwrightQueueJobHandler = null;
@@ -39,9 +39,9 @@ async function recordWebhookEvent(env, ctx, tenantId, workspaceId, body) {
   if (!env?.DB) return;
   const isCfSystem = typeof body?.type === 'string' && body.type.startsWith('cf.workers');
   const provider = isCfSystem ? 'cloudflare' : 'internal';
-  const { ingestWebhookEventAndDispatch } = await import('../webhooks/ingest.js');
+  const { ingestWebhookEventAndDispatch } = await import('../services/webhooks/ingest.js');
   const { resolveWebhookInsertScope, extractGithubRepoFromWebhookPayload, extractWorkerNameFromWebhookPayload } = await import(
-    '../../services/webhooks/ledger.js',
+    '../services/webhooks/ledger.js',
   );
   const repoFullName = extractGithubRepoFromWebhookPayload(body, null);
   const workerName = extractWorkerNameFromWebhookPayload(body, null);
@@ -151,7 +151,7 @@ export async function dispatchQueueMessage(env, ctx, queueMsg) {
   if (body.type === 'codebase_full_index_batch') {
     try {
       const { handleCodebaseFullIndexQueueJob } = await import(
-        '../../agentsam/codebase/queue-handler.js'
+        '../agentsam/codebase/queue-handler.js'
       );
       const result = await handleCodebaseFullIndexQueueJob(env, body);
       return { handled: true, kind: 'codebase_full_index_batch', ...result };
@@ -185,7 +185,7 @@ export async function dispatchQueueMessage(env, ctx, queueMsg) {
 
   if (body.type === 'cms_liquid_import') {
     try {
-      const { handleCmsLiquidImportQueueJob } = await import('../../../src/queue/handlers/cms-liquid-import.js');
+      const { handleCmsLiquidImportQueueJob } = await import('../../src/queue/handlers/cms-liquid-import.js');
       await handleCmsLiquidImportQueueJob(env, body);
     } catch (e) {
       console.warn('[queue cms_liquid_import]', e?.message ?? e);
@@ -196,7 +196,7 @@ export async function dispatchQueueMessage(env, ctx, queueMsg) {
   // MCP Resend hooks enqueue { type: 'alert', source: 'resend_webhook', event: 'email.bounced', … }
   if (body.type === 'alert') {
     try {
-      const { handleQueueAlert } = await import('./alert.js');
+      const { handleQueueAlert } = await import('./handlers/alert.js');
       await handleQueueAlert(env, ctx, body);
     } catch (e) {
       console.info('[queue alert]', e?.message ?? e);

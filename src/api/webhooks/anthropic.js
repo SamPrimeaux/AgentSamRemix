@@ -5,7 +5,7 @@
 import { jsonResponse } from '../../core/auth.js';
 import { getVaultSecrets, secretFromVault } from '../../core/vault.js';
 import { verifyAnthropicWebhookSignature } from '../../core/anthropic-webhook-verify.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 
 /**
  * @param {Request} request

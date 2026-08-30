@@ -13,7 +13,7 @@ export const QUEUE_MESSAGE_KINDS = {
   /**
    * Durable full project reindex batch: run_id + workspace_id.
    * Producer: queueFullCodeIndexRun / enqueueFullCodeIndexBatch (MY_QUEUE).
-   * Consumer: handlers/codebase-full-index.js → runCodeIndexJob → re-enqueue while resume.
+   * Consumer: backend/agentsam/codebase/queue-handler.js → runCodeIndexJob → re-enqueue while resume.
    */
   CODEBASE_FULL_INDEX_BATCH: 'codebase_full_index_batch',
   /**
@@ -28,7 +28,7 @@ export const QUEUE_MESSAGE_KINDS = {
   PLAYWRIGHT_JOB: 'playwright_screenshot_or_render',
   /**
    * Operator alert (MCP Resend bounce/complaint/failed → MY_QUEUE).
-   * Consumer: handlers/alert.js → agentsam_webhook_events (+ optional notifications).
+   * Consumer: backend/queue/handlers/alert.js → agentsam_webhook_events (+ optional notifications).
    */
   ALERT: 'alert',
 };

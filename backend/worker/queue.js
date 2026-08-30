@@ -1,5 +1,5 @@
 import { handlePlaywrightQueueJob } from '../browser/runtime/screenshot-queue-job.js';
-import { dispatchQueueMessage, setPlaywrightQueueJobHandler } from '../http/queue/dispatcher.js';
+import { dispatchQueueMessage, setPlaywrightQueueJobHandler } from '../queue/dispatcher.js';
 import { wrapEnvKvBinding } from './kv-storage-policy.js';
 
 setPlaywrightQueueJobHandler(handlePlaywrightQueueJob);

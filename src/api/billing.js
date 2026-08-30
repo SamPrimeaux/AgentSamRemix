@@ -687,7 +687,7 @@ export async function handleStripeWebhook(request, env, ctx) {
     );
   }
 
-  const { ingestWebhookEventAndDispatch } = await import('../../backend/http/webhooks/ingest.js');
+  const { ingestWebhookEventAndDispatch } = await import('../../backend/services/webhooks/ingest.js');
   await ingestWebhookEventAndDispatch(env, ctx, {
     tenantId,
     workspaceId: null,

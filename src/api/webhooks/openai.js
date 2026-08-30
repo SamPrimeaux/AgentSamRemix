@@ -5,7 +5,7 @@
 import { jsonResponse } from '../../core/auth.js';
 import { getVaultSecrets, secretFromVault } from '../../core/vault.js';
 import { isVaultConfigured } from '../../../backend/credentials/vault-key-material.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 
 const STANDARD_TOLERANCE_SEC = 300;
 

@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { ROOT } from '../../lib/repo-root.mjs';
 
 export function websiteCmd(argv) {
-  const r = spawnSync(process.execPath, [join(ROOT, 'scripts/website-assets.mjs'), ...argv], {
+  const r = spawnSync(process.execPath, [join(ROOT, 'bin/website-assets.mjs'), ...argv], {
     cwd: ROOT,
     stdio: 'inherit',
   });

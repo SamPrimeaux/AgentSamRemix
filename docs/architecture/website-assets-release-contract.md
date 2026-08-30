@@ -51,7 +51,7 @@ bin/agentsam website rollback <release>
 
 `website sync` hashes the direct sources, preserves the current build-coupled `index.html`, and writes R2 only when content changes. If the complete logical release is unchanged, it performs no payload upload and does not rewrite `current.json`.
 
-Frontend deploys use `bin/publish-website-assets`, which is the same publisher with `--all` after Vite has generated `app/dist/index.html`.
+Frontend deploys use `bin/website-assets.mjs sync --all`, which is the same publisher with `--all` after Vite has generated `app/dist/index.html`.
 
 Worker-only deploys do not publish HTML.
 

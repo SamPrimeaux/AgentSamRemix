@@ -57,7 +57,7 @@ do_build() {
 }
 
 do_publish_website_assets() {
-  "$ROOT/bin/publish-website-assets"
+  node "$ROOT/bin/website-assets.mjs" sync --all
 }
 
 do_wrangler_deploy() {

@@ -3,7 +3,7 @@
  * POST /api/webhooks/cloudconvert
  */
 import { jsonResponse } from '../../core/auth.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 import { verifyCloudConvertWebhookSignature } from '../../core/cloudconvert-webhook-verify.js';
 import { applyCloudConvertWebhookToMoviemode } from '../../core/moviemode-cloudconvert-webhook.js';
 

@@ -3,7 +3,7 @@
  * POST /api/webhooks/realtimekit
  */
 import { jsonResponse } from '../../core/auth.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 import { processRealtimeKitWebhookPayload } from '../../core/realtimekit-webhook-handler.js';
 import {
   verifyRealtimeKitDyteSignature,

@@ -1,4 +1,5 @@
 import { deployCmd } from './deploy/index.mjs';
+import { acpCmd } from './acp/index.mjs';
 import { websiteCmd } from './website/index.mjs';
 
 /**
@@ -7,6 +8,7 @@ import { websiteCmd } from './website/index.mjs';
  * implementation behind it.
  */
 export const COMMANDS = {
+  acp: acpCmd,
   deploy: deployCmd,
   website: websiteCmd,
 };
@@ -16,10 +18,12 @@ export const VERB_ALIASES = {};
 export const USAGE = `usage: bin/agentsam <verb> [subcommand] [options]
 
 Verbs:
-  deploy      full|fast|worker   tsc/build/wrangler deploy — wraps scripts/agentsam-remix
+  acp         serve              local stdio ACP bridge to the Agent Sam API
+  deploy      full|fast|worker   tsc/build/wrangler deploy — uses bin/deploy
   website     sync|watch|status|verify|rollback   hash-driven WEBSITE_ASSETS releases
 
 Examples:
+  bin/agentsam acp serve
   bin/agentsam deploy full
   bin/agentsam deploy fast
   bin/agentsam deploy worker

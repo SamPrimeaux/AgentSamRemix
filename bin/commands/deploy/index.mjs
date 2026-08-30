@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { ROOT } from '../../lib/repo-root.mjs';
 
 export function deployCmd(argv) {
-  const r = spawnSync(join(ROOT, 'scripts/agentsam-remix'), ['deploy', ...argv], {
+  const r = spawnSync(join(ROOT, 'bin/deploy'), ['deploy', ...argv], {
     cwd: ROOT,
     stdio: 'inherit',
   });

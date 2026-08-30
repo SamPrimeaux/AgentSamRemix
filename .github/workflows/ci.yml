@@ -84,6 +84,15 @@ jobs:
             fi
           done
 
+      - name: Protocol boundary invariant
+        run: |
+          for retired in backend/http/queue backend/http/webhooks/ingest.js backend/http/workflows/webhook-dispatch.js app/backend/agentsam/tools/commands; do
+            if [ -e "$retired" ]; then
+              echo "Retired protocol/operator owner returned: $retired"
+              exit 1
+            fi
+          done
+
       - name: Typecheck
         run: npm run typecheck
 

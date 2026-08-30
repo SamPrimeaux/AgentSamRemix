@@ -4,7 +4,7 @@
  * Persist + operator notify; never leave as unhandled_message_type noise.
  */
 
-import { ingestWebhookEventAndDispatch } from '../webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../services/webhooks/ingest.js';
 import { resolveCronWorkspaceId } from '../../jobs/cron-tenant.js';
 
 /**

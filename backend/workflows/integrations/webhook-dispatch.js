@@ -1,7 +1,7 @@
 /**
  * After agentsam_webhook_events insert — trigger registry workflow_key when configured.
  */
-import { executeWorkflow, resolveWorkflowRow } from '../../workflows/index.js';
+import { executeWorkflow, resolveWorkflowRow } from '../index.js';
 
 const DISPATCH_PROVIDERS = new Set([
   'github',

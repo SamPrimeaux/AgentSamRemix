@@ -1353,7 +1353,7 @@ async function handleResendWebhook(
             },
         );
 
-        const { ingestWebhookEventAndDispatch } = await import('../../backend/http/webhooks/ingest.js');
+        const { ingestWebhookEventAndDispatch } = await import('../../backend/services/webhooks/ingest.js');
         const eventType =
             eventTypeRaw ||
             (lane === 'inbound' ? 'email_inbound' : 'webhook_received');

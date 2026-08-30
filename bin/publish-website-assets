@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-# Compatibility/operator entrypoint used by the deploy lane.
-# Content hashing, immutable object reuse, release manifests, and atomic promotion
-# live in scripts/website-assets.mjs.
-set -euo pipefail
-ROOT="$(cd "$(dirname "$0")/.." && pwd)"
-exec node "$ROOT/scripts/website-assets.mjs" sync --all "$@"

@@ -6,7 +6,7 @@
  */
 import { jsonResponse } from '../../core/auth.js';
 import { getVaultSecrets, secretFromVault } from '../../core/vault.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 import { normalizeGithubRepoFullName } from '../../../backend/services/webhooks/ledger.js';
 
 /** @param {string} a @param {string} b */

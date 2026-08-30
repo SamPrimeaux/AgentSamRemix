@@ -3,7 +3,7 @@
  * Comments have no runtime effect; this map is for debugging only.
  *
  * Hot path (product Update/Restart/Continue):
- *   queue/handlers/codebase-full-index.js
+ *   backend/queue → backend/agentsam/codebase/queue-handler.js
  *     → code-indexer.js (this file)
  *     → code-indexer-dispatch.js     claim job + Hyperdrive gate; route product vs chunk path
  *     → code-indexer-full-run.js     crawl → stage loop host
@@ -33,7 +33,7 @@
  *   api/code-index-run.js              run API helpers
  *   api/workspace-code-index-status.js status payload for Codebase index panel
  *   backend/jobs/code-index-runner.js  scheduled reclaim / pump
- *   queue/handlers/codebase-full-index.js  MY_QUEUE consumer → runCodeIndexJob
+ *   backend/queue → backend/agentsam/codebase/queue-handler.js  MY_QUEUE consumer → runCodeIndexJob
  */
 export {
   buildCodeIndexVectorBackendReceipt,

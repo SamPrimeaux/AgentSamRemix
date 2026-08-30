@@ -7,7 +7,7 @@ import {
   setOverviewBundleDirty,
 } from '../../../packages/shared/overview/dirty-flags.js';
 import { resolveWebhookTenantId } from '../../../backend/services/webhooks/ledger.js';
-import { ingestWebhookEventAndDispatch } from '../../../backend/http/webhooks/ingest.js';
+import { ingestWebhookEventAndDispatch } from '../../../backend/services/webhooks/ingest.js';
 
 /** @param {string} a @param {string} b */
 function timingSafeEqualUtf8(a, b) {
