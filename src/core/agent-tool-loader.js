@@ -462,6 +462,9 @@ export async function loadToolsForRequest(env, modeSlug, _intent, opts = {}) {
       name: String(r.name || r.tool_key || r.tool_name || ''),
       description: String(r.description || ''),
       input_schema: parseJsonSafe(r.input_schema, { type: 'object', properties: {} }),
+      ...(parseJsonSafe(r.output_schema, null)
+        ? { output_schema: parseJsonSafe(r.output_schema, null) }
+        : {}),
       ...(cat ? { tool_category: cat } : {}),
       requires_approval: Number(r.requires_approval || 0) === 1,
       caller_policy: r.caller_policy != null ? r.caller_policy : null,
