@@ -4,6 +4,11 @@ import {
   withOpenAiApplyPatchInstructions,
   withOpenAiApplyPatchTool,
 } from './openai-apply-patch.js';
+import {
+  shouldInjectProgrammaticToolCalling,
+  toOpenAIResponsesTools,
+  withProgrammaticToolCalling,
+} from './openai-ptc.js';
 
 function assistantReasoningContent(message) {
   if (typeof message?.reasoning_content === 'string' && message.reasoning_content.trim()) {
@@ -265,23 +270,39 @@ function responsesInput(messages = [], previousResponseId = null) {
 }
 
 export function buildOpenAIResponsesBody(params, stream) {
-  const functionTools = openAiTools(params)?.map((tool) => ({
-    type: 'function',
-    name: tool.function.name,
-    description: tool.function.description,
-    parameters: tool.function.parameters,
-  }));
-  const tools = withOpenAiApplyPatchTool(functionTools, params.openaiApplyPatchEnabled === true);
+  const replay = Array.isArray(params.openaiResponsesReplayInput)
+    ? params.openaiResponsesReplayInput
+    : null;
+  const usePtcReplay = params.openaiPtcEnabled === true && replay != null;
+  const input = usePtcReplay
+    ? replay
+    : responsesInput(params.messages, params.openaiPreviousResponseId);
+  let tools = toOpenAIResponsesTools(params.tools, {
+    openaiPtcEnabled: params.openaiPtcEnabled === true,
+  });
+  tools = withProgrammaticToolCalling(tools, params.openaiPtcEnabled === true);
+  tools = withOpenAiApplyPatchTool(tools, params.openaiApplyPatchEnabled === true);
   const instructions = withOpenAiApplyPatchInstructions(
     params.systemPrompt,
     params.openaiApplyPatchEnabled === true,
   );
-  return {
+  const reasoningContext =
+    params.reasoningContext ||
+    params.reasoning_context ||
+    (/^gpt-5\.6(?:-|$)/i.test(openAiModel(params)) ? 'all_turns' : null);
+  const reasoning = {
+    ...(params.reasoningEffort ? { effort: params.reasoningEffort } : {}),
+    ...(reasoningContext ? { context: reasoningContext } : {}),
+  };
+  const body = {
     model: openAiModel(params),
-    input: params.openaiResponsesReplayInput || responsesInput(params.messages, params.openaiPreviousResponseId),
+    input,
     ...(instructions ? { instructions: String(instructions) } : {}),
     ...(stream ? { stream: true } : {}),
-    ...(params.openaiPreviousResponseId ? { previous_response_id: params.openaiPreviousResponseId } : {}),
+    ...(params.openaiPtcEnabled === true ? { store: false } : {}),
+    ...(!usePtcReplay && params.openaiPreviousResponseId
+      ? { previous_response_id: params.openaiPreviousResponseId }
+      : {}),
     ...(tools?.length ? {
       tools,
       tool_choice: params.toolChoiceNone === true
@@ -291,13 +312,29 @@ export function buildOpenAIResponsesBody(params, stream) {
           : 'auto',
     } : {}),
     ...(params.maxOutputTokens > 0 ? { max_output_tokens: params.maxOutputTokens } : {}),
-    ...(params.reasoningEffort ? { reasoning: { effort: params.reasoningEffort } } : {}),
+    ...(Object.keys(reasoning).length ? { reasoning } : {}),
+    ...(params.verbosity ? { text: { verbosity: params.verbosity } } : {}),
   };
+  if (params.openaiResponsesCapture && typeof params.openaiResponsesCapture === 'object') {
+    params.openaiResponsesCapture.sentInput = Array.isArray(input) ? [...input] : input;
+    params.openaiResponsesCapture.openaiPtcEnabled = params.openaiPtcEnabled === true;
+    params.openaiResponsesCapture.openaiApplyPatchEnabled =
+      params.openaiApplyPatchEnabled === true;
+  }
+  return body;
 }
 
 async function prepareOpenAiResponsesParams(env, params) {
-  const openaiApplyPatchEnabled = await resolveOpenAiApplyPatchEnabled(env, params);
-  return { ...params, openaiApplyPatchEnabled };
+  const [openaiApplyPatchEnabled, openaiPtcEnabled] = await Promise.all([
+    resolveOpenAiApplyPatchEnabled(env, params),
+    shouldInjectProgrammaticToolCalling(env, {
+      userId: params.userId,
+      tenantId: params.tenantId,
+      modelKey: params.modelKey,
+      force: params.openaiPtcEnabled === true,
+    }),
+  ]);
+  return { ...params, openaiApplyPatchEnabled, openaiPtcEnabled };
 }
 
 export async function dispatchOpenAIResponsesStream(env, request, params) {
