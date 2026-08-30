@@ -96,8 +96,6 @@ export type StartProjectAgentChatDetail = {
   projectId: string;
   projectName: string;
   message?: string;
-  memory?: string;
-  instructions?: string;
   /** Optional file attachments from project composer. */
   files?: File[];
   /** When true, open Agent Sam panel on the current page instead of navigating away. @deprecated Always full-screen from project. */
