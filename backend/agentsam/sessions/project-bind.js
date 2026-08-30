@@ -100,7 +100,7 @@ export async function resolveConversationProjectRef(env, input) {
   if (row) {
     const existing = trim(row.project_id) || null;
 
-    if (explicit) {
+    if (scopeExplicit) {
       const nextRef = clear ? null : requestedProjectRef || null;
       if (clear || !nextRef) {
         return {
