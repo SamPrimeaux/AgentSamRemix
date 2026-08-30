@@ -775,6 +775,7 @@ export function ChatAssistantView({ v }: { v: any }) {
                   conversationId={conversationId}
                   disabled={isLoading}
                   compactActiveOnly={isNarrow}
+                  eventBridgeOnly={isNarrow}
                 />
                 <button
                   type="button"
