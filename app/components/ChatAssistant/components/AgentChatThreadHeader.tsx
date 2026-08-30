@@ -216,13 +216,8 @@ export const AgentChatThreadHeader: FC<Props> = ({
             className="fixed z-[9999] min-w-[176px] rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] py-1 shadow-xl"
             style={{ top: menuPos.top, right: menuPos.right }}
           >
-            <button type="button" role="menuitem" onClick={openTerminal} className={MENU_ITEM}>
-              <Terminal size={13} />
-              Terminal
-            </button>
             {canMutate ? (
               <>
-                <div className="my-1 border-t border-[var(--border-subtle)]" />
                 <button
                   type="button"
                   role="menuitem"
