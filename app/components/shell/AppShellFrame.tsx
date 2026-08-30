@@ -293,7 +293,7 @@ export function AppShellFrame(_p: AppShellFrameProps) {
                 type="button"
                 title={`${workspaceDisplayLine} — tap to switch workspace`}
                 onClick={() => setWorkspaceLauncherOpen(true)}
-                className="flex items-center gap-1.5 rounded-md px-1 py-0.5 hover:bg-[var(--bg-hover)] transition-colors group shrink-0"
+                className={`flex items-center gap-1.5 rounded-md px-1 py-0.5 hover:bg-[var(--bg-hover)] transition-colors group shrink-0 ${mobileHamburgerConversationBack ? 'max-phone:hidden' : ''}`}
                 aria-label="Switch workspace"
               >
                 <img
