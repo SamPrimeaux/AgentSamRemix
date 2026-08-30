@@ -156,24 +156,33 @@ export async function handleChatSessionsApi(request, url, env, ctx, routeAuth, i
     if (!userId) return jsonResponse({ error: 'auth_user_id_required' }, 401);
     if (method === 'POST') {
       const body = await request.json().catch(() => ({}));
-      const conversationId = crypto.randomUUID();
+      const requestedConversationId = String(
+        body?.conversation_id ?? body?.conversationId ?? '',
+      ).trim();
+      if (
+        requestedConversationId &&
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(requestedConversationId)
+      ) {
+        return jsonResponse({ error: 'conversation_id_invalid' }, 400);
+      }
+      const conversationId = requestedConversationId || crypto.randomUUID();
       const title =
         typeof body.name === 'string' && body.name.trim() ? body.name.trim() : 'New Conversation';
-      const wsId =
+
+      // Workspace is optional conversation metadata, never chat authority.
+      let wsId =
         authUser.active_workspace_id != null && String(authUser.active_workspace_id).trim() !== ''
           ? String(authUser.active_workspace_id).trim()
           : null;
-      if (!wsId) {
-        return jsonResponse({ error: 'workspace_required' }, 400);
+      if (wsId) {
+        const workspace = await env.DB
+          .prepare('SELECT 1 AS ok FROM agentsam_workspace WHERE id = ? LIMIT 1')
+          .bind(wsId)
+          .first()
+          .catch(() => null);
+        if (!workspace) wsId = null;
       }
-      const workspace = await env.DB
-        .prepare('SELECT 1 AS ok FROM agentsam_workspace WHERE id = ? LIMIT 1')
-        .bind(wsId)
-        .first()
-        .catch(() => null);
-      if (!workspace) {
-        return jsonResponse({ error: 'invalid_workspace' }, 400);
-      }
+
       try {
         await ensureChatSessionRow(env, {
           conversationId,
@@ -185,15 +194,21 @@ export async function handleChatSessionsApi(request, url, env, ctx, routeAuth, i
       } catch (e) {
         return jsonResponse({ error: e?.message || 'session_create_failed' }, 400);
       }
-      initChatSessionR2(env, {
-        conversationId,
-        userId,
-        workspaceId: wsId,
-        tenantId,
-        title,
-        modelKey: body.model_key ?? body.modelKey ?? null,
-      }).catch(() => {});
-      return jsonResponse({ id: conversationId, status: 'active' });
+
+      // Legacy R2 archive bootstrap still expects a workspace namespace. Think owns
+      // the authoritative live transcript in Agent-local SQLite, so no workspace
+      // means there is simply no legacy archive bootstrap for this conversation.
+      if (wsId) {
+        initChatSessionR2(env, {
+          conversationId,
+          userId,
+          workspaceId: wsId,
+          tenantId,
+          title,
+          modelKey: body.model_key ?? body.modelKey ?? null,
+        }).catch(() => {});
+      }
+      return jsonResponse({ id: conversationId, status: 'active', workspace_id: wsId });
     }
     const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '40', 10) || 40, 1), 200);
     const projectId = url.searchParams.get('project_id') || url.searchParams.get('projectId') || null;
