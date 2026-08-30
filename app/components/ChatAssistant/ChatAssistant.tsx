@@ -483,6 +483,9 @@ export const ChatAssistant: React.FC<ChatAssistantProps> = ({
     setComposerToast(
       thinkAgentSam.connectionError.message || 'Agent Sam connection failed.',
     );
+    setIsLoading(false);
+    setThinkingState(null);
+    setPresenceState('idle');
   }, [thinkAgentSam.connectionError]);
 
   const {
