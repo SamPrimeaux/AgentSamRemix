@@ -3,6 +3,7 @@ import { describe, it } from 'node:test';
 
 import {
   machineProofHasCapability,
+  resolveDelegatedMachineUser,
   resolveMachineProof,
 } from '../bridge-key-auth.js';
 
