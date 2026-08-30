@@ -365,13 +365,6 @@ export async function discardImageDraft(env, generationId, userId) {
     .bind(now, String(generationId), String(userId))
     .run();
 
-  try {
-    const { discardImageDraftArtifact } = await import('./image-draft-artifact.js');
-    await discardImageDraftArtifact(env, { userId: String(userId), generationId: String(generationId) });
-  } catch (e) {
-    console.warn('[image-draft] artifact_discard_failed', e?.message ?? e);
-  }
-
   return { ok: true, generation_id: generationId, status: 'discarded' };
 }
 
