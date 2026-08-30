@@ -19,13 +19,15 @@ export function createCodebaseRetrieveTool(env, resolveScope, resolveServices = 
     }),
     execute: async (input) => {
       const scope = await resolveScope();
+      const registry = await resolveActiveCorpusForRepo(env, input.repoFullName);
+      if (!registry.ok) return registry;
       const services = resolveServices
         ? await resolveServices(scope)
         : createRetrievalRuntimeServices(env, scope);
       return retrieveKnowledge(env, {
         query: input.query,
-        repoFullName: input.repoFullName,
-        workspaceId: scope.workspaceId,
+        repoFullName: registry.corpus.repoFullName,
+        workspaceId: registry.corpus.workspaceId,
         sourceType: 'code',
         taskType: 'codebase_retrieval',
         candidateK: input.candidateK,
