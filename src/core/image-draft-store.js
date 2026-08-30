@@ -163,32 +163,9 @@ export async function persistImageDraft(env, p) {
     )
     .run();
 
-  // Surface under /dashboard/artifacts as a draft (best-effort; bytes stay in drafts/).
-  let artifactId = null;
-  try {
-    const { registerImageDraftArtifact } = await import('./image-draft-artifact.js');
-    const reg = await registerImageDraftArtifact(env, {
-      userId,
-      workspaceId: p.workspaceId,
-      tenantId: p.tenantId,
-      generationId,
-      previewUrl,
-      r2Key,
-      r2Bucket: BUCKET,
-      prompt: p.prompt,
-      purpose: p.purpose,
-      provider: p.provider,
-      model: p.model,
-      fileSizeBytes: buf.byteLength,
-      expiresAt,
-      sessionId: p.sessionId ?? p.conversationId ?? null,
-      width: p.width,
-      height: p.height,
-    });
-    artifactId = reg?.artifact_id ?? null;
-  } catch (e) {
-    console.warn('[image-draft] artifact_register_failed', e?.message ?? e);
-  }
+  // Generated images remain ephemeral drafts until the user explicitly saves them.
+  // Do not auto-register drafts as durable Artifacts; Images owns this lifecycle.
+  const artifactId = null;
 
   return {
     id: generationId,
