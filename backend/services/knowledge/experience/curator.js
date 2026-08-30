@@ -55,7 +55,7 @@ export function deriveKnowledgeCandidatesFromExperience(exp) {
   if (err.includes('wrangler') && (err.includes('deploy') || err.includes('failed'))) {
     candidates.push({
       memory_type: 'error',
-      memory_key: `error:deploy:wrangler:${projectKey || 'workspace'}`,
+      memory_key: `error:deploy:wrangler:${ws || 'workspace'}`,
       title: 'Wrangler deploy failure pattern',
       content: `Deploy failed during ${trim(exp.task_type) || 'agent'} run: ${trim(exp.error_message).slice(0, 400)}`,
       importance: 7,
