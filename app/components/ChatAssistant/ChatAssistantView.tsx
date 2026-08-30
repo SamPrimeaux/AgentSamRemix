@@ -701,7 +701,7 @@ export function ChatAssistantView({ v }: { v: any }) {
                 onKeyDown={onKeyDown}
                 onSelect={(ev) => syncPickers(ev.currentTarget.value, ev.currentTarget.selectionStart)}
                 onClick={(ev) => syncPickers(ev.currentTarget.value, ev.currentTarget.selectionStart)}
-                placeholder={composerPlaceholder}
+                placeholder={isNarrow ? 'Ask Agent Sam' : composerPlaceholder}
                 rows={1}
                 className={`iam-composer-textarea w-full min-w-0 bg-transparent px-3 pt-2.5 pb-1 focus:outline-none text-[var(--dashboard-text)] placeholder:text-[var(--text-placeholder-strong)] resize-none font-sans leading-relaxed ${
                   isNarrow ? 'text-base' : 'text-[0.8125rem]'
