@@ -289,6 +289,8 @@ export function DashboardSidebar({
           ) : null}
         </button>
       </div>
+
+      <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain chat-hide-scroll pr-0.5">
       <div className="flex flex-col gap-0.5 shrink-0">
         {SHELL_CORE_NAV.map((item) => {
           if (item.kind === 'action') {
