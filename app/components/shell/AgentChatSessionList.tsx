@@ -92,7 +92,7 @@ export const AgentChatSessionList: FC<{
   }
 
   return (
-    <div className="flex flex-col gap-2 min-h-0 max-h-[42vh] overflow-y-auto chat-hide-scroll px-1">
+    <div className="flex flex-col gap-2 min-h-0 px-1 pb-3">
       {starred.length > 0 ? (
         <div>
           <div className="px-1 pb-0.5 text-[10px] font-semibold uppercase tracking-widest text-muted opacity-70">
