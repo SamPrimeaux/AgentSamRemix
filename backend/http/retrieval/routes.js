@@ -23,15 +23,28 @@ function isMachineScope(scope) {
 
 async function resolveRetrievalScope(env, scope, repoFullName) {
   if (!isMachineScope(scope)) {
-    if (!scope?.userId || !scope?.workspaceId) {
-      return { ok: false, error: 'workspace_scope_required', status: 409 };
+    if (!scope?.userId) {
+      return { ok: false, error: 'user_scope_required', status: 401 };
     }
-    return {
-      ok: true,
-      workspaceId: scope.workspaceId,
-      repoFullName,
-      actorScope: scope,
-    };
+    if (repoFullName) {
+      const registry = await resolveActiveCorpusForRepo(env, repoFullName);
+      if (!registry.ok) return registry;
+      return {
+        ok: true,
+        workspaceId: registry.corpus.workspaceId,
+        repoFullName: registry.corpus.repoFullName,
+        actorScope: { ...scope, repoFullName: registry.corpus.repoFullName },
+      };
+    }
+    if (scope?.workspaceId) {
+      return {
+        ok: true,
+        workspaceId: scope.workspaceId,
+        repoFullName,
+        actorScope: scope,
+      };
+    }
+    return { ok: false, error: 'repo_full_name_required', status: 400 };
   }
 
   if (!machineProofHasCapability(scope.machineProof, 'retrieval.read')) {
