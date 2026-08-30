@@ -32,8 +32,10 @@ describe('Agent Sam bridge service principal', () => {
         'X-User-Id': 'au_valid123',
       },
     });
-    const proof = resolveMachineProof(request, { AGENTSAM_BRIDGE_KEY: 'bridge-secret' });
+    const env = { AGENTSAM_BRIDGE_KEY: 'bridge-secret' };
+    const proof = resolveMachineProof(request, env);
     assert.equal(proof.principalId, 'agentsam-platform');
-    assert.equal(proof.delegatedUserId, 'au_valid123');
+    assert.equal('delegatedUserId' in proof, false);
+    assert.equal(resolveDelegatedMachineUser(request, env), 'au_valid123');
   });
 });
