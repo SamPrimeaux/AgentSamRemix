@@ -721,7 +721,7 @@ export function ChatAssistantView({ v }: { v: any }) {
                     setIsModelPickerOpen(false);
                     setAttachMenuOpen(false);
                   }}
-                  className={`${composerPillClass} max-w-[9rem]`}
+                  className={`${composerPillClass} max-w-[9rem] ${isNarrow ? 'hidden' : ''}`}
                   title={`Conversation mode: ${modeLabel}`}
                   aria-expanded={isModeOpen}
                   aria-haspopup="listbox"
