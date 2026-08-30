@@ -67,7 +67,7 @@ export async function lookupChatProjectId(env, projectRef, workspaceId = null) {
  *   userId?: string|null,
  *   tenantId?: string|null,
  *   requestedProjectRef?: string|null,
- *   explicit?: boolean,
+ *   scopeExplicit?: boolean,
  *   clear?: boolean,
  * }} input
  */
