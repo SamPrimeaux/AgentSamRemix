@@ -112,8 +112,6 @@ export function startProjectAgentChat(detail: StartProjectAgentChatDetail): void
     projectId: detail.projectId,
     projectName: detail.projectName,
     firstMessage: detail.message,
-    memory: detail.memory,
-    instructions: detail.instructions,
     files: detail.files,
   });
 }
