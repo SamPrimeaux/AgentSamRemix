@@ -178,7 +178,7 @@ export async function resolveConversationProjectRef(env, input) {
     };
   }
 
-  if (clear || !explicit || !requestedProjectRef) {
+  if (clear || !scopeExplicit || !requestedProjectRef) {
     return {
       projectRef: null,
       source: clear ? 'explicit_clear' : 'unbound',
