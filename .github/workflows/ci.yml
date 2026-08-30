@@ -47,6 +47,19 @@ jobs:
       - name: WEBSITE_ASSETS authority invariant
         run: npm run guard:website-assets
 
+      - name: app/backend must not exist
+        run: |
+          if [ -d "app/backend" ] && find app/backend -type f -print -quit | grep -q .; then
+            echo "app/backend/ is disconnected from the Worker entry graph and must not exist. See docs/architecture for the harvest-then-delete plan."
+            exit 1
+          fi
+
+      - name: Architecture boundaries (dependency-cruiser)
+        run: npm run guard:boundaries
+
+      - name: backend -> src legacy import ratchet
+        run: npm run guard:ratchet-backend-src
+
       - name: Frontend root invariant
         run: |
           for forbidden in app/dashboard app/app; do

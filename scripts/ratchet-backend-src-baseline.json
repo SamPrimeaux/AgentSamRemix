@@ -1,0 +1,6 @@
+{
+  "refCount": 291,
+  "fileCount": 110,
+  "note": "backend/** -> root src/** legacy import count. Must only go down. Regenerate with: node scripts/ratchet-backend-src.mjs --update",
+  "updatedAt": "2026-08-30"
+}

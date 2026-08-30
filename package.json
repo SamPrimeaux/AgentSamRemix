@@ -16,7 +16,9 @@
     "eval:retrieval": "node scripts/eval-retrieval-v1.mjs",
     "deploy": "node bin/agentsam deploy fast",
     "guard:website-assets": "node scripts/guard-website-assets.mjs",
-    "guard:sdk-boundary": "node scripts/guard-agentsam-sdk-boundary.mjs"
+    "guard:sdk-boundary": "node scripts/guard-agentsam-sdk-boundary.mjs",
+    "guard:boundaries": "depcruise app backend packages --config .dependency-cruiser.cjs",
+    "guard:ratchet-backend-src": "node scripts/ratchet-backend-src.mjs"
   },
   "dependencies": {
     "@agentclientprotocol/sdk": "^1.3.0",
@@ -87,6 +89,7 @@
     "autoprefixer": "^10.5.0",
     "chrome-devtools-mcp": "^1.8.0",
     "concurrently": "^8.2.2",
+    "dependency-cruiser": "^18.2.0",
     "esbuild": "^0.28.2",
     "node-pty": "^1.1.0",
     "postcss": "^8.5.10",
