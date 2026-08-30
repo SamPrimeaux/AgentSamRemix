@@ -55,21 +55,15 @@ export async function fetchActiveProjectContextBlocks(env, opts = {}) {
     ];
     const binds = [ws];
 
-    if (projectRef || projectKeyOpt) {
-      const keys = [];
-      if (projectRef) keys.push(projectRef);
-      if (projectKeyOpt) keys.push(projectKeyOpt);
-      const uniq = [...new Set(keys)];
-      where.push(
-        `(${uniq.map(() => 'project_key = ? OR id = ?').join(' OR ')})`,
-      );
-      for (const k of uniq) {
-        binds.push(k, k);
-      }
-    } else if (primaryKey) {
-      // Fresh chat / no project selected: only the workspace's own spine.
-      where.push(`(project_key = ? OR id = ?)`);
-      binds.push(primaryKey, `ctx_${primaryKey}`);
+    const keys = [];
+    if (projectRef) keys.push(projectRef);
+    if (projectKeyOpt) keys.push(projectKeyOpt);
+    const uniq = [...new Set(keys)];
+    where.push(
+      `(${uniq.map(() => 'project_key = ? OR id = ?').join(' OR ')})`,
+    );
+    for (const k of uniq) {
+      binds.push(k, k);
     }
 
     const { results } = await env.DB.prepare(
