@@ -1,6 +1,6 @@
 import { DurableWorkflowDefinition } from "../types.ts";
 import { WorkflowVersionManager } from "../runtime/cloudflare/versions.ts";
-import { getDatabase } from "../../../../server/db/database.ts";
+import { getDatabase } from "../../legacy/agentsamfast/database.ts";
 
 export interface ProvisionWorkspaceParams {
   workspaceId: string;

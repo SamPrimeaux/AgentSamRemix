@@ -1,4 +1,4 @@
-import { getDatabase } from "../../../../server/db/database.ts";
+import { getDatabase } from "../../legacy/agentsamfast/database.ts";
 import {
   VectorRepository,
   VectorProjectionItem,

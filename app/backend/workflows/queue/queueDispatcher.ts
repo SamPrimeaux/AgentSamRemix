@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import { getDatabase } from "../../../../server/db/database.ts";
+import { getDatabase } from "../../legacy/agentsamfast/database.ts";
 
 /**
  * Cloudflare Queue Fan-Out Interface.

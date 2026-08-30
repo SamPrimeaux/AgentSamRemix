@@ -1,7 +1,7 @@
 import { DurableWorkflowDefinition } from "../types.ts";
 import { WorkflowVersionManager } from "../runtime/cloudflare/versions.ts";
-import { getDatabase } from "../../../../server/db/database.ts";
-import { RepoHistorianEngine } from "../../../../server/lib/repoIntelligence/repoHistorian.ts";
+import { getDatabase } from "../../legacy/agentsamfast/database.ts";
+import { RepoHistorianEngine } from "../../legacy/agentsamfast/repoHistorian.ts";
 
 export interface RepoIndexParams {
   repoName: string;

@@ -1,5 +1,5 @@
 import { documentChunkService, DocumentChunk } from "./documentChunkService.ts";
-import { getDatabase } from "../../../server/db/database.ts";
+import { getDatabase } from "../legacy/agentsamfast/database.ts";
 
 /**
  * Enterprise RAG Agent Service.
