@@ -200,6 +200,7 @@ import { useChatWindowBridge } from './hooks/useChatWindowBridge';
 import { useToolApprovalActions } from './hooks/useToolApprovalActions';
 import { usePlanRunActions } from './hooks/usePlanRunActions';
 import { createChatSendHandler } from './hooks/useChatSendPipeline';
+import { useThinkAgentSamChat } from './hooks/useThinkAgentSamChat';
 import { ChatAssistantView } from './ChatAssistantView';
 import {
   getDatabaseSurfaceContext,
