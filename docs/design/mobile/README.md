@@ -12,8 +12,10 @@ These references define the prioritized mobile UX for AgentSamRemix. The impleme
 
 ## Product rules captured by these references
 
-- Mobile-first; `Chat | Work` is the primary product navigation.
-- Chat remains the primary surface. Work presents the current artifact or execution context.
+- Mobile-first. A persistent `Chat | Work` segmented pill is **not** part of the active-conversation chrome.
+- Once a conversation exists, the active chat header should mirror the ChatGPT mobile interaction pattern closely: a floating circular/bubble hamburger control at the top-left and a compact floating `•••` conversation-options pill at the top-right. These controls are the stable mobile chrome; do not replace them with workspace, mode, context, or execution selectors.
+- The hamburger opens the global navigation/history drawer. The `•••` pill manages the current conversation (for example Pin, Add to project, uploaded files, find, archive, delete as those behaviors are implemented).
+- Chat remains the primary conversational surface. Work/execution detail is contextual and must not become a permanent mode switch occupying the active-chat header.
 - Agent work renders as compact structured activity, expandable for detail.
 - Terminal is a bottom sheet, not a separate IDE screen.
 - Local / VM / Sandbox (and future Environment) remain explicit execution lanes with no silent lane failover.
