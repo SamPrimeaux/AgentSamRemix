@@ -178,14 +178,14 @@
   }
 
   .iam-composer-toolbar__left {
-    flex: 1 1 auto;
-    gap: 4px !important;
-    overflow: hidden;
+    display: none;
   }
 
   .iam-composer-toolbar__right {
-    gap: 2px !important;
-    margin-left: 2px;
+    flex: 1 1 100%;
+    width: 100%;
+    gap: 4px !important;
+    margin-left: 0;
   }
 
   .iam-composer-toolbar__left .iam-composer-pill {
