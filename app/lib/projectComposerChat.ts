@@ -36,7 +36,8 @@ export type SendProjectChatOpts = {
 };
 
 function buildProjectMessage(raw: string, memory: string, instructions: string, isNewThread: boolean): string {
-  // Server injects memory/instructions via project_id → system context.
+  // project_id is scope only. Saved memory/instructions are never hidden-concatenated
+  // by the project composer; explicit context selection is a separate turn input.
   void memory;
   void instructions;
   void isNewThread;
