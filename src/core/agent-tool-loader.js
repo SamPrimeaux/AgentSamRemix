@@ -87,7 +87,8 @@ export async function fetchAgentsamToolRowsByName(env, names) {
   const placeholders = names.map(() => '?').join(',');
   try {
     const { results } = await env.DB.prepare(
-      `SELECT tool_name, description, input_schema, handler_config, tool_category, requires_approval
+      `SELECT tool_name, description, input_schema, output_schema, handler_config, tool_category,
+              requires_approval, caller_policy
        FROM agentsam_tools
        WHERE COALESCE(is_active, 1) = 1 AND tool_name IN (${placeholders})`,
     )
