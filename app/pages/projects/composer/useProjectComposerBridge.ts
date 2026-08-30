@@ -23,8 +23,6 @@ export function useProjectComposerBridge({
   sessionUserId,
   project,
   projectChatId,
-  memory,
-  instructions,
   loadChats,
 }: UseProjectComposerBridgeParams) {
   const [draft, setDraft] = useState('');
