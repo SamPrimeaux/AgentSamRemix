@@ -8,7 +8,7 @@
     "build": "NODE_OPTIONS=--max-old-space-size=4096 vite build --config app/vite.config.ts",
     "typecheck": "tsc --noEmit",
     "test:ui": "playwright test",
-    "test:browser": "node --test test/browser-live-view.test.mjs",
+    "test:browser": "node --test test/browser-live-view.test.mjs test/terminal-vpc.test.mjs",
     "test:settings": "node --test test/settings-control-plane.test.mjs",
     "test:retrieval": "node --test test/retrieval-v1.test.mjs",
     "test:bin-lib": "node --test test/bin-lib.test.mjs",
