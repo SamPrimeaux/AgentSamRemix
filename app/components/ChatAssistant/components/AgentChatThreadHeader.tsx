@@ -30,7 +30,6 @@ import { deleteAgentSession, patchAgentSession } from '../../../hooks/useAgentCh
 import { IAM_AGENT_CHAT_CONVERSATION_CHANGE } from '../../../agentChatConstants';
 import { notifyAgentChatSessionsRefresh } from '../../../lib/openAgentConversation';
 import { isUnboundAgentChatPath } from '../../../lib/agentConversationBind';
-import { useWorkspace } from '../../../src/context/WorkspaceContext';
 
 type Props = {
   conversationId: string;
