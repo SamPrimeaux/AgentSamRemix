@@ -157,40 +157,7 @@ export function ChatAssistantView({ v }: { v: any }) {
             </div>
           </header>
         )}
-        {isNarrow && mobileAgentsThread && (
-          <div className="shrink-0 border-b border-[var(--dashboard-border)] bg-[var(--dashboard-panel)] z-10">
-            {renderThreadHeader(true, false, true)}
-            <div className="flex gap-2 px-3 pb-2">
-              <button
-                type="button"
-                onClick={() => setMobileThreadTab('chat')}
-                className={`flex-1 min-w-0 px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
-                  mobileThreadTab === 'chat'
-                    ? 'bg-[var(--scene-bg)] text-[var(--dashboard-text)] border border-[var(--dashboard-border)]'
-                    : 'text-[var(--dashboard-muted)] hover:text-[var(--dashboard-text)] border border-transparent'
-                }`}
-              >
-                Chat
-              </button>
-              <button
-                type="button"
-                onClick={() => setMobileThreadTab('context')}
-                className={`flex-1 min-w-0 px-3 py-1.5 rounded-md text-[12px] font-medium transition-colors ${
-                  mobileThreadTab === 'context'
-                    ? 'bg-[var(--scene-bg)] text-[var(--dashboard-text)] border border-[var(--dashboard-border)]'
-                    : 'text-[var(--dashboard-muted)] hover:text-[var(--dashboard-text)] border border-transparent'
-                }`}
-              >
-                Context
-              </button>
-            </div>
-            {showHeaderPresence ? (
-              <div className="px-3 pb-2">
-                <AgentPresenceStatus presence={presence} mode={mode} showBadge={false} className="opacity-95" />
-              </div>
-            ) : null}
-          </div>
-        )}
+        {isNarrow && mobileAgentsThread ? renderThreadHeader(true, false, true) : null}
         {/* AgentPresenceLogo: built but unwired — chat header has no stable avatar slot without layout churn. */}
         {!isNarrow && !atmosphericHomeMode && (showThreadHeader || shellTabsVisible) ? (
           <div className="flex-shrink-0 flex flex-col min-w-0 border-b border-[var(--dashboard-border)] bg-[var(--dashboard-panel)]/60">
