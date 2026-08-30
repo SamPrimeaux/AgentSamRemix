@@ -19,7 +19,6 @@ describe('Agent Sam bridge service principal', () => {
       principalId: 'agentsam-platform',
       principalType: 'service',
       capabilities: ['retrieval.read', 'retrieval.evaluate'],
-      delegatedUserId: null,
     });
     assert.equal(machineProofHasCapability(proof, 'retrieval.read'), true);
     assert.equal(machineProofHasCapability(proof, 'retrieval.evaluate'), true);
