@@ -133,6 +133,14 @@ export async function executeViaExecOS(
     tenantId?: string | null;
   },
 ) {
+  // The permanent VM is a first-class Cloudflare VPC binding in Remix. Use it
+  // directly instead of adding an ExecOS hop that can independently be down or
+  // misconfigured. ExecOS remains the authority for local and a fallback when
+  // the VPC binding is absent.
+  if (input.lane === 'remote' && env.PTY_SERVICE?.fetch) {
+    return executeViaVPC(env, input.command, input.cwd, input.connection, input);
+  }
+
   const target = input.lane === 'local' ? 'local' : 'remote';
   const result = await callExecOS(env, '/run', {
     method: 'POST',
@@ -166,8 +174,6 @@ export async function executeViaExecOS(
     };
   }
 
-  // Only the permanent remote VM has a direct VPC infrastructure fallback.
-  // Local fails loud rather than silently executing on another machine.
   if (input.lane === 'remote') {
     return executeViaVPC(env, input.command, input.cwd, input.connection, input);
   }
