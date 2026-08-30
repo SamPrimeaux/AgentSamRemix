@@ -153,6 +153,11 @@ export async function executeAgentChatSpine(env, request, ctx, pre) {
     body.project_context_explicit === '1';
   const projectScopeExplicit =
     projectContextExplicit ||
+    body.project_scope_explicit === true ||
+    body.project_scope_explicit === 1 ||
+    body.project_scope_explicit === '1' ||
+    // One-release compatibility for the older inline project composer wire.
+    // This is scope authority only; it never authorizes prompt context.
     projectContextSource === 'project_composer';
   const projectContextClear =
     body.project_context_clear === true ||
