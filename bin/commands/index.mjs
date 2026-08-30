@@ -12,6 +12,7 @@ import { evalCmd } from './eval/index.mjs';
 export const COMMANDS = {
   acp: acpCmd,
   deploy: deployCmd,
+  eval: evalCmd,
   sdk: sdkCmd,
   website: websiteCmd,
 };
