@@ -536,7 +536,7 @@ export function ChatAssistantView({ v }: { v: any }) {
                   </div>
                 ))}
               </div>
-              <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.625rem] font-mono px-0.5 -mt-0.5 pb-0.5">
+              <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.625rem] font-mono px-0.5 -mt-0.5 pb-0.5 ${isNarrow && totalStagedBytes <= CHAT_ATTACH_MAX_TOTAL_BYTES ? 'hidden' : ''}`}>
                 <span
                   className={
                     totalStagedBytes > CHAT_ATTACH_MAX_TOTAL_BYTES ? 'text-[var(--solar-red)]' : 'text-[var(--dashboard-muted)]'
