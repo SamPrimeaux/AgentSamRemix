@@ -1,0 +1,137 @@
+{
+  "version": 1,
+  "components": [
+    {
+      "id": "app.banner",
+      "name": "AppBanner",
+      "layer": "app",
+      "category": "feedback",
+      "importName": "AppBanner",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "Safe-area-aware application banner built on Kumo Banner with primary and dismiss actions.",
+      "dependencies": ["@cloudflare/kumo", "@phosphor-icons/react"],
+      "tags": ["pwa", "update", "alert", "status", "mobile"],
+      "status": "ready"
+    },
+    {
+      "id": "app.clipboard-field",
+      "name": "ClipboardField",
+      "layer": "app",
+      "category": "developer",
+      "importName": "ClipboardField",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "Labeled read-only value with accessible copy feedback and optional alternate text-to-copy.",
+      "dependencies": ["@cloudflare/kumo"],
+      "tags": ["api-key", "sha", "url", "id", "copy"],
+      "status": "ready"
+    },
+    {
+      "id": "app.loading-skeleton",
+      "name": "LoadingSkeleton",
+      "layer": "app",
+      "category": "feedback",
+      "importName": "LoadingSkeleton",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "Layout-preserving text skeleton for cards, lists, and navigation loading states.",
+      "dependencies": ["@cloudflare/kumo"],
+      "tags": ["loading", "skeleton", "placeholder"],
+      "status": "ready"
+    },
+    {
+      "id": "app.page-header",
+      "name": "AppPageHeader",
+      "layer": "app",
+      "category": "navigation",
+      "importName": "AppPageHeader",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "IAM-owned page header with breadcrumbs, title, description, tabs, and action slot.",
+      "dependencies": ["@cloudflare/kumo"],
+      "tags": ["header", "tabs", "breadcrumbs", "actions"],
+      "status": "ready"
+    },
+    {
+      "id": "app.sidebar",
+      "name": "AppSidebar",
+      "layer": "app",
+      "category": "navigation",
+      "importName": "AppSidebar",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "Responsive, collapsible, resizable, peekable application sidebar built on Kumo Sidebar.",
+      "dependencies": ["@cloudflare/kumo"],
+      "tags": ["sidebar", "navigation", "mobile", "responsive", "collapsible"],
+      "status": "ready"
+    },
+    {
+      "id": "app.command-palette",
+      "name": "CommandPaletteShell",
+      "layer": "app",
+      "category": "navigation",
+      "importName": "CommandPaletteShell",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "Grouped, keyboard-accessible command/search palette presentation shell built on Kumo CommandPalette.",
+      "dependencies": ["@cloudflare/kumo"],
+      "tags": ["search", "command", "cmd-k", "spotlight", "keyboard"],
+      "status": "ready"
+    },
+    {
+      "id": "site.header",
+      "name": "SiteHeader",
+      "layer": "site",
+      "category": "navigation",
+      "importName": "SiteHeader",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "Lightweight public-site header with brand, navigation, and action slots.",
+      "dependencies": [],
+      "tags": ["website", "header", "navigation", "brand"],
+      "status": "ready"
+    },
+    {
+      "id": "site.hero",
+      "name": "SiteHero",
+      "layer": "site",
+      "category": "marketing",
+      "importName": "SiteHero",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "Responsive public-site hero with optional media and dual actions.",
+      "dependencies": [],
+      "tags": ["website", "hero", "marketing", "landing"],
+      "status": "ready"
+    },
+    {
+      "id": "site.feature-grid",
+      "name": "FeatureGrid",
+      "layer": "site",
+      "category": "content",
+      "importName": "FeatureGrid",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "Two-, three-, or four-column feature/service grid for public websites.",
+      "dependencies": [],
+      "tags": ["website", "features", "services", "grid"],
+      "status": "ready"
+    },
+    {
+      "id": "site.cta",
+      "name": "SiteCta",
+      "layer": "site",
+      "category": "marketing",
+      "importName": "SiteCta",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "High-emphasis call-to-action section with optional secondary action.",
+      "dependencies": [],
+      "tags": ["website", "cta", "conversion"],
+      "status": "ready"
+    },
+    {
+      "id": "site.footer",
+      "name": "SiteFooter",
+      "layer": "site",
+      "category": "navigation",
+      "importName": "SiteFooter",
+      "importPath": "@inneranimalmedia/cms-cloudflare-template-library",
+      "description": "Public-site footer with brand copy, grouped links, and legal slot.",
+      "dependencies": [],
+      "tags": ["website", "footer", "navigation", "legal"],
+      "status": "ready"
+    }
+  ]
+}

@@ -19,10 +19,10 @@ export type ShellProductItem = {
   children?: ShellProductItem[];
 };
 
-/** CMS Suite — site/project context will be resolved inside CMS when that product phase resumes. */
+/** CMS Suite — reusable library is active; authoring routes remain parked until their CMS API pass. */
 export const CMS_SUITE_NAV: ShellProductItem[] = [
   // /dashboard/examples is reserved for the later CMS-owned Examples implementation.
-  { id: 'cms-sites', label: 'Sites', path: '/dashboard/cms', match: 'exact' },
+  { id: 'cms-sites', label: 'Overview', path: '/dashboard/cms', match: 'exact' },
   { id: 'cms-online-store', label: 'Online store', path: '/dashboard/cms/online-store', match: 'prefix' },
   { id: 'cms-theme-editor', label: 'Theme editor', path: '/dashboard/cms/theme-editor', match: 'prefix' },
   { id: 'cms-editor', label: 'Pages', path: '/dashboard/cms/pages', match: 'prefix' },

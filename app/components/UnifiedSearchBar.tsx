@@ -1,32 +1,12 @@
 import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import {
-  ArrowRight,
-  ChevronDown,
-  ChevronRight,
-  Database,
-  FolderSearch,
-  HardDrive,
-  Layers,
-  Loader2,
-  MessageSquare,
-  Router,
-  Search,
-  Terminal,
-  Workflow,
-  LayoutGrid,
-  FileText,
-} from 'lucide-react';
+import { FolderSearch, Router, Search } from 'lucide-react';
 import { resumeAgentChatSession } from '../lib/openAgentConversation';
 import { SetiFileIcon } from '../src/components/SetiFileIcon';
 import {
   WRANGLER_CATEGORY_LABELS,
-  filterWranglerCatalog,
   groupWranglerCatalog,
-  normalizeCommandRow,
-  type WranglerCatalogEntry,
-  type WranglerCommandCategory,
 } from '../lib/wranglerCommandCatalog';
 import { useWorkspace } from '../src/context/WorkspaceContext';
 import {
@@ -37,11 +17,11 @@ import {
 } from '../src/lib/databaseStudioRoute';
 import { ConnectionMenuPanel, type ConnectionMenuAction } from './ConnectionMenuPanel';
 import { GitRepoBranchMenuPanel, GitRepoBranchNavTrigger } from './GitRepoBranchDropdown';
-import { ShellDropdownPanel, SHELL_DROPDOWN_WIDTH_PX } from './ShellDropdownPanel';
+import { SHELL_DROPDOWN_WIDTH_PX } from './ShellDropdownPanel';
 import { filterDeployPaletteRows } from '../src/lib/deployPaletteItems';
 import { IAM_GIT_SYNC_PUBLISH, IAM_OPEN_CONNECTION_MENU, IAM_OPEN_GIT_REPO_MENU } from '../src/lib/openCommandPalette';
 import type { OpenCommandPaletteDetail } from '../src/lib/openCommandPalette';
-import { isGithubCloneQuery, parseGithubCloneRef } from '../src/lib/githubClone';
+import { parseGithubCloneRef } from '../src/lib/githubClone';
 import {
   PALETTE_CONNECT_CLOUDFLARE,
   PALETTE_R2_PAGE_SIZE,
@@ -56,429 +36,38 @@ import {
 } from '../src/lib/paletteCloudflare';
 import { searchConnectedLocalFiles } from '../src/lib/searchConnectedLocalFiles';
 import { searchConnectedLocalContent } from '../src/lib/searchConnectedLocalContent';
+import {
+  CommandPaletteShell,
+  type CommandPaletteGroup as KumoCommandPaletteGroup,
+} from '@iam/cms-template-library';
 
-export type UnifiedSearchNavigate =
-  | { kind: 'table'; name: string }
-  | { kind: 'conversation'; id: string }
-  | { kind: 'knowledge'; url: string | null; label: string }
-  | { kind: 'sql'; sql: string }
-  | { kind: 'deployment'; summary: string }
-  | { kind: 'column'; sql: string }
-  | { kind: 'file'; path: string; line?: number; column?: number };
-
-type SourceChipId = 'all' | 'planes' | 'r2' | 'd1' | 'commands' | 'workflows' | 'chats' | 'files';
-
-type PaletteCategory =
-  | 'resource'
-  | 'r2'
-  | 'd1'
-  | 'hyperdrive'
-  | 'vectorize'
-  | 'chat'
-  | 'deploy'
-  | 'command'
-  | 'workflow'
-  | 'file'
-  | 'tip'
-  | 'search'
-  | 'github_clone'
-  | 'connect';
-
-type PaletteItem = {
-  id: string;
-  category: PaletteCategory;
-  title: string;
-  subtitle?: string;
-  bound?: boolean;
-  objectCount?: number | null;
-  commandText?: string;
-  conversationId?: string;
-  workflowKey?: string;
-  r2Bucket?: string;
-  dbTarget?: 'd1' | 'hyperdrive';
-  filePath?: string;
-  /** 1-based line for content search hits */
-  fileLine?: number;
-  fileColumn?: number;
-  deploySummary?: string;
-  deployAction?: 'workers_builds' | 'open_deploys';
-  commandCategory?: WranglerCommandCategory;
-  /** Unified-search row passthrough */
-  legacyRow?: LegacyUnifiedRow;
-  cloneRef?: string;
-  d1DatabaseName?: string;
-  hyperdriveId?: string;
-  vectorizeIndexName?: string;
-};
-
-type CommandSection = { key: string; label: string; rows: PaletteItem[] };
-
-type LegacyUnifiedRow = {
-  type: string;
-  id: string;
-  title: string;
-  subtitle?: string;
-  sql_text?: string;
-  url?: string | null;
-  summary?: string;
-};
-
-type GithubRepoListRow = { full_name?: string; name?: string; html_url?: string; private?: boolean };
-
-type QueryMode = 'default' | 'planes' | 'r2' | 'd1' | 'hyperdrive' | 'vectorize' | 'command' | 'workflow' | 'file' | 'search' | 'clone';
-
-const SOURCE_CHIPS: { id: SourceChipId; label: string; Icon: React.ComponentType<{ size?: number; className?: string }> }[] = [
-  { id: 'all', label: 'All', Icon: LayoutGrid },
-  { id: 'files', label: 'Files', Icon: FileText },
-  { id: 'planes', label: 'Planes', Icon: Layers },
-  { id: 'r2', label: 'R2', Icon: HardDrive },
-  { id: 'd1', label: 'D1', Icon: Database },
-  { id: 'commands', label: 'Commands', Icon: Terminal },
-  { id: 'workflows', label: 'Workflows', Icon: Workflow },
-  { id: 'chats', label: 'Chats', Icon: MessageSquare },
-];
-
-const SEARCH_TIPS: PaletteItem[] = [
-  { id: 'tip-cmd', category: 'tip', title: '/', subtitle: 'Show and run commands' },
-  { id: 'tip-hash', category: 'tip', title: '#', subtitle: 'Search files, content, and knowledge' },
-  { id: 'tip-at', category: 'tip', title: '@', subtitle: 'Go to file in connected folder' },
-  { id: 'tip-more', category: 'tip', title: '?', subtitle: 'Platform: r2: · d1: · planes: · wf:' },
-];
-
-/** Empty ⌘K Quick Open — Cursor-style action rows (tips set the query prefix). */
-const QUICK_OPEN_ACTIONS: PaletteItem[] = [
-  { id: 'qo-cmd', category: 'tip', title: '/', subtitle: 'Show and run commands' },
-  { id: 'qo-hash', category: 'tip', title: '#', subtitle: 'Search for text' },
-  { id: 'qo-at', category: 'tip', title: '@', subtitle: 'Go to file' },
-  { id: 'qo-more', category: 'tip', title: '?', subtitle: 'More — r2:, d1:, planes:, wf:' },
-];
-
-function paletteSearchTips(_cfConnected: boolean | null): PaletteItem[] {
-  return SEARCH_TIPS;
-}
-
-function r2CatalogToPaletteItems(rows: { name: string; bound: boolean }[]): PaletteItem[] {
-  return rows.map((b) => ({
-    id: `r2-${b.name}`,
-    category: 'r2' as const,
-    title: b.name,
-    subtitle: b.bound ? 'Bound to this Worker' : 'Account bucket',
-    bound: b.bound,
-    r2Bucket: b.name,
-  }));
-}
-
-function d1RowsToPalette(
-  rows: { name: string; uuid?: string; bound?: boolean }[],
-): PaletteItem[] {
-  return rows.map((db) => ({
-    id: `d1-db-${db.name}`,
-    category: 'd1' as const,
-    title: db.name,
-    subtitle: db.bound ? 'D1 database · bound to Worker' : 'D1 database · your Cloudflare account',
-    bound: db.bound,
-    d1DatabaseName: db.name,
-    dbTarget: 'd1' as const,
-  }));
-}
-
-function hyperdriveRowsToPalette(
-  rows: { id: string; name: string; bound?: boolean }[],
-): PaletteItem[] {
-  return rows.map((cfg) => ({
-    id: `hd-${cfg.id}`,
-    category: 'hyperdrive' as const,
-    title: cfg.name,
-    subtitle: cfg.bound ? 'Hyperdrive · bound to Worker' : 'Hyperdrive config · your account',
-    bound: cfg.bound,
-    hyperdriveId: cfg.id,
-    dbTarget: 'hyperdrive' as const,
-  }));
-}
-
-function vectorizeRowsToPalette(
-  rows: { name: string; description?: string | null; bound?: boolean }[],
-): PaletteItem[] {
-  return rows.map((idx) => ({
-    id: `vx-${idx.name}`,
-    category: 'vectorize' as const,
-    title: idx.name,
-    subtitle: idx.bound
-      ? 'Vectorize index · bound to Worker'
-      : idx.description || 'Vectorize index · your account',
-    bound: idx.bound,
-    vectorizeIndexName: idx.name,
-  }));
-}
-
-function buildPlaneSectionsFromCatalog(
-  catalog: {
-    d1?: { name: string; id?: string; bound?: boolean }[];
-    r2?: { name: string; bound?: boolean }[];
-    hyperdrive?: { id: string; name: string; bound?: boolean }[];
-    vectorize?: { name: string; description?: string | null; bound?: boolean }[];
-  },
-  searchTerm: string,
-  r2PageNum: number,
-): { sections: CommandSection[]; r2Catalog: { name: string; bound: boolean }[] } {
-  const term = searchTerm.trim().toLowerCase();
-  const match = (name: string) => !term || name.toLowerCase().includes(term);
-
-  const sections: CommandSection[] = [];
-
-  const d1Rows = d1RowsToPalette((catalog.d1 || []).filter((db) => match(db.name)));
-  if (d1Rows.length) sections.push({ key: 'd1', label: 'D1 Databases', rows: d1Rows });
-
-  const r2Sorted = filterPaletteR2Buckets(
-    (catalog.r2 || []).map((b) => ({ name: b.name, bound: !!b.bound })),
-    searchTerm,
-  );
-  const r2Start = (r2PageNum - 1) * PALETTE_R2_PAGE_SIZE;
-  const r2PageRows = r2CatalogToPaletteItems(r2Sorted.slice(r2Start, r2Start + PALETTE_R2_PAGE_SIZE));
-  if (r2PageRows.length) sections.push({ key: 'r2', label: 'R2 Buckets', rows: r2PageRows });
-
-  const hdRows = hyperdriveRowsToPalette(
-    (catalog.hyperdrive || []).filter((c) => match(c.name || c.id)),
-  );
-  if (hdRows.length) sections.push({ key: 'hyperdrive', label: 'Hyperdrive', rows: hdRows });
-
-  const vxRows = vectorizeRowsToPalette((catalog.vectorize || []).filter((i) => match(i.name)));
-  if (vxRows.length) sections.push({ key: 'vectorize', label: 'Vectorize', rows: vxRows });
-
-  return { sections, r2Catalog: r2Sorted };
-}
-
-function deployRowToPalette(row: ReturnType<typeof filterDeployPaletteRows>[number]): PaletteItem {
-  return {
-    id: row.id,
-    category: row.category,
-    title: row.title,
-    subtitle: row.subtitle,
-    commandText: row.commandText,
-    deployAction: row.deployAction,
-  };
-}
-
-function catalogEntryToPalette(c: WranglerCatalogEntry): PaletteItem {
-  return {
-    id: c.id,
-    category: 'command',
-    title: c.display_name,
-    subtitle: c.mapped_command,
-    commandText: c.mapped_command,
-    commandCategory: c.category,
-  };
-}
-
-function mergeCommandCatalog(
-  apiRows: Record<string, unknown>[],
-  searchTerm: string,
-  limit = 80,
-): WranglerCatalogEntry[] {
-  const byCmd = new Map<string, WranglerCatalogEntry>();
-  for (const raw of apiRows) {
-    const n = normalizeCommandRow(raw);
-    if (n) byCmd.set(n.mapped_command.toLowerCase(), n);
-  }
-  for (const c of filterWranglerCatalog(searchTerm, limit)) {
-    if (!byCmd.has(c.mapped_command.toLowerCase())) byCmd.set(c.mapped_command.toLowerCase(), c);
-  }
-  return [...byCmd.values()].sort((a, b) => (a.sort_order ?? 50) - (b.sort_order ?? 0));
-}
-
-function parseQueryMode(raw: string): { mode: QueryMode; term: string } {
-  const q = raw.trim();
-  const lower = q.toLowerCase();
-  if (lower.startsWith('r2:')) return { mode: 'r2', term: q.slice(3).trim() };
-  if (lower === 'r2' || lower.startsWith('r2 ')) return { mode: 'r2', term: q.replace(/^r2\s*/i, '').trim() };
-  if (lower.startsWith('d1:')) return { mode: 'd1', term: q.slice(3).trim() };
-  if (lower === 'd1' || lower.startsWith('d1 ')) return { mode: 'd1', term: q.replace(/^d1\s*/i, '').trim() };
-  if (lower.startsWith('planes:')) return { mode: 'planes', term: q.slice(7).trim() };
-  if (lower === 'planes' || lower.startsWith('planes ')) {
-    return { mode: 'planes', term: q.replace(/^planes\s*/i, '').trim() };
-  }
-  if (lower.startsWith('hyperdrive:') || lower.startsWith('hd:')) {
-    return { mode: 'hyperdrive', term: q.replace(/^(hyperdrive|hd):/i, '').trim() };
-  }
-  if (lower === 'hyperdrive' || lower === 'hd' || lower.startsWith('hyperdrive ') || lower.startsWith('hd ')) {
-    return { mode: 'hyperdrive', term: q.replace(/^(hyperdrive|hd)\s*/i, '').trim() };
-  }
-  if (lower.startsWith('vectorize:') || lower.startsWith('vx:')) {
-    return { mode: 'vectorize', term: q.replace(/^(vectorize|vx):/i, '').trim() };
-  }
-  if (lower === 'vectorize' || lower === 'vx' || lower.startsWith('vectorize ') || lower.startsWith('vx ')) {
-    return { mode: 'vectorize', term: q.replace(/^(vectorize|vx)\s*/i, '').trim() };
-  }
-  // Cursor Quick Open prefixes
-  if (q.startsWith('>') || q.startsWith('/')) {
-    return { mode: 'command', term: q.replace(/^[>/]/, '').trim() };
-  }
-  if (q.startsWith('#')) return { mode: 'search', term: q.slice(1).trim() };
-  if (q.startsWith('?')) {
-    // Help → stay on default empty actions, or show tip list via empty load
-    return { mode: 'default', term: '' };
-  }
-  if (lower.startsWith('wf:') || lower === 'wf' || lower.startsWith('wf ')) {
-    return { mode: 'workflow', term: q.replace(/^wf:?/i, '').trim() };
-  }
-  if (q.startsWith('@')) return { mode: 'file', term: q.slice(1).trim() };
-  if (lower.startsWith('clone:')) return { mode: 'clone', term: q.slice(6).trim() };
-  if (lower.startsWith('clone ') || lower === 'clone' || isGithubCloneQuery(q)) {
-    return { mode: 'clone', term: q.replace(/^clone\s*/i, '').trim() || q.trim() };
-  }
-  // File-first: any bare query is Go to File (not unified platform search)
-  if (q.length >= 1) return { mode: 'file', term: q };
-  return { mode: 'default', term: q };
-}
-
-function chipMatchesCategory(chip: SourceChipId, category: PaletteCategory): boolean {
-  if (chip === 'all') return category !== 'tip' && category !== 'connect';
-  if (chip === 'files') return category === 'file';
-  if (chip === 'r2') return category === 'r2' || category === 'resource';
-  if (chip === 'd1') return category === 'd1';
-  if (chip === 'planes') {
-    return category === 'd1' || category === 'r2' || category === 'hyperdrive' || category === 'vectorize';
-  }
-  if (chip === 'commands') return category === 'command' || category === 'deploy';
-  if (chip === 'workflows') return category === 'workflow';
-  if (chip === 'chats') return category === 'chat';
-  return true;
-}
-
-
-async function fetchJson<T>(url: string): Promise<T | null> {
-  try {
-    const res = await fetch(url, { credentials: 'same-origin' });
-    if (!res.ok) return null;
-    return (await res.json()) as T;
-  } catch {
-    return null;
-  }
-}
-
-function normalizeLegacySearchRows(data: Record<string, unknown>): LegacyUnifiedRow[] {
-  const ranked = data.results;
-  if (!Array.isArray(ranked)) return [];
-  const out: LegacyUnifiedRow[] = [];
-  for (const raw of ranked) {
-    if (!raw || typeof raw !== 'object') continue;
-    const r = raw as Record<string, unknown>;
-    const type = String(r.type || '');
-    out.push({
-      type,
-      id: String(r.id ?? r.path ?? ''),
-      title: String(r.title ?? ''),
-      subtitle: r.subtitle != null ? String(r.subtitle) : undefined,
-      sql_text: r.sql_text != null ? String(r.sql_text) : undefined,
-      url: r.url != null ? String(r.url) : null,
-      summary: r.summary != null ? String(r.summary) : undefined,
-    });
-  }
-  return out;
-}
-
-function legacyToPalette(row: LegacyUnifiedRow): PaletteItem | null {
-  const id = `${row.type}-${row.id}`;
-  switch (row.type) {
-    case 'deployment':
-      return {
-        id,
-        category: 'deploy',
-        title: row.title,
-        subtitle: row.subtitle,
-        deploySummary: row.summary || row.subtitle || row.title,
-        legacyRow: row,
-      };
-    case 'conversation':
-      return {
-        id,
-        category: 'chat',
-        title: row.title,
-        subtitle: row.subtitle,
-        conversationId: row.id,
-        legacyRow: row,
-      };
-    case 'command':
-      return {
-        id,
-        category: 'command',
-        title: row.title,
-        subtitle: row.subtitle,
-        commandText: row.sql_text || row.title,
-        legacyRow: row,
-      };
-    case 'workspace':
-    case 'branch':
-    case 'repo':
-      return {
-        id,
-        category: 'search',
-        title: row.title,
-        subtitle: row.subtitle || row.type,
-        legacyRow: row,
-      };
-    default:
-      if (row.type === 'table' || row.type === 'snippet' || row.type === 'query' || row.type === 'column') {
-        return {
-          id,
-          category: 'search',
-          title: row.title,
-          subtitle: row.subtitle || row.type,
-          legacyRow: row,
-        };
-      }
-      return {
-        id,
-        category: 'search',
-        title: row.title,
-        subtitle: row.subtitle,
-        legacyRow: row,
-      };
-  }
-}
-
-function sectionTitle(mode: QueryMode, chip: SourceChipId, hasQuery: boolean): string | null {
-  if (!hasQuery && mode === 'default') return null;
-  if (mode === 'r2') return 'R2 Buckets';
-  if (mode === 'd1') return 'D1 Databases';
-  if (mode === 'planes') return 'Data planes';
-  if (mode === 'hyperdrive') return 'Hyperdrive';
-  if (mode === 'vectorize') return 'Vectorize';
-  if (mode === 'command') return 'Commands';
-  if (mode === 'workflow') return 'Workflows';
-  if (mode === 'file') return 'Files';
-  if (mode === 'search') return 'Search results';
-  if (chip !== 'all') return SOURCE_CHIPS.find((c) => c.id === chip)?.label ?? 'Results';
-  return 'Results';
-}
-
-function rowIcon(category: PaletteCategory) {
-  switch (category) {
-    case 'r2':
-    case 'resource':
-      return HardDrive;
-    case 'd1':
-      return Database;
-    case 'hyperdrive':
-      return Router;
-    case 'vectorize':
-      return Layers;
-    case 'command':
-      return Terminal;
-    case 'workflow':
-      return Workflow;
-    case 'chat':
-      return MessageSquare;
-    case 'deploy':
-      return Layers;
-    case 'file':
-      return FileText;
-    case 'connect':
-      return HardDrive;
-    default:
-      return Search;
-  }
-}
+import {
+  QUICK_OPEN_ACTIONS,
+  SOURCE_CHIPS,
+  buildPlaneSectionsFromCatalog,
+  catalogEntryToPalette,
+  chipMatchesCategory,
+  deployRowToPalette,
+  d1RowsToPalette,
+  fetchJson,
+  legacyToPalette,
+  hyperdriveRowsToPalette,
+  mergeCommandCatalog,
+  normalizeLegacySearchRows,
+  paletteSearchTips,
+  parseQueryMode,
+  r2CatalogToPaletteItems,
+  rowIcon,
+  sectionTitle,
+  vectorizeRowsToPalette,
+  type CommandSection,
+  type GithubRepoListRow,
+  type LegacyUnifiedRow,
+  type PaletteItem,
+  type SourceChipId,
+  type UnifiedSearchNavigate,
+} from './unified-search/paletteModel';
+export type { UnifiedSearchNavigate } from './unified-search/paletteModel';
 
 export const UnifiedSearchBar: React.FC<{
   workspaceLabel?: string;
@@ -577,7 +166,6 @@ export const UnifiedSearchBar: React.FC<{
   const [loading, setLoading] = useState(false);
   const [items, setItems] = useState<PaletteItem[]>([]);
   const [recentSearches, setRecentSearches] = useState<PaletteItem[]>([]);
-  const [active, setActive] = useState(0);
   const [sourceChip, setSourceChip] = useState<SourceChipId>('all');
   const [cfConnected, setCfConnected] = useState<boolean | null>(null);
   const [r2Catalog, setR2Catalog] = useState<{ name: string; bound: boolean }[]>([]);
@@ -590,10 +178,8 @@ export const UnifiedSearchBar: React.FC<{
   const [bucketMenuOpen, setBucketMenuOpen] = useState(false);
   const [bucketMenuRows, setBucketMenuRows] = useState<{ name: string; bound: boolean }[]>([]);
   const [bucketMenuLoading, setBucketMenuLoading] = useState(false);
-  const inputRef = useRef<HTMLInputElement>(null);
   const bucketMenuRef = useRef<HTMLDivElement>(null);
   const paletteRef = useRef<HTMLDivElement>(null);
-  const mobileDropdownRef = useRef<HTMLDivElement>(null);
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const githubReposCacheRef = useRef<GithubRepoListRow[] | null>(null);
   const githubReposAuthedRef = useRef<boolean | null>(null);
@@ -622,10 +208,8 @@ export const UnifiedSearchBar: React.FC<{
   const activateDataPlaneChip = useCallback((chip: SourceChipId, prefix: string) => {
     setSourceChip(chip);
     setQ(prefix);
-    setActive(0);
     setPlaneSections([]);
     setCommandSections([]);
-    requestAnimationFrame(() => inputRef.current?.focus());
   }, []);
 
   const openFilesSearch = useCallback(() => {
@@ -633,9 +217,7 @@ export const UnifiedSearchBar: React.FC<{
     setConnectionMenuOpen(false);
     setSourceChip('all');
     setQ('');
-    setActive(0);
     setOpen(true);
-    requestAnimationFrame(() => inputRef.current?.focus());
   }, []);
 
   useEffect(() => {
@@ -663,8 +245,6 @@ export const UnifiedSearchBar: React.FC<{
         setQ('@');
       }
     }
-    setActive(0);
-    requestAnimationFrame(() => inputRef.current?.focus());
   }, [open, initialFacets, initialQuery, onInitialQueryConsumed]);
 
   useEffect(() => {
@@ -1154,8 +734,12 @@ export const UnifiedSearchBar: React.FC<{
             repos = [];
             githubReposCacheRef.current = repos;
           } else {
-            const data = await res.json();
-            const list = Array.isArray(data) ? data : data.repos || [];
+            const data: unknown = await res.json();
+            const list = Array.isArray(data)
+              ? data
+              : data && typeof data === 'object' && 'repos' in data
+                ? (data as { repos?: unknown }).repos ?? []
+                : [];
             repos = (Array.isArray(list) ? list : [])
               .filter((r: GithubRepoListRow) => r.full_name || r.name);
             githubReposCacheRef.current = repos;
@@ -1460,7 +1044,6 @@ export const UnifiedSearchBar: React.FC<{
     setPlaneSections([]);
     setPlanesCatalog(null);
     setSourceChip('all');
-    setActive(0);
     setR2Catalog([]);
     setR2Page(1);
     setCfConnected(null);
@@ -1575,8 +1158,7 @@ export const UnifiedSearchBar: React.FC<{
             ...QUICK_OPEN_ACTIONS.filter((a) => a.title !== '?'),
           ]);
           setQ('');
-          setActive(0);
-          return;
+                return;
         }
         setQ(item.title);
         return;
@@ -1756,6 +1338,35 @@ export const UnifiedSearchBar: React.FC<{
     return [{ key: 'main', label: title || 'Results', rows: filtered.filter((i) => i.category !== 'tip') }];
   }, [items, mode, q, sourceChip, commandSections, planeSections, cfConnected]);
 
+  const kumoPaletteGroups = useMemo<KumoCommandPaletteGroup[]>(() =>
+    displaySections.map((section) => ({
+      id: section.key,
+      label: section.label || 'Results',
+      items: section.rows.map((item, index) => {
+        const Icon = rowIcon(item.category);
+        const detailParts = [
+          item.commandCategory ? WRANGLER_CATEGORY_LABELS[item.commandCategory] : null,
+          item.subtitle || null,
+          typeof item.objectCount === 'number' ? `${item.objectCount.toLocaleString()} objects` : null,
+          item.bound ? 'Bound' : null,
+        ].filter((part): part is string => Boolean(part));
+        return {
+          id: `${section.key}:${index}:${item.id}`,
+          title: item.title,
+          description: detailParts.join(' · ') || undefined,
+          icon: item.category === 'file'
+            ? <SetiFileIcon filename={item.filePath || item.title} size={14} />
+            : <Icon
+                size={14}
+                className={item.category === 'r2' || item.category === 'resource' ? 'text-amber-500/90' : 'text-kumo-subtle'}
+                aria-hidden
+              />,
+          data: item,
+        };
+      }),
+    })),
+  [displaySections]);
+
   const r2TotalPages = useMemo(
     () => Math.max(1, Math.ceil(r2Catalog.length / PALETTE_R2_PAGE_SIZE)),
     [r2Catalog.length],
@@ -1774,12 +1385,6 @@ export const UnifiedSearchBar: React.FC<{
     }
   }, [r2Page, r2Catalog, mode, planesCatalog, term]);
 
-  const flatList = useMemo(() => displaySections.flatMap((s) => s.rows), [displaySections]);
-
-  useEffect(() => {
-    setActive(0);
-  }, [flatList.length, q, sourceChip, mode]);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       const meta = e.metaKey || e.ctrlKey;
@@ -1796,60 +1401,8 @@ export const UnifiedSearchBar: React.FC<{
     return () => window.removeEventListener('keydown', onKey);
   }, [open, closePalette]);
 
-  /**
-   * Click-outside closes palette — mobile panel is portaled to document.body.
-   *
-   * NOTE: this listens on 'mousedown' (fires before 'click'). Anything inside the
-   * dropdown that only calls `e.stopPropagation()` on a *different* event type
-   * (e.g. onPointerDown) will NOT stop this handler — pointerdown and mousedown are
-   * independent event streams, so stopping one doesn't stop the other from bubbling.
-   * The dropdown below stops propagation directly on 'mousedown' at the panel root
-   * so nothing inside the panel can ever trigger this close path.
-   */
-  useEffect(() => {
-    if (!open) return;
-    const onDocDown = (e: Event) => {
-      const t = e.target as Node;
-      if (paletteRef.current?.contains(t)) return;
-      if (mobileDropdownRef.current?.contains(t)) return;
-      closePalette();
-    };
-    document.addEventListener('mousedown', onDocDown);
-    document.addEventListener('touchstart', onDocDown, { passive: true });
-    return () => {
-      document.removeEventListener('mousedown', onDocDown);
-      document.removeEventListener('touchstart', onDocDown);
-    };
-  }, [open, closePalette]);
-
-  const onKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      setActive((i) => Math.min(i + 1, Math.max(0, flatList.length - 1)));
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      setActive((i) => Math.max(0, i - 1));
-    } else if (e.key === 'Enter') {
-      if (flatList.length > 0) {
-        e.preventDefault();
-        const item = flatList[active];
-        if (item) applyItem(item, q.trim());
-        return;
-      }
-      if (mode === 'clone') {
-        const ref = parseGithubCloneRef(term || q.trim());
-        if (ref) {
-          e.preventDefault();
-          void runGithubClone(ref);
-        }
-      }
-    }
-  };
-
   const isMac = typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
   const mobileCompact = mobileToolbar;
-  let rowIndex = -1;
-
   return (
     <div
       ref={paletteRef}
@@ -1966,204 +1519,104 @@ export const UnifiedSearchBar: React.FC<{
       </div>
       )}
 
-      {open && (
-          <ShellDropdownPanel
-            ref={mobileCompact ? mobileDropdownRef : undefined}
-            variant="anchored"
-            className={`nav-dropdown${mobileCompact ? ' iam-palette-mobile-panel' : ''}`}
-            aria-label="Command palette"
-            // Stop mousedown from ever reaching the document-level click-outside
-            // listener. Without this, any mousedown inside the panel (result rows,
-            // chips, the scrollbar, etc.) can race the outside-click handler and
-            // close the palette before the corresponding click/select fires.
-            onMouseDown={(e) => e.stopPropagation()}
-            style={mobileCompact ? { background: 'rgba(12, 19, 26, 0.94)' } : undefined}
-            header={
-              <>
-                <div className="flex items-center gap-2">
-                  <Search size={16} className="text-muted shrink-0" />
-                  <input
-                    ref={inputRef}
-                    value={q}
-                    onChange={(e) => setQ(e.target.value)}
-                    onKeyDown={onKeyDown}
-                    placeholder="Search files, content, and symbols — / commands · # text · @ file · ? more"
-                    className="flex-1 min-w-0 bg-transparent border-0 outline-none text-[13px] text-main placeholder:text-muted"
-                  />
-                  <kbd className="text-[9px] font-mono px-1.5 py-0.5 rounded border border-[var(--border-subtle)] text-muted shrink-0">
-                    Esc
-                  </kbd>
-                  {loading ? <Loader2 size={16} className="animate-spin text-[var(--solar-cyan)] shrink-0" /> : null}
-                </div>
-                {/* Chips stay for platform power modes; file-first is the empty/default path */}
-                <div className={`flex flex-wrap gap-1${mobileCompact ? ' iam-palette-chips' : ''}`}>
-                  {SOURCE_CHIPS.map(({ id, label, Icon }) => {
-                    const on = activeChip === id || (id === 'files' && mode === 'file');
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        title={label}
-                        onPointerDown={(e) => e.stopPropagation()}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          if (id === 'all') {
-                            setSourceChip('all');
-                            setQ('');
-                            setActive(0);
-                            return;
-                          }
-                          if (id === 'files') {
-                            setSourceChip('files');
-                            setQ('');
-                            setActive(0);
-                            void loadFiles('');
-                            return;
-                          }
-                          if (id === 'planes') {
-                            activateDataPlaneChip('planes', 'planes:');
-                            return;
-                          }
-                          if (id === 'r2') {
-                            activateDataPlaneChip('r2', 'r2:');
-                            return;
-                          }
-                          if (id === 'd1') {
-                            activateDataPlaneChip('d1', 'd1:');
-                            return;
-                          }
-                          if (id === 'commands') {
-                            activateDataPlaneChip('commands', '/');
-                            return;
-                          }
-                          setSourceChip(id);
-                          setActive(0);
-                        }}
-                        className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1.5 text-[10px] font-medium border transition-colors touch-manipulation min-h-[30px] ${
-                          on
-                            ? 'border-[var(--solar-cyan)]/50 bg-[var(--solar-cyan)]/10 text-main'
-                            : 'border-[var(--border-subtle)] text-muted hover:bg-[var(--bg-hover)]'
-                        }`}
-                      >
-                        <Icon size={11} className="shrink-0 opacity-80" />
-                        <span>{label}</span>
-                      </button>
-                    );
-                  })}
-                </div>
-              </>
-            }
-            footer={
-              <>
-                {(mode === 'r2' || mode === 'planes') && r2TotalPages > 1 ? (
-                  <div
-                    className="px-3.5 py-1.5 flex items-center justify-between gap-2 text-[10px] text-muted font-[var(--font-sans)]"
-                    style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}
-                  >
-                    <button
-                      type="button"
-                      disabled={r2Page <= 1}
-                      onClick={() => setR2Page((p) => Math.max(1, p - 1))}
-                      className="px-2 py-0.5 rounded border border-[var(--border-subtle)] disabled:opacity-40 hover:bg-[var(--bg-hover)]"
-                    >
-                      Previous
-                    </button>
-                    <span>
-                      Page {r2Page} of {r2TotalPages} · {r2Catalog.length} buckets
-                    </span>
-                    <button
-                      type="button"
-                      disabled={r2Page >= r2TotalPages}
-                      onClick={() => setR2Page((p) => Math.min(r2TotalPages, p + 1))}
-                      className="px-2 py-0.5 rounded border border-[var(--border-subtle)] disabled:opacity-40 hover:bg-[var(--bg-hover)]"
-                    >
-                      Next
-                    </button>
-                  </div>
-                ) : null}
-                <div className="px-3.5 py-1.5 text-[10px] text-muted flex items-center gap-3 font-[var(--font-sans)]">
-                  <span>↑↓ to navigate</span>
-                  <span>↵ to select</span>
-                </div>
-              </>
-            }
-          >
-            <div className="nav-dropdown__results flex-1 min-h-0 overflow-y-auto chat-hide-scroll">
-              {flatList.length === 0 && !loading ? (
-                <div className="px-3 py-6 text-center text-[12px] text-muted">No results</div>
-              ) : null}
-
-              {displaySections.map((section) => (
-                <div key={section.key}>
-                  {section.label ? (
-                    <div className="px-3.5 pt-2 pb-1 text-[10px] font-semibold uppercase tracking-wide text-muted font-[var(--font-sans)]">
-                      {section.label}
-                    </div>
-                  ) : null}
-                  {section.rows.map((item) => {
-                    rowIndex += 1;
-                    const i = rowIndex;
-                    const Icon = rowIcon(item.category);
-                    const selected = i === active;
-                    const isTip = item.category === 'tip' || item.category === 'connect';
-                    return (
-                      <button
-                        key={`${item.id}-${i}`}
-                        type="button"
-                        onClick={() => applyItem(item, q.trim())}
-                        onMouseEnter={() => setActive(i)}
-                        className={`w-full text-left px-3.5 py-2 transition-colors flex items-center gap-2.5 group ${
-                          selected ? 'bg-[#2d5a7a]/90' : 'hover:bg-white/[0.06]'
-                        }`}
-                      >
-                        {item.category === 'file' ? (
-                          <SetiFileIcon
-                            filename={item.filePath || item.title}
-                            size={14}
-                            className="shrink-0"
-                          />
-                        ) : (
-                          <Icon
-                            size={14}
-                            className={`shrink-0 ${item.category === 'r2' || item.category === 'resource' ? 'text-amber-500/90' : 'text-muted'}`}
-                            aria-hidden
-                          />
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="text-[12px] font-medium text-main truncate">{item.title}</span>
-                            {item.bound ? (
-                              <span className="text-[9px] uppercase tracking-wide text-[var(--solar-cyan)] shrink-0">bound</span>
-                            ) : null}
-                          </div>
-                          {item.commandCategory ? (
-                            <div className="text-[9px] font-semibold uppercase tracking-wider text-[var(--solar-cyan)]/80">
-                              {WRANGLER_CATEGORY_LABELS[item.commandCategory]}
-                            </div>
-                          ) : null}
-                          {item.subtitle ? (
-                            <div className="text-[11px] font-mono text-muted truncate">{item.subtitle}</div>
-                          ) : null}
-                          {typeof item.objectCount === 'number' ? (
-                            <div className="text-[10px] text-muted font-mono">
-                              {item.objectCount.toLocaleString()} objects
-                            </div>
-                          ) : null}
-                        </div>
-                        {selected && !isTip ? (
-                          <ArrowRight size={14} className="shrink-0 text-muted opacity-70" />
-                        ) : isTip ? (
-                          <ChevronRight size={14} className="shrink-0 text-muted opacity-50" />
-                        ) : null}
-                      </button>
-                    );
-                  })}
-                </div>
-              ))}
+      <CommandPaletteShell
+        open={open}
+        onOpenChange={(nextOpen) => {
+          if (nextOpen) setOpen(true);
+          else closePalette();
+        }}
+        query={q}
+        onQueryChange={setQ}
+        groups={kumoPaletteGroups}
+        loading={loading}
+        placeholder="Search files, content, symbols, data, or commands…"
+        leading={<Search size={16} className="text-kumo-subtle" aria-hidden />}
+        toolbar={
+          <div className="flex flex-wrap gap-1.5">
+            {SOURCE_CHIPS.map(({ id, label, Icon }) => {
+              const selected = activeChip === id || (id === 'files' && mode === 'file');
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => {
+                    if (id === 'all') {
+                      setSourceChip('all');
+                      setQ('');
+                      return;
+                    }
+                    if (id === 'files') {
+                      setSourceChip('files');
+                      setQ('');
+                      void loadFiles('');
+                      return;
+                    }
+                    if (id === 'planes') {
+                      activateDataPlaneChip('planes', 'planes:');
+                      return;
+                    }
+                    if (id === 'r2') {
+                      activateDataPlaneChip('r2', 'r2:');
+                      return;
+                    }
+                    if (id === 'd1') {
+                      activateDataPlaneChip('d1', 'd1:');
+                      return;
+                    }
+                    if (id === 'commands') {
+                      activateDataPlaneChip('commands', '/');
+                      return;
+                    }
+                    setSourceChip(id);
+                  }}
+                  className={`inline-flex min-h-7 items-center gap-1 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors ${
+                    selected
+                      ? 'border-kumo-brand/40 bg-kumo-tint text-kumo-default'
+                      : 'border-kumo-line bg-kumo-base text-kumo-subtle hover:bg-kumo-tint hover:text-kumo-default'
+                  }`}
+                >
+                  <Icon size={12} aria-hidden />
+                  {label}
+                </button>
+              );
+            })}
+          </div>
+        }
+        footer={
+          <div className="flex w-full items-center justify-between gap-3">
+            <div className="flex items-center gap-3 text-[11px] text-kumo-subtle">
+              <span>↑↓ navigate</span>
+              <span>↵ select</span>
+              <span>⌘↵ new tab</span>
             </div>
-
-          </ShellDropdownPanel>
-      )}
+            {(mode === 'r2' || mode === 'planes') && r2TotalPages > 1 ? (
+              <div className="flex items-center gap-2 text-[11px] text-kumo-subtle">
+                <button
+                  type="button"
+                  disabled={r2Page <= 1}
+                  onClick={() => setR2Page((page) => Math.max(1, page - 1))}
+                  className="rounded-md border border-kumo-line px-2 py-1 disabled:opacity-40"
+                >
+                  Previous
+                </button>
+                <span>{r2Page}/{r2TotalPages}</span>
+                <button
+                  type="button"
+                  disabled={r2Page >= r2TotalPages}
+                  onClick={() => setR2Page((page) => Math.min(r2TotalPages, page + 1))}
+                  className="rounded-md border border-kumo-line px-2 py-1 disabled:opacity-40"
+                >
+                  Next
+                </button>
+              </div>
+            ) : null}
+          </div>
+        }
+        onSelect={(entry) => {
+          const item = entry.data as PaletteItem | undefined;
+          if (item) applyItem(item, q.trim());
+        }}
+      />
 
       {toast ? (
         <div className="fixed bottom-6 left-1/2 z-[200] -translate-x-1/2 px-3 py-2 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-[12px] text-main shadow-xl">

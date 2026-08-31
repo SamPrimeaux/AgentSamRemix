@@ -459,6 +459,10 @@ export default defineConfig(({ mode }) => {
       alias: {
         "@": path.resolve(__dirname, "."),
         "@iam/frontend": path.resolve(repoRoot, "app/frontend"),
+        "@iam/cms-template-library": path.resolve(
+          repoRoot,
+          "packages/cms-cloudflare-template-library/src/index.ts",
+        ),
         "lucide-react": path.resolve(repoRoot, "node_modules/lucide-react"),
         "three/addons": path.resolve(
           repoRoot,

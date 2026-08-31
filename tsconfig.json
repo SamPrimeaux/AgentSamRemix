@@ -22,6 +22,9 @@
     "paths": {
       "@/*": [
         "./*"
+      ],
+      "@iam/cms-template-library": [
+        "./packages/cms-cloudflare-template-library/src/index.ts"
       ]
     },
     "allowImportingTsExtensions": true,

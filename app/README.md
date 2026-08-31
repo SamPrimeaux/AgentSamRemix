@@ -50,7 +50,8 @@ Important files:
 - `vite.config.ts` — production dashboard/PWA build configuration.
 - `frontend/public/cms/studio-cms-shell.html` — canonical parked CMS presentation source, published as logical `cms/studio.html` through `WEBSITE_ASSETS`.
 - `frontend/public/site/home.html` — canonical root presentation source; it is not copied through Vite.
-- `pages/cms/CmsPage.tsx` — small lazy host for that shell while CMS authoring is on the backburner.
+- `pages/cms/CmsPage.tsx` — CMS route boundary: the root/template-library routes are active React surfaces; authoring routes remain parked behind the `WEBSITE_ASSETS` shell until their API pass.
+- `../packages/cms-cloudflare-template-library/` — reusable IAM app/site blocks, themes, and machine-readable registries for CMS/customer builds.
 
 ## Live dashboard route map
 
@@ -121,18 +122,18 @@ Examples are deliberately not part of the Agent surface or Agent critical bundle
 
 ### CMS pages
 
-All CMS paths currently render through the tiny lazy `pages/cms/CmsPage.tsx` host into the parked `WEBSITE_ASSETS` shell. CMS uses the application workspace identity; it does not own a second workspace-context endpoint. Site/project context will be reintroduced inside the CMS domain when that product phase resumes:
+CMS uses the application identity and does not own a second workspace-context endpoint. The reusable component/template library is now active without reconnecting the old CMS authoring runtime:
 
-- `/dashboard/cms`
-- `/dashboard/cms/pages`
-- `/dashboard/cms/templates`
-- `/dashboard/cms/imports`
-- `/dashboard/cms/theme-editor`
-- `/dashboard/cms/online-store`
-- `/dashboard/cms/media`
-- `/dashboard/cms/*`
+- `/dashboard/cms` — live template-library overview and reusable-block preview.
+- `/dashboard/cms/templates` — live template recipes backed by the package registry.
+- `/dashboard/cms/pages` — parked authoring presentation shell.
+- `/dashboard/cms/imports` — parked authoring presentation shell.
+- `/dashboard/cms/theme-editor` — parked authoring presentation shell.
+- `/dashboard/cms/online-store` — parked authoring presentation shell.
+- `/dashboard/cms/media` — parked authoring presentation shell.
+- `/dashboard/cms/*` — other CMS authoring routes remain parked until their domain/API pass.
 
-`/dashboard/cms/sites` is a compatibility redirect to `/dashboard/cms`.
+`/dashboard/cms/sites` remains a compatibility redirect to `/dashboard/cms`. The live library is intentionally independent from site/project authoring state so UI modernization cannot recreate hidden workspace resolution.
 
 ### Collaboration pages
 

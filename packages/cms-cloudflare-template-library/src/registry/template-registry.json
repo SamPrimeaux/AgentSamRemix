@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "templates": [
+    {
+      "id": "site.local-business",
+      "name": "Local Business",
+      "layer": "site",
+      "description": "Conversion-first public site for contractors, service companies, studios, and local businesses.",
+      "componentIds": ["site.header", "site.hero", "site.feature-grid", "site.cta", "site.footer"],
+      "themeId": "iam-classy",
+      "tags": ["business", "services", "local", "lead-generation"],
+      "status": "ready"
+    },
+    {
+      "id": "site.agency-portfolio",
+      "name": "Agency / Portfolio",
+      "layer": "site",
+      "description": "Editorial marketing shell for studios, agencies, creators, and portfolio-led businesses.",
+      "componentIds": ["site.header", "site.hero", "site.feature-grid", "site.cta", "site.footer"],
+      "themeId": "iam-classy",
+      "tags": ["agency", "portfolio", "creative", "editorial"],
+      "status": "ready"
+    },
+    {
+      "id": "app.cms-admin",
+      "name": "CMS Admin",
+      "layer": "app",
+      "description": "Reusable authenticated CMS/dashboard shell for future customer administration surfaces.",
+      "componentIds": ["app.sidebar", "app.page-header", "app.command-palette", "app.banner", "app.loading-skeleton", "app.clipboard-field"],
+      "themeId": "iam-classy",
+      "tags": ["cms", "dashboard", "admin", "saas"],
+      "status": "ready"
+    }
+  ]
+}
