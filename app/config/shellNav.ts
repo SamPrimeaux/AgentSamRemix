@@ -87,6 +87,7 @@ export const SHELL_PRODUCTS: ShellProduct[] = [
         children: CMS_SUITE_NAV,
       },
       { id: 'moviemode', label: 'Movie Mode', path: '/dashboard/moviemode', match: 'prefix' },
+      { id: 'workmode', label: 'Work Mode', path: '/dashboard/workmode', match: 'exact' },
     ],
   },
   {

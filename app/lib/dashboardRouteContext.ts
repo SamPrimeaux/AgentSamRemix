@@ -55,6 +55,36 @@ export function resolveDashboardRouteAgentContext(opts: {
     };
   }
 
+  if (path.startsWith('/dashboard/workmode')) {
+    return {
+      route_key: 'work_mode',
+      task_type: 'work_mode_execution',
+      context_label: 'Work Mode',
+      contextMode: 'work_mode',
+      workspaceContext: {
+        ...basePacket,
+        activeTab: 'workbench',
+        capabilities: ['workbench', 'git', 'terminal', 'presentations'],
+      },
+      quickActions: [
+        {
+          id: 'wm-git-status',
+          label: 'Git status',
+          message: 'Inspect the active repository branch, changed files, and sync state.',
+          route_key: 'work_mode',
+          task_type: 'work_mode_execution',
+        },
+        {
+          id: 'wm-run-tests',
+          label: 'Run tests',
+          message: 'Run the project test suite and report pass/fail with actionable fixes.',
+          route_key: 'work_mode',
+          task_type: 'work_mode_execution',
+        },
+      ],
+    };
+  }
+
   if (path.startsWith('/dashboard/designstudio')) {
     return {
       route_key: 'design_studio',

@@ -100,6 +100,9 @@ export const WorkflowsPage = lazy(() =>
 export const MovieModePage = lazy(() =>
   import('./moviemode/MovieModePage').then((m) => ({ default: m.default })),
 );
+export const WorkModePage = lazy(() =>
+  import('./workmode/WorkModePage').then((m) => ({ default: m.default })),
+);
 export const DrawPage = lazy(() =>
   import('./pages/draw/DrawPage').then((m) => ({ default: m.default })),
 );

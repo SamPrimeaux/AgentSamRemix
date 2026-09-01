@@ -39,6 +39,7 @@ import {
   ProjectDetailPage,
   WorkflowsPage,
   MovieModePage,
+  WorkModePage,
   DrawPage,
   SketchPage,
   CmsPage,
@@ -167,6 +168,14 @@ export function DashboardAppRoutes(props: DashboardAppRoutesProps) {
     element={
       <div className="flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden">
         <MovieModePage />
+      </div>
+    }
+  />
+  <Route
+    path="/dashboard/workmode"
+    element={
+      <div className="flex flex-1 flex-col min-h-0 min-w-0 overflow-hidden">
+        <WorkModePage />
       </div>
     }
   />
