@@ -21,13 +21,17 @@ export const VERB_ALIASES = {};
 
 export const USAGE = `usage: bin/agentsam <verb> [subcommand] [options]
 
-SDK verbs (delegated to @inneranimalmedia/agentsam-sdk):
+SDK verbs (delegated to @inneranimalmedia/agentsam-sdk when not a host verb):
   context                         Git repository and bridge context
   init                            local-first project scaffold
+  status [--json]                 live Git + DB + API + PTY status
+  db init|status                  project-local SQLite database
+  tui [rich]                      ANSI (or optional Rich) terminal dashboard
   start-local                     local PTY server
   tunnel                          expose the local PTY
   identity    preview|init        portable identity setup
   shell                           shell and slash-command information
+  deploy                          SDK deploy (use host deploy below for this repo)
 
 AgentSamRemix host verbs:
   acp         serve               local stdio ACP bridge to the Agent Sam API
@@ -39,6 +43,7 @@ AgentSamRemix host verbs:
 Examples:
   bin/agentsam --version
   bin/agentsam context --json
+  bin/agentsam status --json
   bin/agentsam identity preview --open
   bin/agentsam acp serve
   bin/agentsam deploy full

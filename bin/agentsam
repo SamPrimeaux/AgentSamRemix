@@ -14,7 +14,9 @@ import { COMMANDS, usage, resolveVerb } from './commands/index.mjs';
 
 const require = createRequire(import.meta.url);
 const SDK_PACKAGE = '@inneranimalmedia/agentsam-sdk';
-const SDK_VERBS = new Set(['context', 'init', 'start-local', 'tunnel', 'identity', 'shell']);
+
+/** Remix-owned verbs — these override same-named SDK commands when both exist (e.g. deploy). */
+const HOST_VERBS = new Set(Object.keys(COMMANDS));
 
 function resolveSdkCli() {
   const packagePath = require.resolve(`${SDK_PACKAGE}/package.json`);
@@ -59,18 +61,17 @@ function main(argv) {
     return;
   }
 
-  const [verb, ...rest] = argv;
-  if (SDK_VERBS.has(verb)) return runSdkCli(argv);
-
+  const [verb] = argv;
   const key = resolveVerb(verb);
-  const cmd = COMMANDS[key];
-  if (!cmd) {
-    console.error(`unknown verb: ${verb}`);
-    usage();
-    process.exitCode = 2;
-    return;
+
+  if (HOST_VERBS.has(key)) {
+    const cmd = COMMANDS[key];
+    return cmd(argv.slice(1));
   }
-  return cmd(rest);
+
+  // All other verbs execute the installed @inneranimalmedia/agentsam-sdk CLI
+  // (context, init, status, db, tui, start-local, tunnel, identity, shell, …).
+  return runSdkCli(argv);
 }
 
 Promise.resolve(main(process.argv.slice(2))).catch((error) => {
