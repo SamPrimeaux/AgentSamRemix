@@ -1,0 +1,66 @@
+{
+  "schemaVersion": "agentsam-mcp-bridge-v1",
+  "description": "Wiring manifest for inneranimalmedia-mcp-server ↔ AgentSamRemix tool catalog",
+  "mcpServer": {
+    "serverKey": "inneranimalmedia-mcp-server",
+    "providerSlug": "inneranimalmedia-mcp-server",
+    "publicUrl": "https://mcp.inneranimalmedia.com/mcp",
+    "healthUrl": "https://mcp.inneranimalmedia.com/health",
+    "oauthAuthorizeUrl": "https://mcp.inneranimalmedia.com/api/oauth/authorize"
+  },
+  "remixWorker": {
+    "name": "agentsamremix",
+    "publicUrl": "https://agentsamremix.inneranimalmedia.com",
+    "toolCatalogTable": "agentsam_tools",
+    "mcpServersTable": "agentsam_mcp_servers",
+    "toolCallLogTable": "agentsam_tool_call_log"
+  },
+  "executionLanes": {
+    "catalogExecutor": "backend/services/tools/catalog-execution-runtime.js",
+    "mcpRowExecutor": "src/core/catalog-tool-mcp.js",
+    "mcpServerResolver": "src/core/mcp-servers.js",
+    "mcpToolExecution": "src/core/mcp-tool-execution.js"
+  },
+  "schemaTwins": [
+    {
+      "remixPath": "src/core/mcp-memory-search-schema.js",
+      "mcpServerPath": "src/mcp-memory-search-schema.js",
+      "exportName": "CANONICAL_AGENTSAM_MEMORY_SEARCH_INPUT_SCHEMA"
+    },
+    {
+      "remixPath": "src/core/mcp-memory-save-schema.js",
+      "mcpServerPath": "src/mcp-memory-save-schema.js",
+      "exportName": "CANONICAL_AGENTSAM_MEMORY_SAVE_INPUT_SCHEMA"
+    },
+    {
+      "remixPath": "src/core/mcp-plan-schema.js",
+      "mcpServerPath": "src/mcp-plan-schema.js",
+      "exportName": "CANONICAL_AGENTSAM_PLAN_INPUT_SCHEMA"
+    },
+    {
+      "remixPath": "src/core/mcp-github-public-schema.js",
+      "mcpServerPath": "src/mcp-github-public-schema.js",
+      "exportName": "agentsamGithubReadInputSchema"
+    },
+    {
+      "remixPath": "src/core/d1-write-contract.js",
+      "mcpServerPath": "src/mcp-d1-write-contract.js",
+      "exportName": "assertD1WriteContracts"
+    }
+  ],
+  "operatorCli": {
+    "hostWrapper": "bin/agentsam",
+    "sdkPackage": "@inneranimalmedia/agentsam-sdk",
+    "acpBridge": "bin/agentsam acp serve",
+    "verifyCommands": [
+      "npm run verify:sdk-cli",
+      "npm run verify:mcp-bridge",
+      "npm run test:bin-lib"
+    ]
+  },
+  "deployCommands": {
+    "frontendAndWorker": "npm run build && npm run deploy",
+    "workerOnly": "node bin/agentsam deploy worker",
+    "fast": "node bin/agentsam deploy fast"
+  }
+}

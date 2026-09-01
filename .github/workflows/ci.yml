@@ -38,6 +38,12 @@ jobs:
       - name: Bin/lib portability tests
         run: npm run test:bin-lib
 
+      - name: MCP bridge schema twins
+        run: npm run verify:mcp-bridge
+
+      - name: SDK CLI installed
+        run: npm run verify:sdk-cli
+
       - name: Retrieval eval harness syntax
         run: node --check scripts/eval-retrieval-v1.mjs
 
